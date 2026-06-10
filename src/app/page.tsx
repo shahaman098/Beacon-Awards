@@ -1,12 +1,18 @@
 import {
   AccreditedSection,
+  AwardsArchiveSection,
   AwardsFeatureSection,
+  BeaconExcellenceIntroSection,
   CeremonyGallerySection,
+  ExperiencePillarsSection,
+  EventsShowcaseSection,
+  FeaturedSpeakersSection,
   FinalCta,
   HomeHero,
   HeroStatsBand,
   NetworkSection,
   NewsSection,
+  PublicationsSection,
   QualityStandardsSection,
   ServicesSection,
   SiteFooter,
@@ -19,10 +25,13 @@ export default async function Home() {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main className="overflow-x-hidden bg-white text-black">
         <HomeHero />
         <HeroStatsBand />
+        <BeaconExcellenceIntroSection />
         <AwardsFeatureSection />
+        <PublicationsSection />
+        <AwardsArchiveSection />
         <WinnersShowcaseSection />
         <StandardsIntro />
         <QualityStandardsSection />
@@ -30,6 +39,9 @@ export default async function Home() {
         <NetworkSection />
         <AccreditedSection />
         <CeremonyGallerySection />
+        <FeaturedSpeakersSection />
+        <ExperiencePillarsSection />
+        <EventsShowcaseSection />
         <NewsSection />
         <FinalCta />
       </main>

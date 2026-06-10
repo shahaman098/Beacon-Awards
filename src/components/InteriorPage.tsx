@@ -3,19 +3,35 @@ import Link from "next/link";
 import { accreditedMosques, standards, type CardLink } from "@/lib/content";
 import type { InteriorPage as InteriorPageData, PageForm, PageSection } from "@/lib/pages";
 import { ButtonLink } from "@/components/ButtonLink";
-import { SectionHeader } from "@/components/SectionHeader";
-import { SiteFooter } from "@/components/HomeSections";
+import { SectionAwardsDecor, SectionKicker, SiteFooter } from "@/components/HomeSections";
 import { SiteHeader } from "@/components/SiteHeader";
-import { AwardCardAccent } from "@/components/AwardMotifs";
+import { AwardCardAccent, AwardSeal } from "@/components/AwardMotifs";
 
-function TextSection({ section }: { section: Extract<PageSection, { kind: "text" }> }) {
+type SectionTone = "white" | "warm";
+
+function bandClass(tone: SectionTone = "white") {
+  return [
+    "relative isolate overflow-hidden px-5 py-20 text-black md:px-8 md:py-28",
+    tone === "warm" ? "bg-[#f3f1ed]" : "bg-white",
+  ].join(" ");
+}
+
+function TextSection({ section, tone = "white" }: { section: Extract<PageSection, { kind: "text" }>; tone?: SectionTone }) {
   return (
-    <section className="pattern-light bg-white px-5 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-[960px]">
-        {section.title ? <SectionHeader align="left" title={section.title} /> : null}
-        <div className="space-y-5 text-lg leading-9 text-slate-600">
+    <section className={bandClass(tone)}>
+      <SectionAwardsDecor left={section.title ? "Context" : "Beacon"} right="Standards" />
+      <div className="relative z-10 mx-auto grid max-w-[980px] gap-10 md:grid-cols-[0.82fr_1.18fr]">
+        <div>
+          <SectionKicker>{section.title ? "Overview" : "Beacon Mosque"}</SectionKicker>
+          {section.title ? (
+            <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
+              {section.title}
+            </h2>
+          ) : null}
+        </div>
+        <div className="space-y-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
           {section.paragraphs.map((paragraph) => (
-            <p className="text-slate-600" key={paragraph}>
+            <p key={paragraph}>
               {paragraph}
             </p>
           ))}
@@ -28,11 +44,11 @@ function TextSection({ section }: { section: Extract<PageSection, { kind: "text"
 function LinkCard({ card }: { card: CardLink }) {
   const hasImage = Boolean(card.image);
   const className =
-    "group relative block overflow-hidden rounded-lg border border-slate-900/10 bg-white shadow-[0_12px_32px_rgba(7,21,36,0.06)] transition duration-200 hover:-translate-y-1 hover:border-gold-300 hover:shadow-[0_24px_60px_rgba(7,21,36,0.14)]";
+    "group block overflow-hidden border-t border-black/14 pt-5 text-black transition hover:text-emerald-700";
   const content = (
     <>
       {hasImage ? (
-        <div className="relative aspect-[1.45] overflow-hidden bg-cream-200">
+        <div className="relative mb-5 aspect-[1.45] overflow-hidden bg-white">
           <Image
             alt={card.imageAlt ?? ""}
             className="object-cover transition duration-500 group-hover:scale-105"
@@ -40,21 +56,21 @@ function LinkCard({ card }: { card: CardLink }) {
             sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
             src={card.image!}
           />
-          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[linear-gradient(180deg,transparent,rgba(7,21,36,0.62))]" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.38))]" />
           {card.meta ? (
-            <span className="absolute left-5 top-5 rounded-full bg-gold-400/95 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-navy-950 shadow">
+            <span className="absolute left-4 top-4 bg-gold-400/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-black">
               {card.meta}
             </span>
           ) : null}
         </div>
       ) : null}
-      <div className="relative p-7">
-        <AwardCardAccent />
-        {!hasImage && card.meta ? <span className="relative z-10 mb-5 inline-block text-xs font-bold uppercase text-emerald-700">{card.meta}</span> : null}
-        <h3 className="relative z-10 text-xl font-semibold leading-snug text-slate-950">{card.title}</h3>
-        <p className="relative z-10 mt-3 text-sm leading-7 text-slate-600">{card.text}</p>
+      <div className="relative pb-1">
+        <AwardCardAccent className="opacity-35" />
+        {!hasImage && card.meta ? <span className="relative z-10 mb-4 inline-block text-[0.62rem] font-bold uppercase tracking-[0.18em] text-black/42">{card.meta}</span> : null}
+        <h3 className="relative z-10 text-lg font-semibold leading-snug tracking-[-0.02em] text-current">{card.title}</h3>
+        <p className="relative z-10 mt-3 text-sm leading-7 text-black/58">{card.text}</p>
       </div>
-      <span className="absolute inset-x-0 bottom-0 h-0.5 bg-[linear-gradient(90deg,#d7a948,transparent)] opacity-0 transition group-hover:opacity-100" />
+      <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.14em] text-black/40 transition group-hover:text-emerald-700">Open</span>
     </>
   );
 
@@ -81,13 +97,110 @@ function LinkCard({ card }: { card: CardLink }) {
   );
 }
 
-function CardsSection({ section }: { section: Extract<PageSection, { kind: "cards" }> }) {
+function StoriesMark() {
+  return (
+    <div className="flex items-center gap-4 text-black/18 md:gap-5" aria-hidden="true">
+      <AwardSeal className="h-20 w-20 shrink-0 text-black/18 md:h-28 md:w-28" />
+      <div className="h-20 w-px bg-black/18 md:h-28" />
+      <span className="[writing-mode:vertical-rl] text-[10px] font-semibold uppercase tracking-[0.45em] text-black/24 md:text-xs">
+        Stories
+      </span>
+    </div>
+  );
+}
+
+function FloralMark() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-[12rem] w-[9rem] text-black/18 md:h-[15rem] md:w-[11rem]"
+      fill="none"
+      viewBox="0 0 180 260"
+    >
+      <path
+        d="M99 136C118 95 132 56 126 20C155 33 170 61 166 91C163 117 147 139 125 151"
+        stroke="currentColor"
+        strokeWidth="2.4"
+      />
+      <path
+        d="M95 138C105 105 107 70 94 37C121 45 138 69 140 98C142 120 131 142 115 155"
+        stroke="currentColor"
+        strokeWidth="2.4"
+      />
+      <path
+        d="M90 142C78 108 57 80 24 62C20 91 31 120 52 142C67 156 85 164 102 164"
+        stroke="currentColor"
+        strokeWidth="2.4"
+      />
+      <path
+        d="M89 145C63 134 35 133 10 145C21 171 45 188 73 192C92 195 109 190 123 180"
+        stroke="currentColor"
+        strokeWidth="2.4"
+      />
+      <path
+        d="M96 145C120 153 142 170 155 197C129 205 100 201 78 187C62 177 52 162 49 146"
+        stroke="currentColor"
+        strokeWidth="2.4"
+      />
+      <path
+        d="M101 141C129 137 156 122 177 96C184 123 176 150 157 171C142 188 124 197 106 198"
+        stroke="currentColor"
+        strokeWidth="2.4"
+      />
+      <ellipse cx="95" cy="145" rx="24" ry="20" stroke="currentColor" strokeWidth="2.8" />
+      <path d="M95 126V166" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M78 136C87 139 97 141 110 141" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M72 151C87 147 99 146 116 148" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function AwardsSectionHeader({ title, variant }: { title: string; variant: "stories" | "floral" }) {
+  return (
+    <div className="mb-10 border-b border-black/14 pb-8">
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between md:gap-8">
+        <div className="max-w-2xl">
+          <SectionKicker>
+            {variant === "stories" ? "Archive" : "Categories"}
+          </SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
+            {title}
+          </h2>
+        </div>
+        <div className="flex justify-end md:shrink-0">
+          {variant === "stories" ? <StoriesMark /> : <FloralMark />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CardsSection({ section, tone = "warm" }: { section: Extract<PageSection, { kind: "cards" }>; tone?: SectionTone }) {
   const hasImages = section.cards.some((card) => card.image);
+  const sectionTitle = section.title ?? "";
+  const awardsHeaderVariant =
+    sectionTitle === "Awards archive"
+      ? "stories"
+      : /^Award categories/.test(sectionTitle)
+        ? "floral"
+        : null;
 
   return (
-    <section className="bg-cream-100 px-5 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-[1180px]">
-        {section.title ? <SectionHeader title={section.title} /> : null}
+    <section className={bandClass(tone)}>
+      <SectionAwardsDecor left={sectionTitle || "Cards"} right="Explore" />
+      <div className="relative z-10 mx-auto max-w-[1180px]">
+        {section.title
+          ? awardsHeaderVariant
+            ? <AwardsSectionHeader title={section.title} variant={awardsHeaderVariant} />
+            : (
+              <div className="mb-10 max-w-xl">
+                <SectionKicker>Explore</SectionKicker>
+                <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
+                  {section.title}
+                </h2>
+              </div>
+            )
+          : null}
         <div className={["grid gap-5", hasImages ? "lg:grid-cols-2 xl:grid-cols-3" : "md:grid-cols-2 xl:grid-cols-3"].join(" ")}>
           {section.cards.map((card) => (
             <LinkCard card={card} key={`${card.title}-${card.href}`} />
@@ -100,9 +213,10 @@ function CardsSection({ section }: { section: Extract<PageSection, { kind: "card
 
 function WordPressSection({ section }: { section: Extract<PageSection, { kind: "wordpress" }> }) {
   return (
-    <section className="pattern-light bg-white px-5 py-16 md:px-8 md:py-20">
+    <section className={bandClass("white")}>
+      <SectionAwardsDecor left="Archive" right="Content" />
       <div
-        className="wordpress-content mx-auto max-w-[1180px]"
+        className="wordpress-content relative z-10 mx-auto max-w-[1180px]"
         dangerouslySetInnerHTML={{ __html: section.html }}
       />
     </section>
@@ -119,8 +233,8 @@ function shouldUseMediaLinkFallback(src: string) {
 
 function MediaLinkFallback({ href }: { href: string }) {
   return (
-    <div className="flex aspect-video items-center justify-center bg-[linear-gradient(135deg,#071524,#063f35)] p-6 text-center text-white">
-      <a className="rounded-lg border border-gold-200/45 px-5 py-3 text-sm font-semibold text-gold-200 transition hover:bg-white/10" href={href} rel="noreferrer" target="_blank">
+    <div className="flex aspect-video items-center justify-center bg-black p-6 text-center text-white">
+      <a className="border border-white/18 px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-gold-200 transition hover:bg-white hover:text-black" href={href} rel="noreferrer" target="_blank">
         Open original media
       </a>
     </div>
@@ -129,13 +243,20 @@ function MediaLinkFallback({ href }: { href: string }) {
 
 export function MediaSection({ section }: { section: Extract<PageSection, { kind: "media" }> }) {
   return (
-    <section className="pattern-light bg-[#fcfaf5] px-5 py-14 md:px-8 md:py-18">
-      <div className="mx-auto max-w-[1180px]">
-        {section.title ? <SectionHeader align="left" title={section.title} text={section.text} /> : null}
+    <section className={bandClass("warm")}>
+      <SectionAwardsDecor left="Media" right="Archive" />
+      <div className="relative z-10 mx-auto max-w-[1180px]">
+        {section.title ? (
+          <div className="mb-10 max-w-xl">
+            <SectionKicker>Media</SectionKicker>
+            <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">{section.title}</h2>
+            {section.text ? <p className="mt-5 text-sm leading-7 text-black/58">{section.text}</p> : null}
+          </div>
+        ) : null}
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {section.items.map((item) => (
             <figure
-              className="overflow-hidden rounded-lg border border-gold-300/25 bg-white shadow-[0_18px_44px_rgba(7,21,36,0.08)]"
+              className="overflow-hidden border border-black/10 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.08)]"
               key={`${item.type}-${item.src}`}
             >
               {item.type === "image" && !shouldUseMediaLinkFallback(item.src) ? (
@@ -181,7 +302,7 @@ export function MediaSection({ section }: { section: Extract<PageSection, { kind
                 <MediaLinkFallback href={item.src} />
               ) : null}
               {item.caption || item.alt ? (
-                <figcaption className="border-t border-gold-300/25 bg-white p-5 text-sm leading-6 text-slate-600">
+                <figcaption className="border-t border-black/10 bg-white p-5 text-sm leading-6 text-black/58">
                   {item.caption || item.alt}
                 </figcaption>
               ) : null}
@@ -195,15 +316,19 @@ export function MediaSection({ section }: { section: Extract<PageSection, { kind
 
 function GallerySection({ section }: { section: Extract<PageSection, { kind: "gallery" }> }) {
   return (
-    <section className="pattern-light bg-white px-5 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-[1180px]">
-        {section.title ? <SectionHeader title={section.title} text="Visual moments from the Beacon Mosque public archive." /> : null}
+    <section className={bandClass("warm")}>
+      <SectionAwardsDecor left="Gallery" right="Moments" />
+      <div className="relative z-10 mx-auto max-w-[1180px]">
+        {section.title ? (
+          <div className="mb-10 max-w-xl">
+            <SectionKicker>Gallery</SectionKicker>
+            <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">{section.title}</h2>
+            <p className="mt-5 text-sm leading-7 text-black/58">Visual moments from the Beacon Mosque public archive.</p>
+          </div>
+        ) : null}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {section.images.map((image, index) => (
-            <figure
-              className="group relative overflow-hidden rounded-lg border border-gold-300/35 bg-navy-950 shadow-[0_18px_44px_rgba(7,21,36,0.12)]"
-              key={image.src}
-            >
+            <figure className="group relative overflow-hidden border border-black/10 bg-black shadow-[0_24px_80px_rgba(0,0,0,0.08)]" key={image.src}>
               <div className="relative aspect-square">
                 <Image
                   alt={image.alt}
@@ -228,15 +353,20 @@ function GallerySection({ section }: { section: Extract<PageSection, { kind: "ga
 
 function AudioSection({ section }: { section: Extract<PageSection, { kind: "audio" }> }) {
   return (
-    <section className="pattern-light bg-white px-5 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-[1180px]">
-        <SectionHeader title={section.title} text={section.text} />
+    <section className={bandClass("white")}>
+      <SectionAwardsDecor left="Audio" right="Vision" />
+      <div className="relative z-10 mx-auto max-w-[1180px]">
+        <div className="mb-10 max-w-xl">
+          <SectionKicker>Audio</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">{section.title}</h2>
+          <p className="mt-5 text-sm leading-7 text-black/58">{section.text}</p>
+        </div>
         <div className="grid gap-5 md:grid-cols-2">
           {section.items.map((item) => (
-            <article className="rounded-lg border border-gold-300/35 bg-cream-100 p-6 shadow-[0_14px_36px_rgba(7,21,36,0.07)]" key={item.src}>
-              <span className="text-xs font-bold uppercase text-emerald-700">30 year plan</span>
-              <h3 className="mt-4 text-xl font-semibold text-slate-950">{item.title}</h3>
-              <p className="mt-2 text-sm leading-7 text-slate-600">{item.subtitle}</p>
+            <article className="border-t border-black/14 pt-5" key={item.src}>
+              <span className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-black/42">30 year plan</span>
+              <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em] text-black">{item.title}</h3>
+              <p className="mt-2 text-sm leading-7 text-black/58">{item.subtitle}</p>
               <audio className="mt-5 w-full" controls preload="none">
                 <source src={item.src} type="audio/mp4" />
                 <a className="font-semibold text-emerald-800 underline" href={item.src}>
@@ -253,18 +383,27 @@ function AudioSection({ section }: { section: Extract<PageSection, { kind: "audi
 
 function StandardsSection() {
   return (
-    <section className="pattern-dark bg-[linear-gradient(135deg,#071524,#063f35)] px-5 py-16 text-white md:px-8 md:py-20">
-      <div className="mx-auto max-w-[1180px]">
-        <SectionHeader inverse title="Beacon Mosque standards" text="Explore the quality framework used across the Beacon Mosque accreditation pathway." />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <section className={bandClass("warm")}>
+      <SectionAwardsDecor left="Standards" right="Trust" />
+      <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 md:grid-cols-[0.9fr_1.1fr] md:items-start">
+        <div>
+          <SectionKicker>Standards</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
+            Beacon Mosque standards
+          </h2>
+          <p className="mt-6 max-w-xl text-sm leading-7 text-black/58">
+            Explore the quality framework used across the Beacon Mosque accreditation pathway.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
           {standards.map((standard) => (
             <Link
-              className="flex min-h-44 flex-col items-center justify-center gap-4 rounded-lg border border-gold-200/22 bg-white/8 p-5 text-center transition duration-200 hover:-translate-y-1 hover:border-gold-200/60"
+              className="border-t border-black/18 py-5 transition hover:text-emerald-700"
               href={standard.href}
               key={standard.title}
             >
-              <Image alt="" height={64} src={standard.image} width={64} />
-              <span className="text-sm font-semibold leading-tight text-white">{standard.title}</span>
+              <Image alt="" className="mb-4 h-9 w-9 object-contain" height={64} src={standard.image} width={64} />
+              <span className="text-base font-semibold tracking-[-0.02em]">{standard.title}</span>
             </Link>
           ))}
         </div>
@@ -275,18 +414,23 @@ function StandardsSection() {
 
 function AccreditedSection() {
   return (
-    <section className="bg-cream-100 px-5 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-[1180px]">
-        <SectionHeader title="Accredited Beacon Mosques" text="Mosques recognised through the Beacon Mosque accreditation pathway." />
+    <section className={bandClass("warm")}>
+      <SectionAwardsDecor left="Accredited" right="Beacon" />
+      <div className="relative z-10 mx-auto max-w-[1180px]">
+        <div className="mb-10 max-w-xl">
+          <SectionKicker>Accreditation</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">Accredited Beacon Mosques</h2>
+          <p className="mt-5 text-sm leading-7 text-black/58">Mosques recognised through the Beacon Mosque accreditation pathway.</p>
+        </div>
         <div className="grid gap-6 md:grid-cols-3">
           {accreditedMosques.map((mosque) => (
-            <Link className="overflow-hidden rounded-lg border border-slate-900/10 bg-white shadow-lg transition hover:-translate-y-1 hover:border-gold-300" href={mosque.href} key={mosque.title}>
-              <div className="relative aspect-[1.42] bg-cream-100">
+            <Link className="group overflow-hidden border-t border-black/14 pt-5 transition hover:text-emerald-700" href={mosque.href} key={mosque.title}>
+              <div className="relative aspect-[1.42] bg-white">
                 <Image alt={mosque.imageAlt} className="object-cover" fill sizes="(min-width: 768px) 33vw, 100vw" src={mosque.image} />
               </div>
-              <div className="border-t-2 border-gold-300/60 p-6">
-                <h3 className="text-xl font-semibold text-slate-950">{mosque.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{mosque.text}</p>
+              <div className="pt-5">
+                <h3 className="text-xl font-semibold tracking-[-0.02em] text-current">{mosque.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-black/58">{mosque.text}</p>
               </div>
             </Link>
           ))}
@@ -298,17 +442,21 @@ function AccreditedSection() {
 
 function CriteriaSection({ section }: { section: Extract<PageSection, { kind: "criteria" }> }) {
   return (
-    <section className="pattern-light bg-white px-5 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-[1180px]">
-        <SectionHeader title={section.title} />
+    <section className={bandClass("white")}>
+      <SectionAwardsDecor left="Criteria" right="Rating" />
+      <div className="relative z-10 mx-auto max-w-[1180px]">
+        <div className="mb-10 max-w-xl">
+          <SectionKicker>Criteria</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">{section.title}</h2>
+        </div>
         <div className="grid gap-5 lg:grid-cols-3">
           {section.groups.map((group) => (
-            <article className="rounded-lg border border-gold-300/35 bg-cream-100 p-6" key={group.title}>
-              <h3 className="text-xl font-semibold text-slate-950">{group.title}</h3>
-              <ul className="mt-5 space-y-3 text-sm leading-6 text-slate-600">
+            <article className="border-t border-black/14 pt-5" key={group.title}>
+              <h3 className="text-xl font-semibold tracking-[-0.02em] text-black">{group.title}</h3>
+              <ul className="mt-5 space-y-3 text-sm leading-6 text-black/58">
                 {group.items.map((item) => (
                   <li className="relative pl-6" key={item}>
-                    <span className="absolute left-0 top-2 h-2 w-2 rounded-full bg-gold-400" />
+                    <span className="absolute left-0 top-2 h-2 w-2 bg-gold-400" />
                     {item}
                   </li>
                 ))}
@@ -395,7 +543,7 @@ function Field({ field }: { field: FormField }) {
 
   return (
     <label className="block" htmlFor={inputId}>
-      <span className="text-sm font-semibold text-slate-700">
+      <span className="text-sm font-semibold text-black/68">
         {field.label}
         <span className="ml-1 text-emerald-700" aria-hidden="true">
           *
@@ -404,7 +552,7 @@ function Field({ field }: { field: FormField }) {
       {field.options ? (
         <select
           aria-required="true"
-          className="mt-2 h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-slate-950 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-gold-300/40"
+          className="mt-2 h-12 w-full border border-black/18 bg-white px-4 text-black outline-none transition focus:border-black focus:ring-2 focus:ring-gold-300/35"
           defaultValue={field.defaultValue ?? ""}
           id={inputId}
           name={field.name}
@@ -421,7 +569,7 @@ function Field({ field }: { field: FormField }) {
         <input
           aria-required="true"
           autoComplete={field.autoComplete}
-          className="mt-2 h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-slate-950 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-gold-300/40"
+          className="mt-2 h-12 w-full border border-black/18 bg-white px-4 text-black outline-none transition focus:border-black focus:ring-2 focus:ring-gold-300/35"
           defaultValue={field.defaultValue}
           id={inputId}
           name={field.name}
@@ -452,12 +600,15 @@ function FormSection({
   );
 
   return (
-    <section id={form === "nomination" ? "nomination-form" : undefined} className="bg-cream-100 px-5 py-16 md:px-8 md:py-20">
-      <div className="mx-auto grid max-w-[1180px] gap-10 lg:grid-cols-[0.75fr_1fr]">
+    <section id={form === "nomination" ? "nomination-form" : undefined} className={bandClass("warm")}>
+      <SectionAwardsDecor left="Contact" right="Enquiry" />
+      <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[0.75fr_1fr]">
         <div>
-          <SectionHeader align="left" title={title} text={text} />
+          <SectionKicker>Form</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">{title}</h2>
+          <p className="mt-5 text-sm leading-7 text-black/58">{text}</p>
         </div>
-        <form action="/api/forms/" className="rounded-lg border border-gold-300/35 bg-white p-6 shadow-[0_24px_60px_rgba(7,21,36,0.12)]" method="post">
+        <form action="/api/forms/" className="border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)]" method="post">
           <input name="form_type" type="hidden" value={form} />
           <input name="source_path" type="hidden" value={sourcePath} />
           <label className="hidden" htmlFor={`${form}-website`}>
@@ -470,19 +621,19 @@ function FormSection({
             ))}
           </div>
           <label className="mt-5 block" htmlFor={`${form}-message`}>
-            <span className="text-sm font-semibold text-slate-700">{config.messageLabel}</span>
+            <span className="text-sm font-semibold text-black/68">{config.messageLabel}</span>
             <textarea
               aria-required="true"
-              className="mt-2 min-h-36 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-gold-300/40"
+              className="mt-2 min-h-36 w-full border border-black/18 bg-white px-4 py-3 text-black outline-none transition focus:border-black focus:ring-2 focus:ring-gold-300/35"
               id={`${form}-message`}
               name="message"
               required
             />
           </label>
-          <button className="mt-6 inline-flex min-h-12 items-center justify-center rounded-lg border border-gold-300 bg-[linear-gradient(135deg,#f3d98c,#d7a948)] px-5 py-3 text-sm font-semibold text-emerald-950 shadow-[0_18px_40px_rgba(216,169,72,0.22)]" type="submit">
+          <button className="mt-6 inline-flex min-h-12 items-center justify-center border border-black bg-black px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-white hover:text-black" type="submit">
             {config.actionLabel}
           </button>
-          <p className="mt-4 text-xs leading-6 text-slate-500">
+          <p className="mt-4 text-xs leading-6 text-black/45">
             Fields marked with an asterisk are required. Your submission is routed through the Beacon Mosque intake workflow.
           </p>
         </form>
@@ -491,12 +642,14 @@ function FormSection({
   );
 }
 
-function RenderSection({ currentPath, section }: { currentPath: string; section: PageSection }) {
+function RenderSection({ currentPath, index, section }: { currentPath: string; index: number; section: PageSection }) {
+  const tone: SectionTone = index % 2 === 0 ? "white" : "warm";
+
   switch (section.kind) {
     case "text":
-      return <TextSection section={section} />;
+      return <TextSection section={section} tone={tone} />;
     case "cards":
-      return <CardsSection section={section} />;
+      return <CardsSection section={section} tone={tone} />;
     case "wordpress":
       return <WordPressSection section={section} />;
     case "media":
@@ -524,12 +677,12 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
     <>
       <SiteHeader />
       <main>
-        <section className="pattern-dark relative isolate overflow-hidden bg-[linear-gradient(135deg,#071524,#063f35)] px-5 py-20 text-white md:px-8 md:py-24">
-          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_10%,rgba(216,169,72,0.24),transparent_30%)]" />
+        <section className="pattern-dark relative isolate overflow-hidden bg-[linear-gradient(135deg,#050505,#18120a)] px-5 pb-20 pt-36 text-white md:px-8 md:pb-24 md:pt-40">
+          <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-[linear-gradient(180deg,transparent,rgba(5,5,5,0.92))]" />
           <div className={["mx-auto max-w-[1180px] items-center gap-12", hasHeroVisual ? "grid lg:grid-cols-[1fr_0.78fr]" : "max-w-[860px]"].join(" ")}>
             <div className={hasHeroVisual ? "" : "max-w-4xl"}>
               {page.eyebrow ? <span className="text-xs font-bold uppercase tracking-[0.24em] text-gold-200">{page.eyebrow}</span> : null}
-              <h1 className="mt-5 text-4xl font-bold leading-[1.02] md:text-6xl">{page.title}</h1>
+              <h1 className="mt-5 text-4xl font-black leading-[0.98] md:text-6xl">{page.title}</h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-white/78 md:text-xl">{page.intro}</p>
               {page.ctas?.length ? (
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -542,15 +695,15 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
               ) : null}
               {!hasHeroVisual ? (
                 <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-lg border border-white/14 bg-white/8 p-5 backdrop-blur-sm">
+                  <div className="border border-white/14 bg-white/8 p-5 backdrop-blur-sm">
                     <span className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-200">Awards</span>
                     <p className="mt-3 text-sm leading-7 text-white/76">National recognition for mosques, educators, volunteers, imams and community leadership.</p>
                   </div>
-                  <div className="rounded-lg border border-white/14 bg-white/8 p-5 backdrop-blur-sm">
+                  <div className="border border-white/14 bg-white/8 p-5 backdrop-blur-sm">
                     <span className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-200">Standards</span>
                     <p className="mt-3 text-sm leading-7 text-white/76">A practical quality framework covering governance, facilities, communication and service delivery.</p>
                   </div>
-                  <div className="rounded-lg border border-white/14 bg-white/8 p-5 backdrop-blur-sm">
+                  <div className="border border-white/14 bg-white/8 p-5 backdrop-blur-sm">
                     <span className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-200">Accreditation</span>
                     <p className="mt-3 text-sm leading-7 text-white/76">A route for mosque teams to evidence strong practice and improve year by year.</p>
                   </div>
@@ -581,7 +734,7 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
           </div>
         </section>
         {page.sections.map((section, index) => (
-          <RenderSection currentPath={`/${page.slug}/`} key={`${section.kind}-${index}`} section={section} />
+          <RenderSection currentPath={`/${page.slug}/`} index={index} key={`${section.kind}-${index}`} section={section} />
         ))}
       </main>
       <SiteFooter />

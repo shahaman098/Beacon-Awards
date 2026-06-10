@@ -35,7 +35,7 @@ export function HomeHeroVideo({ poster, src }: HomeHeroVideoProps) {
       autoPlay
       className={[
         "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
-        ready ? "opacity-70" : "opacity-0",
+        ready ? "opacity-90" : "opacity-0",
       ].join(" ")}
       loop
       muted

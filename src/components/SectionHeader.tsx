@@ -1,4 +1,5 @@
 type SectionHeaderProps = {
+  eyebrow?: string;
   title: string;
   text?: string;
   align?: "center" | "left";
@@ -6,6 +7,7 @@ type SectionHeaderProps = {
 };
 
 export function SectionHeader({
+  eyebrow,
   title,
   text,
   align = "center",
@@ -18,6 +20,16 @@ export function SectionHeader({
         align === "center" ? "mx-auto text-center" : "text-left",
       ].join(" ")}
     >
+      {eyebrow ? (
+        <span
+          className={[
+            "mb-5 inline-block text-xs font-bold uppercase tracking-[0.22em]",
+            inverse ? "text-gold-200" : "text-gold-400",
+          ].join(" ")}
+        >
+          {eyebrow}
+        </span>
+      ) : null}
       <div
         className={[
           "mb-5 h-px w-32",
@@ -29,7 +41,7 @@ export function SectionHeader({
       />
       <h2
         className={[
-          "text-3xl font-semibold leading-[1.08] md:text-5xl",
+          "text-3xl font-black leading-[0.98] tracking-[-0.06em] md:text-5xl",
           inverse ? "text-white" : "text-slate-950",
         ].join(" ")}
       >

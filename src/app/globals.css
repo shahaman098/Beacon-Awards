@@ -1,36 +1,46 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f2e8;
-  --foreground: #17231f;
+  --background: #050505;
+  --foreground: #f8f6f1;
+  --surface-0: #050505;
+  --surface-1: #0d0d0d;
+  --surface-2: #151515;
+  --surface-3: #211d1a;
+  --text-soft: rgb(248 246 241 / 0.68);
+  --line-soft: rgb(255 255 255 / 0.1);
+  --accent-warm: #d36b34;
+  --accent-gold: #e4bf68;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-navy-950: #071524;
-  --color-navy-900: #0b1e30;
-  --color-emerald-950: #063f35;
-  --color-emerald-800: #0b6b55;
-  --color-emerald-700: #0f7d61;
+  --color-navy-950: #050505;
+  --color-navy-900: #111111;
+  --color-emerald-950: #050505;
+  --color-emerald-800: #231a0d;
+  --color-emerald-700: #d7a948;
   --color-gold-200: #f1d58a;
   --color-gold-300: #e4bf68;
   --color-gold-400: #d7a948;
-  --color-cream-100: #f7f2e8;
-  --color-cream-200: #efe5d1;
-  --font-sans: Inter, Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
+  --color-cream-100: #fffdfa;
+  --color-cream-200: #f6f0e5;
+  --font-sans: var(--font-manrope), Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", ui-monospace, monospace;
 }
 
 html {
   background: var(--background);
   color: var(--foreground);
+  overflow-x: hidden;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Inter, Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-manrope), Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
 }
 
 img,
@@ -43,7 +53,11 @@ a {
 }
 
 .wordpress-content {
-  color: #334155;
+  color: rgb(0 0 0 / 0.62);
+}
+
+.wordpress-content-dark {
+  color: rgb(255 255 255 / 0.72);
 }
 
 .wordpress-content * {
@@ -97,8 +111,18 @@ a {
 .wordpress-content h4,
 .wordpress-content h5,
 .wordpress-content h6 {
-  color: #020617;
+  color: #050505;
   line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+.wordpress-content-dark h1,
+.wordpress-content-dark h2,
+.wordpress-content-dark h3,
+.wordpress-content-dark h4,
+.wordpress-content-dark h5,
+.wordpress-content-dark h6 {
+  color: #fff;
 }
 
 .wordpress-content h1,
@@ -117,9 +141,15 @@ a {
 .wordpress-content p,
 .wordpress-content li,
 .wordpress-content blockquote {
-  color: #475569;
+  color: rgb(0 0 0 / 0.58);
   font-size: 1.0625rem;
   line-height: 1.9;
+}
+
+.wordpress-content-dark p,
+.wordpress-content-dark li,
+.wordpress-content-dark blockquote {
+  color: rgb(255 255 255 / 0.7);
 }
 
 .wordpress-content p,
@@ -136,36 +166,58 @@ a {
 }
 
 .wordpress-content a {
-  color: #0f7d61;
+  color: #c89b43;
 }
 
 .wordpress-content img,
 .wordpress-content video,
 .wordpress-content iframe {
   display: block;
-  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
   height: auto;
-  border-radius: 8px;
+}
+
+.wordpress-content img {
+  width: auto;
+  max-height: min(70vh, 520px);
+  object-fit: contain;
+}
+
+.wordpress-content video,
+.wordpress-content iframe {
+  width: 100%;
+  border: 1px solid rgb(0 0 0 / 0.1);
+  background: #050505;
 }
 
 .wordpress-content iframe {
-  min-height: 320px;
+  min-height: min(56vw, 420px);
   border: 0;
+  filter: grayscale(1) sepia(0.16) contrast(0.95);
 }
 
 .wordpress-content figure {
   overflow: hidden;
-  border: 1px solid rgb(228 191 104 / 0.28);
-  border-radius: 8px;
+  border: 1px solid rgb(0 0 0 / 0.1);
   background: #fff;
-  box-shadow: 0 18px 44px rgb(7 21 36 / 0.08);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 0.08);
+}
+
+.wordpress-content-dark figure {
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: 0 18px 44px rgb(0 0 0 / 0.28);
 }
 
 .wordpress-content figcaption {
   padding: 1rem 1.25rem;
   font-size: 0.875rem;
   line-height: 1.7;
-  color: #475569;
+  color: rgb(0 0 0 / 0.58);
+}
+
+.wordpress-content-dark figcaption {
+  color: rgb(255 255 255 / 0.66);
 }
 
 .wordpress-content .fusion-button,
@@ -175,13 +227,14 @@ a {
   align-items: center;
   justify-content: center;
   min-height: 3rem;
-  border: 1px solid #e4bf68;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #f3d98c, #d7a948);
-  color: #063f35 !important;
+  border: 1px solid #050505;
+  background: #050505;
+  color: #fff !important;
   font-size: 0.875rem;
   font-weight: 700;
   padding: 0.75rem 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .wordpress-content .fusion-button span {
@@ -200,6 +253,11 @@ a {
   text-align: left;
 }
 
+.wordpress-content-dark th,
+.wordpress-content-dark td {
+  border-color: rgb(255 255 255 / 0.16);
+}
+
 .wordpress-content form {
   display: grid;
   gap: 1rem;
@@ -209,10 +267,9 @@ a {
 .wordpress-content textarea,
 .wordpress-content select {
   width: 100%;
-  border: 1px solid rgb(148 163 184 / 0.45);
-  border-radius: 8px;
+  border: 1px solid rgb(0 0 0 / 0.18);
   background: #fff;
-  color: #020617;
+  color: #050505;
   padding: 0.85rem 1rem;
 }
 
@@ -248,7 +305,7 @@ a {
 
 .pattern-light::after {
   background:
-    linear-gradient(135deg, rgb(6 63 53 / 5%) 25%, transparent 25%) 0 0 / 38px 38px,
+    linear-gradient(135deg, rgb(10 10 10 / 3%) 25%, transparent 25%) 0 0 / 38px 38px,
     linear-gradient(225deg, rgb(216 169 72 / 7%) 25%, transparent 25%) 0 0 / 38px 38px;
 }
 
@@ -260,12 +317,88 @@ a {
   border-radius: 4px 4px 146px 146px;
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .arch-frame-lg {
   border-radius: 12px 12px 260px 260px;
 }
 
 .arch-frame-lg-inner {
   border-radius: 6px 6px 248px 248px;
+}
+
+.section-word-motion {
+  animation: section-word-reveal 820ms cubic-bezier(0.2, 0.78, 0.18, 1) both;
+  animation-timeline: view();
+  animation-range: entry 8% cover 30%;
+}
+
+.award-float {
+  animation: award-float 6.5s ease-in-out infinite;
+}
+
+.award-float-delayed {
+  animation: award-float 7.2s ease-in-out 900ms infinite;
+}
+
+.award-float-slow {
+  animation: award-float 9s ease-in-out 350ms infinite;
+}
+
+.gallery-marquee-track {
+  animation: gallery-marquee 34s linear infinite;
+  will-change: transform;
+}
+
+.gallery-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes section-word-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes award-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes gallery-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 0.625rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-marquee-track {
+    animation: none;
+    transform: translateX(0);
+  }
 }
 
 /* Islamic geometric star pattern - subtle, repeating */
@@ -310,6 +443,37 @@ a {
   box-shadow: 0 0 0 3px rgb(241 213 138 / 25%);
 }
 
+.concert-outline-title {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgb(255 255 255 / 0.85);
+}
+
+.concert-glow-left::before,
+.concert-glow-right::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 999px;
+  filter: blur(32px);
+}
+
+.concert-glow-left::before {
+  left: -5rem;
+  bottom: 8rem;
+  width: 14rem;
+  height: 14rem;
+  background: radial-gradient(circle, rgb(211 107 52 / 0.32), transparent 68%);
+}
+
+.concert-glow-right::after {
+  right: -4rem;
+  top: 4rem;
+  width: 13rem;
+  height: 13rem;
+  background: radial-gradient(circle, rgb(211 107 52 / 0.24), transparent 68%);
+}
+
 @media (max-width: 640px) {
   .section-header {
     margin-left: 0;
@@ -326,6 +490,8 @@ a {
   *,
   *::before,
   *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition: none !important;
   }

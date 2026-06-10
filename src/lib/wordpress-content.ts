@@ -5,6 +5,7 @@ const mediaAttachmentCache = new Map<string, Promise<MediaItem | null>>();
 function shouldUseWordPressBody(page: InteriorPage) {
   const curatedSlugs = new Set([
     "category/news",
+    "contact-us",
     "gallery",
     "privacy-policy",
   ]);

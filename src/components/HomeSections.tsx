@@ -5,142 +5,90 @@ import {
   awardWinners2025,
   ceremonyGallery,
   featureCards,
-  heroStats,
   mainNav,
   newsCards,
   serviceCards,
   standards,
   type CardLink,
-  type ImageCard,
 } from "@/lib/content";
 import { ButtonLink } from "@/components/ButtonLink";
-import { HomeHeroSlideshow } from "@/components/HomeHeroSlideshow";
+import { AwardSeal, StarRating } from "@/components/AwardMotifs";
 import { HomeHeroVideo } from "@/components/HomeHeroVideo";
-import { SectionHeader } from "@/components/SectionHeader";
-import { AwardCardAccent, AwardSeal, StarRating } from "@/components/AwardMotifs";
+import { WinnersShowcaseInteractive } from "@/components/WinnersShowcaseInteractive";
 
-function Card({ card }: { card: CardLink }) {
+export function EditorialLink({
+  children,
+  className = "",
+  href,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  href: string;
+}) {
   return (
     <Link
-      className="group relative block overflow-hidden rounded-lg border border-slate-900/10 bg-white/82 p-7 shadow-[0_12px_32px_rgba(7,21,36,0.06)] transition duration-200 hover:-translate-y-1 hover:border-gold-300 hover:shadow-[0_24px_60px_rgba(7,21,36,0.14)]"
-      href={card.href}
-    >
-      <AwardCardAccent />
-      {card.meta ? (
-        <span className="relative z-10 mb-5 inline-block text-xs font-bold uppercase text-emerald-700">
-          {card.meta}
-        </span>
-      ) : null}
-      <h3 className="relative z-10 text-xl font-semibold leading-snug text-slate-950">{card.title}</h3>
-      <p className="relative z-10 mt-3 text-sm leading-7 text-slate-600">{card.text}</p>
-      <span className="absolute inset-x-0 bottom-0 h-0.5 bg-[linear-gradient(90deg,#d7a948,transparent)] opacity-0 transition group-hover:opacity-100" />
-    </Link>
-  );
-}
-
-function NewsCard({ card }: { card: CardLink }) {
-  return (
-    <Link
-      className="group relative flex flex-col overflow-hidden rounded-lg border border-slate-900/10 bg-white shadow-[0_12px_32px_rgba(7,21,36,0.06)] transition duration-200 hover:-translate-y-1 hover:border-gold-300 hover:shadow-[0_24px_60px_rgba(7,21,36,0.14)]"
-      href={card.href}
-    >
-      {card.image ? (
-        <div className="relative aspect-[4/3] overflow-hidden bg-cream-200">
-          <Image
-            alt={card.imageAlt ?? ""}
-            className="object-cover transition duration-500 group-hover:scale-105"
-            fill
-            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
-            src={card.image}
-          />
-          <span className="absolute inset-x-0 bottom-0 h-1/3 bg-[linear-gradient(180deg,transparent,rgba(7,21,36,0.55))]" />
-          {card.meta ? (
-            <span className="absolute left-4 top-4 rounded-full bg-gold-400/95 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-navy-950 shadow">
-              {card.meta}
-            </span>
-          ) : null}
-        </div>
-      ) : null}
-      <div className="flex flex-1 flex-col p-6">
-        <h3 className="text-lg font-semibold leading-snug text-slate-950 transition group-hover:text-emerald-700">
-          {card.title}
-        </h3>
-        <p className="mt-3 flex-1 text-sm leading-7 text-slate-600">{card.text}</p>
-        <span className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
-          Read story
-          <span aria-hidden="true">&rarr;</span>
-        </span>
-      </div>
-    </Link>
-  );
-}
-
-function FeatureCard({ card }: { card: ImageCard }) {
-  return (
-    <article
       className={[
-        "grid overflow-hidden rounded-lg border shadow-[0_16px_40px_rgba(7,21,36,0.08)] md:grid-cols-[280px_1fr]",
-        card.dark
-          ? "border-gold-300/25 bg-[linear-gradient(135deg,#063f35,#071524)] text-white"
-          : "border-gold-300/35 bg-white/86 text-slate-950",
+        "inline-flex min-h-10 items-center justify-center border border-black bg-black px-5 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-white hover:text-black",
+        className,
       ].join(" ")}
+      href={href}
     >
-      <div className="relative min-h-64 w-full overflow-hidden bg-cream-100 md:min-h-full">
-        <Image
-          alt={card.imageAlt}
-          className="object-contain p-5"
-          fill
-          sizes="(min-width: 768px) 280px, 100vw"
-          src={card.image}
-        />
-        <span
-          aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(7,21,36,0.14))]"
-        />
+      {children}
+    </Link>
+  );
+}
+
+export function SectionKicker({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="section-word-motion block text-[0.68rem] font-bold uppercase tracking-[0.24em] text-emerald-700">
+      {children}
+    </span>
+  );
+}
+
+export function SectionAwardsDecor({
+  left = "Nominee",
+  right = "Winner",
+  tone = "light",
+}: {
+  left?: string;
+  right?: string;
+  tone?: "light" | "dark";
+}) {
+  const lineClass = tone === "dark" ? "bg-gold-200/36" : "bg-gold-400/30";
+  const textClass = tone === "dark" ? "text-gold-200/60" : "text-black/18";
+  const chipClass =
+    tone === "dark"
+      ? "border-white/12 bg-white/6 text-white/55"
+      : "border-black/10 bg-white/55 text-black/34";
+
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 hidden overflow-hidden lg:block">
+      <div className="award-float-slow absolute -left-12 top-8 flex items-center gap-4 2xl:left-5">
+        <AwardSeal className="h-24 w-24 opacity-50" />
+        <div>
+          <div className={`h-14 w-px ${lineClass}`} />
+          <p className={`mt-3 rotate-180 text-[0.6rem] font-bold uppercase tracking-[0.32em] [writing-mode:vertical-rl] ${textClass}`}>
+            {left}
+          </p>
+        </div>
       </div>
-      <div className="relative p-8">
-        <span className="absolute left-0 top-9 h-12 w-0.5 bg-gold-400" />
-        <h3 className="text-2xl font-semibold leading-tight">{card.title}</h3>
-        <p className={["mt-4 leading-8", card.dark ? "text-white/76" : "text-slate-600"].join(" ")}>
-          {card.text}
-        </p>
-        {card.actions ? (
-          <div className="mt-6 flex flex-wrap gap-4">
-            {card.actions.map((action) => (
-              <Link
-                className={[
-                  "text-sm font-bold",
-                  card.dark ? "text-gold-200" : "text-emerald-700",
-                ].join(" ")}
-                href={action.href}
-                key={`${action.href}-${action.label}`}
-              >
-                {action.label}
-              </Link>
-            ))}
-          </div>
-        ) : null}
+      <div className="award-float-delayed absolute right-5 bottom-10 grid justify-items-end gap-3">
+        <span className={`rounded-full border px-4 py-2 text-[0.62rem] font-bold uppercase tracking-[0.2em] backdrop-blur ${chipClass}`}>
+          {right}
+        </span>
+        <StarRating className={tone === "dark" ? "opacity-55" : "opacity-35"} />
       </div>
-    </article>
+    </div>
   );
 }
 
 export function HomeHero() {
   const heroPoster = "/assets/hero/awards-2025-poster.jpeg";
   const heroVideo = "https://beaconmosque.com/wp-content/uploads/2023/05/Beacon-Mosque-Home-Intro-Video.mp4";
-  const heroSlides = [
-    { src: "/wp-content/uploads/2025/12/02-700x441.jpg", alt: "Beacon Mosque awards visual 1" },
-    { src: "/wp-content/uploads/2025/12/03-460x295.jpg", alt: "Beacon Mosque awards visual 2" },
-    { src: "/wp-content/uploads/2025/12/05-768x432.jpg", alt: "Beacon Mosque awards visual 3" },
-    { src: "/wp-content/uploads/2025/12/06-600x338.jpg", alt: "Beacon Mosque awards visual 4" },
-    { src: "/wp-content/uploads/2025/12/17.jpg", alt: "Beacon Mosque awards visual 5" },
-    { src: "/wp-content/uploads/2025/12/19-1024x576.jpg", alt: "Beacon Mosque awards visual 6" },
-    { src: "/wp-content/uploads/2025/12/26-1024x576.jpg", alt: "Beacon Mosque awards visual 7" },
-    { src: "/wp-content/uploads/2025/12/27-700x441.jpg", alt: "Beacon Mosque awards visual 8" },
-  ];
 
   return (
-    <section className="pattern-dark relative isolate overflow-hidden bg-navy-950 px-5 py-16 text-white md:px-8 md:py-24">
+    <section className="relative isolate min-h-screen overflow-hidden bg-[#040816] px-5 pt-20 text-white md:px-8 md:pt-28">
       <div aria-hidden="true" className="absolute inset-0 -z-20 bg-navy-950">
         <Image
           alt=""
@@ -151,53 +99,76 @@ export function HomeHero() {
         />
         <HomeHeroVideo poster={heroPoster} src={heroVideo} />
       </div>
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,21,36,0.95),rgba(6,63,53,0.86)_52%,rgba(7,21,36,0.78))]" />
-      <div className="absolute inset-0 -z-10 islamic-pattern-dark opacity-60" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_22%_18%,rgba(216,169,72,0.30),transparent_30%),radial-gradient(circle_at_80%_12%,rgba(15,138,104,0.24),transparent_34%)]" />
-      <div className="mx-auto grid max-w-[1240px] items-center gap-12 lg:grid-cols-[1fr_0.82fr]">
-        <div className="relative">
-          <span className="mb-5 inline-flex items-center gap-3 rounded-full border border-gold-200/40 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-gold-200 backdrop-blur">
-            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gold-300" />
-            British Beacon Mosque Awards
-          </span>
-          <h1 className="max-w-3xl text-5xl font-bold leading-[1.03] text-white md:text-6xl">
-            Celebrating <span className="text-gold-200">excellence</span> in British mosques
-          </h1>
-          <div className="mt-5 max-w-xl gold-divider" aria-hidden="true" />
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-white/82">
-            Beacon Mosque helps mosques raise standards, evidence strong practice and share models of service that strengthen communities across the UK and beyond.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href="/awards/beacon-mosque-awards-2026/">Submit Your Nomination</ButtonLink>
-            <ButtonLink href="/awards/beacon-mosque-awards-2025/" variant="secondary">
-              View Winners and Finalists
-            </ButtonLink>
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,6,18,0.78),rgba(3,6,18,0.52)_48%,rgba(3,6,18,0.82))]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_28%,rgba(39,89,255,0.24),transparent_22%),radial-gradient(circle_at_80%_30%,rgba(10,42,146,0.28),transparent_24%),linear-gradient(180deg,rgba(1,4,14,0.10),rgba(1,4,14,0.68))]" />
+      <div className="relative mx-auto flex min-h-[calc(100svh-6.5rem)] max-w-[1720px] flex-col justify-between gap-10 pb-6 md:pb-8">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] lg:items-start">
+          <div className="pt-4">
+            <span className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/6 px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.32em] text-white/82 backdrop-blur-sm">
+              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gold-300" />
+              British Beacon Mosque Awards
+            </span>
+            <h1 className="mt-6 text-[clamp(3.2rem,10vw,8.8rem)] font-bold uppercase leading-[0.86] tracking-[-0.06em] text-white">
+              <span className="block">Beacon</span>
+              <span
+                className="block text-transparent"
+                style={{
+                  WebkitTextStroke: "1.8px rgba(255,255,255,0.92)",
+                }}
+              >
+                Awards
+              </span>
+            </h1>
           </div>
-          <div className="mt-8 hidden items-center gap-4 sm:flex">
-            <AwardSeal className="h-14 w-14" />
-            <div>
-              <span className="block text-xs font-bold uppercase tracking-wider text-gold-200">Next awards cycle</span>
-              <Link className="text-base font-semibold text-white hover:text-gold-200" href="/awards/beacon-mosque-awards-2026/">
-                9th Beacon Mosque Awards 2026 &mdash; nominations open
-              </Link>
+          <div className="flex justify-start lg:justify-end">
+            <div className="w-full max-w-[360px] border border-white/14 bg-white/5 p-4 backdrop-blur-sm sm:p-6 lg:mt-14">
+              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-gold-200">
+                Awards cycle
+              </span>
+              <p className="mt-4 text-3xl font-semibold leading-[1.05] text-white sm:text-4xl">
+                9th Annual Beacon Mosque Awards 2026
+              </p>
+              <p className="mt-4 text-sm leading-6 text-white/68 sm:leading-7">
+                Celebrating the best of British mosques through service, governance, innovation and measurable community impact.
+              </p>
             </div>
           </div>
         </div>
-        <div className="relative hidden justify-self-center lg:block">
-          <span
-            aria-hidden="true"
-            className="absolute -inset-6 rounded-[12px_12px_280px_280px] bg-[radial-gradient(circle_at_50%_30%,rgba(241,213,138,0.35),transparent_65%)] blur-2xl"
-          />
-          <div className="arch-frame-lg relative w-[420px] max-w-[42vw] border border-gold-200/50 bg-emerald-950 p-3 shadow-[0_40px_90px_rgba(0,0,0,0.45)]">
-            <span aria-hidden="true" className="arch-frame-lg absolute inset-1.5 border border-gold-200/30" />
-            <div className="arch-frame-lg-inner relative z-10 aspect-[0.67] overflow-hidden">
-              <HomeHeroSlideshow slides={heroSlides} />
+        <div className="grid gap-6 border-t border-white/12 pt-6 lg:max-w-[62%]">
+          <div className="max-w-2xl">
+            <p className="text-sm leading-7 text-white/76 sm:text-lg sm:leading-8">
+              Beacon Mosque helps mosques raise standards, evidence strong practice and share models of service that strengthen communities across the UK and beyond.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <ButtonLink className="min-w-[220px]" href="/awards/beacon-mosque-awards-2026/">
+                Submit Your Nomination
+              </ButtonLink>
+              <Link
+                className="inline-flex min-h-12 items-center justify-center border border-white/22 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/50 hover:bg-white/8"
+                href="/awards/beacon-mosque-awards-2025/"
+              >
+                View Winners and Finalists
+              </Link>
             </div>
-            <span
-              aria-hidden="true"
-              className="absolute -bottom-4 left-1/2 flex h-8 w-8 -translate-x-1/2 rotate-45 items-center justify-center border border-gold-200/60 bg-emerald-950"
-            />
+            <div className="mt-8 lg:hidden">
+              <p className="text-[clamp(3rem,14vw,4.6rem)] font-bold leading-none text-white">9TH</p>
+              <p className="mt-2 text-[clamp(1.8rem,8vw,3rem)] font-semibold uppercase leading-none text-white/94">
+                2026
+              </p>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.3em] text-white/62">
+                October awards cycle
+              </p>
+            </div>
           </div>
+        </div>
+        <div className="pointer-events-none absolute bottom-6 right-0 hidden text-right lg:block">
+          <p className="text-[clamp(4rem,8vw,6.8rem)] font-bold leading-none text-white">9TH</p>
+          <p className="mt-2 text-[clamp(2rem,3vw,3.6rem)] font-semibold uppercase leading-none text-white/94">
+            2026
+          </p>
+          <p className="mt-4 text-sm font-semibold uppercase tracking-[0.3em] text-white/62">
+            October awards cycle
+          </p>
         </div>
       </div>
     </section>
@@ -205,96 +176,76 @@ export function HomeHero() {
 }
 
 export function HeroStatsBand() {
+  return null;
+}
+
+export function BeaconExcellenceIntroSection() {
   return (
-    <section className="pattern-dark bg-[linear-gradient(90deg,#063f35,#071524)] px-5 py-6 text-white md:px-8">
-      <div className="mx-auto grid max-w-[1180px] overflow-hidden rounded-lg border border-gold-200/25 bg-white/7 sm:grid-cols-3">
-        {heroStats.map((stat) => (
-          <div className="border-b border-gold-200/20 p-5 sm:border-b-0 sm:border-r last:border-0" key={stat.label}>
-            <strong className="block text-2xl font-bold text-gold-200">{stat.value}</strong>
-            <span className="mt-2 block text-sm font-medium leading-5 text-white/74">{stat.label}</span>
+    <section className="relative isolate overflow-hidden bg-white px-5 py-20 text-black md:px-8 md:py-28">
+      <SectionAwardsDecor left="Recognition" right="Impact" />
+      <div className="relative z-10 mx-auto grid max-w-[980px] gap-12 md:grid-cols-[0.85fr_1fr] md:items-start">
+        <div className="relative mx-auto w-full max-w-[330px] md:mt-10">
+          <Image
+            alt="Beacon Mosque Awards attendees"
+            className="aspect-[4/5] w-full object-cover"
+            height={820}
+            src="/assets/interior/awards-gala.jpg"
+            width={650}
+          />
+        </div>
+        <div>
+          <div className="max-w-md">
+            <SectionKicker>National recognition</SectionKicker>
+            <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-4xl">
+              Striving for excellence
+            </h2>
+            <p className="section-word-motion mt-5 text-sm leading-7 text-black/58">
+              Beacon Mosque helps mosques evidence strong practice, celebrate outstanding service and share models of leadership that strengthen communities across the UK.
+            </p>
           </div>
-        ))}
+          <div className="mt-12 grid gap-8 md:grid-cols-[0.85fr_1fr] md:items-end">
+            <Image
+              alt="Beacon Mosque ceremony moment"
+              className="aspect-[4/3] w-full object-cover"
+              height={560}
+              src="/wp-content/uploads/2025/12/05-768x432.jpg"
+              width={760}
+            />
+            <p className="section-word-motion text-center text-xl font-semibold leading-tight tracking-[-0.03em] md:text-2xl">
+              Attend our awards programme to stay informed about excellent mosques, leaders and volunteers.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
 
 export function AwardsFeatureSection() {
+  const awards = featureCards[0];
+
   return (
-    <section className="relative bg-cream-100 px-5 py-20 md:px-8 md:py-24">
-      <span aria-hidden="true" className="islamic-pattern absolute inset-0 opacity-50" />
-      <div className="relative mx-auto max-w-[1180px]">
-        <SectionHeader
-          title="9th Annual British Beacon Mosque Awards 2025"
-          text="The 2025 awards celebrate the best of British mosques, highlighting service, governance, innovation and community impact."
+    <section className="relative isolate overflow-hidden bg-[#f3f1ed] px-5 py-20 text-black md:px-8 md:py-28">
+      <SectionAwardsDecor left="Nomination" right="Shortlist" />
+      <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <Image
+          alt={awards.imageAlt}
+          className="aspect-[4/3] w-full object-contain bg-black p-6"
+          height={780}
+          src={awards.image}
+          width={980}
         />
-        <div className="grid gap-6 lg:grid-cols-2">
-          {featureCards.map((card) => (
-            <FeatureCard card={card} key={card.title} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function StandardsIntro() {
-  return (
-    <section className="pattern-light relative bg-white px-5 py-20 md:px-8 md:py-24">
-      <div className="mx-auto grid max-w-[1180px] items-center gap-12 lg:grid-cols-[1fr_0.8fr]">
-        <div>
-          <span className="mb-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">
-            Our Mission
-          </span>
-          <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-5xl">
-            Establishing global mosque standards
+        <div className="max-w-md">
+          <SectionKicker>Awards 2026</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
+            {awards.title}
           </h2>
-          <div className="mt-5 max-w-md gold-divider" aria-hidden="true" />
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600">
-            Beacon Mosque is committed to highlighting excellent practices, promoting effective governance and helping to establish benchmarks of quality for other Mosques and Islamic Centres to try and emulate.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <ButtonLink className="focus:ring-offset-white" href="/standards/">
-              Explore standards
-            </ButtonLink>
-            <ButtonLink className="focus:ring-offset-white" href="/accreditation-process/" variant="secondary">
-              Accreditation process
-            </ButtonLink>
-          </div>
-          <div className="mt-8 inline-flex items-center gap-4 rounded-lg border border-gold-300/40 bg-cream-100 px-5 py-4">
-            <Image
-              alt="Beacon Mosque"
-              className="h-12 w-auto"
-              height={91}
-              src="/assets/brand/beacon-mosque.png"
-              width={250}
-            />
-            <StarRating className="!gap-1" />
-          </div>
-        </div>
-        <div className="relative">
-          <span
-            aria-hidden="true"
-            className="absolute -inset-4 rounded-[12px_12px_240px_240px] bg-[radial-gradient(circle_at_50%_20%,rgba(216,169,72,0.32),transparent_70%)] blur-xl"
-          />
-          <div className="arch-frame-lg relative overflow-hidden border-2 border-gold-300/50 bg-emerald-950 shadow-[0_30px_70px_rgba(7,21,36,0.20)]">
-            <Image
-              alt="Heritage mosque architecture detail"
-              className="arch-frame-lg h-[440px] w-full object-cover"
-              height={840}
-              src="/assets/interior/golden-mosque.jpg"
-              width={620}
-            />
-            <span
-              aria-hidden="true"
-              className="absolute inset-x-0 bottom-0 h-1/3 bg-[linear-gradient(180deg,transparent,rgba(7,21,36,0.65))]"
-            />
-            <div className="absolute bottom-6 left-6 right-6 text-white">
-              <AwardSeal className="h-16 w-16" />
-              <p className="mt-3 text-sm font-semibold uppercase tracking-wider text-gold-200">
-                Five star Beacon standard
-              </p>
-            </div>
+          <p className="section-word-motion mt-6 text-sm leading-7 text-black/58">{awards.text}</p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <EditorialLink href="/awards/beacon-mosque-awards-2026/">View awards</EditorialLink>
+            <EditorialLink className="!bg-white !text-black hover:!bg-black hover:!text-white" href="/awards/beacon-mosque-awards-2026/">
+              Submit nomination
+            </EditorialLink>
           </div>
         </div>
       </div>
@@ -302,24 +253,33 @@ export function StandardsIntro() {
   );
 }
 
-export function ServicesSection() {
+export function PublicationsSection() {
   return (
-    <section className="relative bg-cream-100 px-5 py-20 md:px-8 md:py-24">
-      <span aria-hidden="true" className="islamic-pattern absolute inset-0 opacity-50" />
-      <div className="relative mx-auto max-w-[1180px]">
-        <div className="mb-9 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-          <SectionHeader
-            align="left"
-            title="Support for every stage"
-            text="Practical pathways for accreditation, advice, training and community excellence."
-          />
-          <Link className="text-sm font-bold text-emerald-700 underline underline-offset-4" href="/resources/">
-            Resources
+    <section className="relative isolate overflow-hidden bg-white px-5 py-16 text-black md:px-8 md:py-24" id="events">
+      <SectionAwardsDecor left="Programme" right="Ceremony" />
+      <div className="relative z-10 mx-auto max-w-[1080px]">
+        <div className="mb-8 flex items-end justify-between gap-6">
+          <div>
+            <SectionKicker>Programme</SectionKicker>
+            <h2 className="section-word-motion mt-3 text-3xl font-semibold tracking-[-0.04em] md:text-4xl">Event schedule</h2>
+          </div>
+          <Link className="text-xs font-semibold uppercase tracking-[0.14em] text-black hover:text-emerald-700" href="/awards/">
+            View all
           </Link>
         </div>
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {serviceCards.map((card) => (
-            <Card card={card} key={card.title} />
+        <div className="border-t border-black">
+          {[
+            ["09:30 - 10:30", "Awards nominations open", "Beacon Mosque Awards", "2026 cycle"],
+            ["10:45 - 12:00", "Standards and accreditation briefing", "Beacon Mosque", "Leadership"],
+            ["14:00 - 15:30", "Winners, finalists and community impact", "Awards archive", "2025 stories"],
+            ["17:00 - 18:00", "Mosque & Madrassah Expo platform", "Partner network", "Community"],
+          ].map((item) => (
+            <div className="grid gap-4 border-b border-black/18 py-4 text-xs md:grid-cols-[1fr_2.1fr_1.5fr_1fr]" key={item.join("-")}>
+              <span className="font-semibold">{item[0]}</span>
+              <span className="font-semibold">{item[1]}</span>
+              <span className="text-black/55">{item[2]}</span>
+              <span className="text-black/55">{item[3]}</span>
+            </div>
           ))}
         </div>
       </div>
@@ -327,150 +287,28 @@ export function ServicesSection() {
   );
 }
 
-export function QualityStandardsSection() {
+export function AwardsArchiveSection() {
   return (
-    <section className="pattern-dark relative overflow-hidden bg-[linear-gradient(135deg,#071524,#063f35)] px-5 py-20 text-white md:px-8 md:py-24">
-      <span aria-hidden="true" className="islamic-pattern-dark absolute inset-0 opacity-40" />
-      <div className="relative mx-auto max-w-[1180px]">
-        <SectionHeader
-          inverse
-          title="Attaining Quality Standards"
-          text="Each standard points mosque leadership teams toward clear evidence, better systems and stronger community outcomes."
-        />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {standards.map((standard) => (
-            <Link
-              className="group flex min-h-44 flex-col items-center justify-center gap-4 rounded-lg border border-gold-200/22 bg-white/8 p-5 text-center transition duration-200 hover:-translate-y-1 hover:border-gold-200/60 hover:bg-white/12 hover:shadow-[0_22px_45px_rgba(0,0,0,0.22)]"
-              href={standard.href}
-              key={standard.title}
-            >
-              <span className="flex h-16 w-16 items-center justify-center rounded-full border border-gold-200/30 bg-white/5 transition group-hover:border-gold-200/60">
-                <Image alt="" className="h-9 w-9" height={64} src={standard.image} width={64} />
-              </span>
-              <span className="text-sm font-semibold leading-tight text-white">{standard.title}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function NetworkSection() {
-  return (
-    <section className="bg-cream-100 px-5 py-20 md:px-8 md:py-24">
-      <div className="mx-auto grid max-w-[1180px] items-center gap-12 lg:grid-cols-[1fr_0.85fr]">
-        <div>
-          <span className="mb-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">
-            National network
-          </span>
-          <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-5xl">
-            Beacon Mosque network
-          </h2>
-          <div className="mt-5 max-w-md gold-divider" aria-hidden="true" />
-          <p className="mt-6 text-lg leading-8 text-slate-600">
-            A growing network of accredited mosques, award winners and community projects demonstrating measurable impact.
-          </p>
-          <ul className="mt-7 space-y-4 text-base leading-7 text-slate-600">
-            {[
-              "Quality standards for mosque leadership and management",
-              "Awards categories that surface practical excellence",
-              "Resources for mosques developing stronger public services",
-            ].map((item) => (
-              <li className="relative border-t border-slate-900/10 pt-4 pl-8" key={item}>
-                <span className="absolute left-1 top-7 h-2.5 w-2.5 rounded-full bg-gold-400 shadow-[0_0_0_5px_rgba(216,169,72,0.16)]" />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="relative">
-          <div className="relative overflow-hidden rounded-lg border border-gold-300/35 bg-white p-6 shadow-[0_24px_60px_rgba(7,21,36,0.16)]">
-            <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,#d7a948,transparent)]" />
-            <Image
-              alt="Mosque and Madrassah Expo cover artwork"
-              className="rounded-md"
-              height={315}
-              src="/wp-content/uploads/2025/12/Original.png"
-              width={851}
-            />
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">Partner platform</span>
-                <p className="mt-1 text-sm leading-6 text-slate-600">Mosque &amp; Madrassah Expo</p>
+    <section className="relative isolate overflow-hidden bg-white px-5 pb-20 text-black md:px-8 md:pb-28">
+      <SectionAwardsDecor left="Archive" right="Honours" />
+      <div className="relative z-10 mx-auto max-w-[1180px]">
+        <div className="no-scrollbar flex gap-5 overflow-x-auto pb-3 md:justify-end">
+          {awardWinners2025.slice(0, 5).map((winner, index) => (
+            <Link className="group block min-w-[220px]" href="/awards/beacon-mosque-awards-2025/" key={`${winner.src}-${index}`}>
+              <div className="relative aspect-[4/5] overflow-hidden bg-[#f3f1ed]">
+                <Image
+                  alt={winner.alt}
+                  className="object-contain p-4 transition duration-500 group-hover:scale-[1.03]"
+                  fill
+                  sizes="220px"
+                  src={winner.src}
+                />
               </div>
-              <ButtonLink className="focus:ring-offset-white" href="/beacon-mosques/">
-                View beacon mosques
-              </ButtonLink>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function NewsSection() {
-  return (
-    <section className="pattern-light bg-white px-5 py-20 md:px-8 md:py-24">
-      <div className="mx-auto max-w-[1180px]">
-        <div className="mb-9 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-          <SectionHeader
-            align="left"
-            title="Latest news and award stories"
-            text="Current stories from award winners, accredited mosques and national community initiatives."
-          />
-          <Link className="text-sm font-bold text-emerald-700 underline underline-offset-4" href="/category/news/">
-            All news
-          </Link>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {newsCards.map((card) => (
-            <NewsCard card={card} key={card.title} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function CeremonyGallerySection() {
-  return (
-    <section className="relative overflow-hidden bg-cream-100 px-5 py-20 md:px-8 md:py-24">
-      <span aria-hidden="true" className="islamic-pattern absolute inset-0 opacity-50" />
-      <div className="relative mx-auto max-w-[1180px]">
-        <SectionHeader
-          title="Inside the ceremonies"
-          text="Moments from past Beacon Mosque Awards ceremonies, accredited mosques and community gatherings."
-        />
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          {ceremonyGallery.map((item, index) => (
-            <figure
-              className={[
-                "group relative overflow-hidden rounded-lg border border-gold-300/30 bg-emerald-950 shadow-[0_16px_40px_rgba(7,21,36,0.10)]",
-                index === 0 ? "col-span-2 row-span-2 aspect-square md:aspect-auto" : "aspect-square",
-              ].join(" ")}
-              key={item.src + index}
-            >
-              <Image
-                alt={item.alt}
-                className="object-cover transition duration-500 group-hover:scale-105"
-                fill
-                sizes={index === 0 ? "(min-width: 768px) 50vw, 100vw" : "(min-width: 768px) 25vw, 50vw"}
-                src={item.src}
-              />
-              {item.caption ? (
-                <>
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(7,21,36,0.75))]"
-                  />
-                  <figcaption className="absolute bottom-3 left-4 right-4 text-xs font-semibold uppercase tracking-wider text-gold-200 md:text-sm">
-                    {item.caption}
-                  </figcaption>
-                </>
-              ) : null}
-            </figure>
+              <div className="mt-4 flex items-center justify-between gap-4 text-xs font-semibold">
+                <span>{winner.alt.replace(" - ", " ")}</span>
+                <span aria-hidden="true">+</span>
+              </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -480,48 +318,30 @@ export function CeremonyGallerySection() {
 
 export function WinnersShowcaseSection() {
   return (
-    <section className="pattern-dark relative overflow-hidden bg-[linear-gradient(135deg,#071524,#063f35)] px-5 py-20 text-white md:px-8 md:py-24">
-      <span aria-hidden="true" className="islamic-pattern-dark absolute inset-0 opacity-40" />
-      <div className="relative mx-auto max-w-[1180px]">
-        <div className="mb-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <div className="max-w-2xl">
-            <span className="mb-4 inline-flex items-center gap-3 rounded-full border border-gold-200/40 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-gold-200 backdrop-blur">
-              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gold-300" />
-              8th BBMA 2025
-            </span>
-            <h2 className="text-3xl font-semibold leading-tight text-white md:text-5xl">
-              Meet the 2025 Beacon Mosque Award winners
-            </h2>
-            <div className="mt-5 max-w-md gold-divider" aria-hidden="true" />
-            <p className="mt-6 text-base leading-8 text-white/76 md:text-lg">
-              Mosques, madrassahs and individuals recognised at the 8th British Beacon Mosque Awards 2025, hosted by Faith Associates.
-            </p>
-          </div>
-          <Link
-            className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-gold-200 hover:text-gold-300"
-            href="/awards/beacon-mosque-awards-2025/"
-          >
-            All winners &amp; finalists <span aria-hidden="true">&rarr;</span>
-          </Link>
+    <section className="relative isolate overflow-hidden bg-[#f3f1ed] px-5 py-20 text-black md:px-8 md:py-28" id="winners">
+      <SectionAwardsDecor left="Winners" right="Finalists" />
+      <WinnersShowcaseInteractive intro="The archive keeps public recognition visible and helps mosque teams learn from strong examples of service, governance and community impact." />
+    </section>
+  );
+}
+
+export function StandardsIntro() {
+  return (
+    <section className="relative isolate overflow-hidden bg-white px-5 py-20 text-black md:px-8 md:py-28">
+      <SectionAwardsDecor left="Standards" right="Trust" />
+      <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 md:grid-cols-[0.95fr_1.05fr] md:items-center">
+        <div>
+          <SectionKicker>Standards</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
+            Where mosque standards meet public service and trust
+          </h2>
         </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {awardWinners2025.map((winner) => (
-            <figure
-              className="group relative aspect-square overflow-hidden rounded-lg border border-gold-200/30 bg-navy-950 shadow-[0_18px_44px_rgba(0,0,0,0.30)] transition duration-300 hover:-translate-y-1 hover:border-gold-200/60 hover:shadow-[0_28px_60px_rgba(0,0,0,0.40)]"
-              key={winner.src}
-            >
-              <Image
-                alt={winner.alt}
-                className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                fill
-                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-                src={winner.src}
-              />
-              <span
-                aria-hidden="true"
-                className="absolute inset-0 ring-1 ring-inset ring-gold-200/10 transition group-hover:ring-gold-200/30"
-              />
-            </figure>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {standards.slice(0, 4).map((standard) => (
+            <Link className="border-t border-black/18 py-5 transition hover:text-emerald-700" href={standard.href} key={standard.title}>
+              <Image alt="" className="mb-4 h-9 w-9 object-contain" height={64} src={standard.image} width={64} />
+              <h3 className="text-base font-semibold tracking-[-0.02em]">{standard.title}</h3>
+            </Link>
           ))}
         </div>
       </div>
@@ -529,38 +349,170 @@ export function WinnersShowcaseSection() {
   );
 }
 
-export function AccreditedSection() {
+export function QualityStandardsSection() {
+  return null;
+}
+
+export function ServicesSection() {
   return (
-    <section className="relative bg-white px-5 py-20 md:px-8 md:py-24">
-      <div className="relative mx-auto max-w-[1180px]">
-        <SectionHeader
-          title="Accredited Beacon Mosques"
-          text="Recognised mosques demonstrating quality, service and leadership through the Beacon Mosque accreditation pathway."
-        />
-        <div className="grid gap-6 md:grid-cols-3">
-          {accreditedMosques.map((mosque) => (
-            <Link
-              className="group overflow-hidden rounded-lg border border-slate-900/10 bg-white shadow-[0_12px_32px_rgba(7,21,36,0.07)] transition duration-200 hover:-translate-y-1 hover:border-gold-300 hover:shadow-[0_24px_60px_rgba(7,21,36,0.14)]"
-              href={mosque.href}
-              key={mosque.title}
-            >
-              <div className="relative aspect-[1.42] overflow-hidden bg-cream-100">
-                <Image
-                  alt={mosque.imageAlt}
-                  className="object-cover transition duration-500 group-hover:scale-105"
-                  fill
-                  sizes="(min-width: 768px) 33vw, 100vw"
-                  src={mosque.image}
-                />
-                <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-700/95 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow">
-                  <span aria-hidden="true">&#9733;</span> Accredited
-                </span>
+    <section className="relative isolate overflow-hidden border-y border-black bg-white py-3 text-black">
+      <SectionAwardsDecor left="Service" right="Excellence" />
+      <div className="relative z-10 flex gap-8 overflow-hidden whitespace-nowrap text-xs font-semibold">
+        {[...serviceCards, ...serviceCards].map((card, index) => (
+          <Link className="inline-flex items-center gap-3" href={card.href} key={`${card.title}-${index}`}>
+            <span aria-hidden="true">+</span>
+            {card.title}
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function NetworkSection() {
+  const expo = featureCards[1];
+
+  return (
+    <section className="relative isolate overflow-hidden bg-white px-5 py-20 text-black md:px-8 md:py-28">
+      <SectionAwardsDecor left="Network" right="Beacon" />
+      <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 md:grid-cols-[1fr_0.95fr] md:items-center">
+        <div>
+          <SectionKicker>National network</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
+            Beacon Mosque network
+          </h2>
+          <p className="section-word-motion mt-6 max-w-xl text-sm leading-7 text-black/58">
+            A growing network of accredited mosques, award winners and community projects demonstrating measurable impact.
+          </p>
+          <ul className="mt-8 space-y-4">
+            {accreditedMosques.map((mosque) => (
+              <li className="border-t border-black/12 pt-4" key={mosque.title}>
+                <Link className="flex items-center justify-between gap-6 text-sm font-semibold hover:text-emerald-700" href={mosque.href}>
+                  {mosque.title}
+                  <span aria-hidden="true">+</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-lg border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)]">
+          <Image
+            alt={expo.imageAlt}
+            className="h-auto w-full"
+            height={315}
+            src={expo.image}
+            width={851}
+          />
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <SectionKicker>Partner platform</SectionKicker>
+              <p className="mt-2 text-sm text-black/58">{expo.title}</p>
+            </div>
+            <EditorialLink href="/beacon-mosques/">View beacon mosques</EditorialLink>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function AccreditedSection() {
+  return null;
+}
+
+export function CeremonyGallerySection() {
+  return (
+    <section className="relative isolate overflow-hidden bg-[#f3f1ed] py-20 text-black md:py-28">
+      <SectionAwardsDecor left="Gallery" right="Moments" />
+      <div className="relative z-10 mx-auto max-w-[1320px] px-5 md:px-8">
+        <div className="mb-10 max-w-xl">
+          <SectionKicker>Gallery</SectionKicker>
+          <h2 className="section-word-motion mt-3 text-3xl font-semibold tracking-[-0.04em] md:text-4xl">
+            Ceremony moments and community stories
+          </h2>
+        </div>
+      </div>
+      <div className="relative z-10">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-[#f3f1ed] to-transparent md:w-14" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-[#f3f1ed] to-transparent md:w-14" />
+        <div className="overflow-hidden px-5 md:px-8">
+          <div className="gallery-marquee-track flex w-max gap-5">
+            {[0, 1].map((loop) => (
+              <div className="flex shrink-0 gap-5" key={loop}>
+                {ceremonyGallery.map((item, index) => (
+                  <figure className="w-[260px] shrink-0 md:w-[340px]" key={`${item.src}-${loop}-${index}`}>
+                    <div className="relative aspect-[4/5] overflow-hidden bg-white">
+                      <Image alt={item.alt} className="object-cover" fill sizes="340px" src={item.src} />
+                    </div>
+                    <figcaption className="mt-4 text-xs font-semibold">{item.caption}</figcaption>
+                  </figure>
+                ))}
               </div>
-              <div className="border-t-2 border-gold-300/60 p-6">
-                <h3 className="text-xl font-semibold text-slate-950 transition group-hover:text-emerald-700">{mosque.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{mosque.text}</p>
-              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function FeaturedSpeakersSection() {
+  return null;
+}
+
+export function ExperiencePillarsSection() {
+  return (
+    <section className="relative isolate overflow-hidden bg-white px-5 py-20 text-black md:px-8 md:py-28">
+      <SectionAwardsDecor left="Pathways" right="Progress" />
+      <div className="relative z-10 mx-auto grid max-w-[980px] gap-12 md:grid-cols-[0.95fr_1.05fr]">
+        <div>
+          <SectionKicker>Pathways</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
+            Recognition, standards and accreditation in one national platform
+          </h2>
+        </div>
+        <div className="space-y-8">
+          {[
+            ["Awards", "/awards/", "National recognition for mosques, teams and individuals raising the bar."],
+            ["Standards", "/standards/", "Practical benchmarks for governance, communication and service delivery."],
+            ["Accreditation", "/accreditation-process/", "A route for evidencing quality and progressing toward Beacon status."],
+          ].map(([title, href, text]) => (
+            <Link className="block border-b border-black/14 pb-8 transition hover:text-emerald-700" href={href} key={title}>
+              <h3 className="text-4xl font-semibold tracking-[-0.06em] md:text-6xl">{title}</h3>
+              <p className="mt-4 max-w-lg text-sm leading-7 text-black/58">{text}</p>
             </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function EventsShowcaseSection() {
+  return null;
+}
+
+function NewsItem({ card }: { card: CardLink }) {
+  return (
+    <Link className="block border-t border-black/14 pt-5 transition hover:text-emerald-700" href={card.href}>
+      <span className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-black/42">{card.meta}</span>
+      <h3 className="mt-3 text-base font-semibold leading-snug tracking-[-0.02em]">{card.title}</h3>
+    </Link>
+  );
+}
+
+export function NewsSection() {
+  return (
+    <section className="relative isolate overflow-hidden bg-white px-5 py-20 text-black md:px-8 md:py-28">
+      <SectionAwardsDecor left="Stories" right="Updates" />
+      <div className="relative z-10 mx-auto grid max-w-[1080px] gap-12 md:grid-cols-[0.85fr_1.15fr]">
+        <div>
+          <SectionKicker>News & stories</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold tracking-[-0.04em] md:text-4xl">From our blog</h2>
+        </div>
+        <div className="grid gap-x-12 gap-y-8 md:grid-cols-2">
+          {newsCards.map((card) => (
+            <NewsItem card={card} key={card.title} />
           ))}
         </div>
       </div>
@@ -570,38 +522,24 @@ export function AccreditedSection() {
 
 export function FinalCta() {
   return (
-    <section className="pattern-dark relative isolate overflow-hidden px-5 py-20 text-white md:px-8 md:py-24">
-      <div aria-hidden="true" className="absolute inset-0 -z-20">
-        <Image
-          alt=""
-          className="object-cover"
-          fill
-          sizes="100vw"
-          src="/assets/interior/awards-gala.jpg"
-        />
-      </div>
-      <span
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[linear-gradient(120deg,rgba(7,21,36,0.92),rgba(6,63,53,0.88)_55%,rgba(7,21,36,0.78))]"
+    <section className="relative isolate min-h-[520px] overflow-hidden bg-black px-5 py-20 text-center text-white md:px-8 md:py-28">
+      <SectionAwardsDecor left="Nominate" right="2026" tone="dark" />
+      <Image
+        alt="Beacon Mosque Awards final call to action"
+        className="object-cover"
+        fill
+        sizes="100vw"
+        src="/wp-content/uploads/2025/12/19-1024x576.jpg"
       />
-      <span aria-hidden="true" className="islamic-pattern-dark absolute inset-0 -z-10 opacity-50" />
-      <div className="mx-auto grid max-w-[1180px] gap-10 md:grid-cols-[1fr_auto] md:items-center">
-        <div>
-          <AwardSeal className="mb-6 h-16 w-16" />
-          <h2 className="text-3xl font-semibold leading-tight md:text-5xl">
-            Help set the standard for mosque excellence
-          </h2>
-          <div className="mt-5 max-w-md gold-divider" aria-hidden="true" />
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-white/80">
-            Nominate a mosque, review the standards or contact Beacon Mosque to start the accreditation conversation.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row md:flex-col lg:flex-row">
-          <ButtonLink href="/awards/beacon-mosque-awards-2026/">Submit Your Nomination</ButtonLink>
-          <ButtonLink href="/contact-us/" variant="light">
-            Contact Us
-          </ButtonLink>
-        </div>
+      <div className="absolute inset-0 bg-black/42" />
+      <div className="relative z-10 mx-auto flex min-h-[360px] max-w-3xl flex-col items-center justify-center">
+        <SectionKicker>Beacon Mosque Awards 2026</SectionKicker>
+        <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
+          Presenting the most inspiring mosque excellence stories of the season
+        </h2>
+        <EditorialLink className="mt-7 border-white bg-transparent text-white hover:bg-white hover:text-black" href="/awards/beacon-mosque-awards-2026/">
+          Submit nomination
+        </EditorialLink>
       </div>
     </section>
   );
@@ -611,72 +549,29 @@ export function SiteFooter() {
   const footerNav = mainNav.filter((item) => item.href !== "/");
 
   return (
-    <footer className="bg-[linear-gradient(180deg,#071524,#0b1e30)] px-5 py-14 text-white md:px-8 md:py-16">
-      <div className="mx-auto grid max-w-[1180px] gap-8 lg:grid-cols-[1.1fr_0.7fr_0.95fr]">
-        <div>
-          <Image
-            alt="Beacon Mosque"
-            className="h-auto w-64"
-            height={1120}
-            src="/assets/brand/beacon-mosque-white.png"
-            width={3820}
-          />
-          <p className="mt-5 max-w-md text-sm leading-7 text-white/76">
-            Beacon Mosque has been developed to recognize the role Mosques and Islamic Centres play in the life of towns and cities.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <ButtonLink href="/contact-us/" variant="light">
-              Contact Us
-            </ButtonLink>
-            <ButtonLink href="/standards/" variant="secondary">
-              View Standards
-            </ButtonLink>
-          </div>
-        </div>
-        <div className="grid gap-3 content-start">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-gold-200">Explore</h2>
-          <nav aria-label="Footer">
-            <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-              {footerNav.map((item) => (
-                <li key={item.href}>
-                  <Link className="text-sm text-white/76 transition hover:text-gold-200" href={item.href}>
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <Link className="mt-4 overflow-hidden rounded-lg border border-white/10 bg-white/6 transition hover:border-gold-200/30" href="https://mosqueexpo.com/" rel="noreferrer" target="_blank">
-            <Image
-              alt="Mosque and Madrassah Expo"
-              className="h-auto w-full"
-              height={315}
-              src="/assets/network/mosque-expo-cover.png"
-              width={851}
-            />
-          </Link>
-        </div>
-        <div className="rounded-lg border border-white/10 bg-white/6 p-6">
-          <span className="text-sm font-semibold uppercase tracking-[0.24em] text-gold-200">Awards</span>
-          <Image
-            alt="British Beacon Mosque Awards"
-            className="mt-5 h-auto w-64 md:w-72"
-            height={182}
-            src="/assets/awards/bm-awards-gold.png"
-            width={500}
-          />
-          <p className="mt-5 text-sm leading-7 text-white/76">
-            Submit a nomination for the 9th Beacon Mosque Awards 2026 and continue the accreditation conversation.
-          </p>
-          <ButtonLink className="mt-6 flex w-full sm:w-auto" href="/awards/beacon-mosque-awards-2026/">
-            Submit Your Nomination for the 9th Beacon Mosque Awards 2026
-          </ButtonLink>
-        </div>
+    <footer className="overflow-hidden bg-[#05070a] px-5 py-14 text-white md:px-8">
+      <div className="mx-auto flex max-w-[1180px] flex-col gap-8 md:flex-row md:items-center md:justify-between">
+        <p className="text-xs text-white/55">Copyright 2018 - 2026 | Beacon Mosque | All Rights Reserved</p>
+        <Image
+          alt="Beacon Mosque"
+          className="h-auto w-36"
+          height={1120}
+          src="/assets/brand/beacon-mosque-white.png"
+          width={3820}
+        />
+        <nav aria-label="Footer">
+          <ul className="flex flex-wrap gap-4 text-xs text-white/60">
+            {footerNav.slice(0, 5).map((item) => (
+              <li key={item.href}>
+                <Link className="hover:text-white" href={item.href}>{item.label}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
-      <div className="mx-auto mt-10 max-w-[1180px] border-t border-white/10 pt-6 text-sm text-white/70 md:flex md:items-center md:justify-between md:text-left">
-        <p>Copyright 2018 - 2026 | Beacon Mosque | All Rights Reserved</p>
-        <p className="mt-2 md:mt-0">Built around awards, standards, accreditation and community resources.</p>
-      </div>
+      <p className="mt-12 text-[clamp(3.2rem,15vw,13rem)] font-black uppercase leading-none tracking-[-0.08em] text-[#d8c0a6]">
+        Beacon Mosque
+      </p>
     </footer>
   );
 }

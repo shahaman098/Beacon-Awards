@@ -2549,7 +2549,7 @@ standards.forEach((standard) => {
       {
         kind: "text",
         title: "Standard overview",
-        paragraphs: detail.summary,
+        paragraphs: [`${standard.quote} ${standard.reference}`, ...detail.summary],
       },
       {
         kind: "criteria",
