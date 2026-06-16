@@ -175,6 +175,106 @@ function AwardsSectionHeader({ title, variant }: { title: string; variant: "stor
   );
 }
 
+function AwardArchiveEditorialCarousel({ cards }: { cards: CardLink[] }) {
+  const archivePreviewByYear: Record<
+    string,
+    {
+      image: string;
+      imageAlt: string;
+      mediaClassName: string;
+    }
+  > = {
+    "2025": {
+      image: "/assets/awards/bbma-2025.jpg",
+      imageAlt: "Beacon Mosque Awards 2025 archive artwork",
+      mediaClassName: "aspect-[4/5]",
+    },
+    "2024": {
+      image: "/assets/interior/awards-gala.jpg",
+      imageAlt: "Beacon Mosque Awards 2024 archive preview",
+      mediaClassName: "aspect-[4/5]",
+    },
+    "2023": {
+      image: "/assets/interior/cambridge-mosque.jpg",
+      imageAlt: "Beacon Mosque Awards 2023 archive preview",
+      mediaClassName: "aspect-square",
+    },
+    "2022": {
+      image: "/assets/interior/standards-wide.jpg",
+      imageAlt: "Beacon Mosque Awards 2022 archive preview",
+      mediaClassName: "aspect-[4/5]",
+    },
+    "2021": {
+      image: "/assets/interior/golden-mosque.jpg",
+      imageAlt: "Beacon Mosque Awards 2021 archive preview",
+      mediaClassName: "aspect-[3/4]",
+    },
+    "2020": {
+      image: "/assets/interior/about-hero.jpg",
+      imageAlt: "Beacon Mosque Awards 2020 archive preview",
+      mediaClassName: "aspect-[4/5]",
+    },
+    "2019": {
+      image: "/assets/accredited/al-manaar.jpg",
+      imageAlt: "Beacon Mosque Awards 2019 archive preview",
+      mediaClassName: "aspect-square",
+    },
+    "2018": {
+      image: "/assets/accredited/al-madina.jpg",
+      imageAlt: "Beacon Mosque Awards 2018 archive preview",
+      mediaClassName: "aspect-[3/4]",
+    },
+  };
+
+  return (
+    <div className="no-scrollbar -ml-6 flex snap-x snap-mandatory items-start gap-7 overflow-x-auto pr-3 md:-ml-10 md:gap-8 md:pr-4 lg:-ml-12 lg:gap-10 lg:pr-5">
+      {cards.map((card) => {
+        const yearMatch = card.title.match(/(20\d{2})/);
+        const year = yearMatch?.[1] ?? card.title;
+        const preview = archivePreviewByYear[year] ?? {
+          image: "/assets/awards/bbma-2025.jpg",
+          imageAlt: `${card.title} archive preview`,
+          mediaClassName: "aspect-[4/5]",
+        };
+
+        return (
+          <Link
+            className="group block w-[17rem] min-w-[17rem] shrink-0 snap-start md:w-[20rem] md:min-w-[20rem] lg:w-[22rem] lg:min-w-[22rem]"
+            href={card.href}
+            key={`${card.title}-${card.href}`}
+          >
+            <div className={["relative overflow-hidden bg-[#f3f1ed]", preview.mediaClassName].join(" ")}>
+              <Image
+                alt={preview.imageAlt}
+                className="object-cover transition duration-500 group-hover:scale-[1.035]"
+                fill
+                sizes="(min-width: 1024px) 352px, (min-width: 768px) 320px, 272px"
+                src={preview.image}
+              />
+            </div>
+            <div className="mt-5 flex items-end justify-between gap-5">
+              <div>
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-black/34">
+                  Awards archive
+                </p>
+                <p className="mt-2 text-[1.95rem] font-semibold tracking-[-0.04em] text-black md:text-[2.15rem]">
+                  {year}
+                </p>
+              </div>
+              <span
+                aria-hidden="true"
+                className="text-3xl leading-none text-black/88 transition-transform group-hover:translate-x-1"
+              >
+                →
+              </span>
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
 function CardsSection({ section, tone = "warm" }: { section: Extract<PageSection, { kind: "cards" }>; tone?: SectionTone }) {
   const hasImages = section.cards.some((card) => card.image);
   const sectionTitle = section.title ?? "";
@@ -201,11 +301,15 @@ function CardsSection({ section, tone = "warm" }: { section: Extract<PageSection
               </div>
             )
           : null}
-        <div className={["grid gap-5", hasImages ? "lg:grid-cols-2 xl:grid-cols-3" : "md:grid-cols-2 xl:grid-cols-3"].join(" ")}>
-          {section.cards.map((card) => (
-            <LinkCard card={card} key={`${card.title}-${card.href}`} />
-          ))}
-        </div>
+        {sectionTitle === "Awards archive" ? (
+          <AwardArchiveEditorialCarousel cards={section.cards} />
+        ) : (
+          <div className={["grid gap-5", hasImages ? "lg:grid-cols-2 xl:grid-cols-3" : "md:grid-cols-2 xl:grid-cols-3"].join(" ")}>
+            {section.cards.map((card) => (
+              <LinkCard card={card} key={`${card.title}-${card.href}`} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -669,7 +773,125 @@ function RenderSection({ currentPath, index, section }: { currentPath: string; i
   }
 }
 
+function isAwardProfilePage(page: InteriorPageData) {
+  return /^(Winner|Finalist|Shortlisted)\s-/.test(page.eyebrow ?? "");
+}
+
+function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
+  const winnerName = page.title.split(" - ")[0];
+  const category = page.eyebrow?.split(" - ").slice(1).join(" - ") || "Beacon Mosque Awards";
+  const archiveYear = page.title.match(/20\d{2}/)?.[0] ?? "2025";
+  const scoreRows = [
+    { label: "Great contribution", value: 92 },
+    { label: "Great leadership", value: 90 },
+    { label: "Great service", value: 94 },
+  ];
+  const relatedSection = page.sections.find((section): section is Extract<PageSection, { kind: "cards" }> => section.kind === "cards");
+
+  return (
+    <>
+      <SiteHeader />
+      <main>
+        <section className="relative isolate overflow-hidden bg-[#f6f5ef] px-5 pb-24 pt-36 text-black md:px-8 md:pb-28 md:pt-40">
+          <SectionAwardsDecor left="Winner" right="Profile" />
+          <div className="relative z-10 mx-auto max-w-[1180px]">
+            <span className="text-xs font-bold uppercase tracking-[0.24em] text-gold-500">Winner</span>
+            <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[0.98] tracking-[-0.04em] md:text-6xl">
+              {winnerName}
+            </h1>
+            <div className="mt-10 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+              <div>
+                <div className="relative aspect-[0.86] overflow-hidden bg-white shadow-[0_30px_90px_rgba(0,0,0,0.08)]">
+                  {page.image ? (
+                    <Image
+                      alt={page.imageAlt ?? winnerName}
+                      className="object-cover"
+                      fill
+                      priority
+                      sizes="(min-width: 1024px) 42vw, 100vw"
+                      src={page.image}
+                    />
+                  ) : null}
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  {page.ctas?.map((cta) => (
+                    <ButtonLink href={cta.href} key={cta.href} variant={cta.variant ?? "primary"}>
+                      {cta.label}
+                    </ButtonLink>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-8">
+                <div className="space-y-6 pt-3">
+                  {scoreRows.map((row) => (
+                    <div key={row.label}>
+                      <div className="mb-3 flex items-center justify-between gap-4 text-sm font-semibold text-black">
+                        <span>{row.label}</span>
+                        <span>{row.value}%</span>
+                      </div>
+                      <div className="h-1.5 bg-black/8">
+                        <div className="h-full bg-[#3154f1]" style={{ width: `${row.value}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid gap-6 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:grid-cols-2">
+                  <p className="text-sm leading-7 text-black/58">
+                    {winnerName} is recognised within the Beacon Mosque Awards archive for sustained community impact, trusted leadership and visible service across mosque life.
+                  </p>
+                  <p className="text-sm leading-7 text-black/58">
+                    This winner profile follows a consistent editorial format across the archive, highlighting the same standards of contribution, leadership and service for every card detail page.
+                  </p>
+                  <p className="text-sm leading-7 text-black/58">
+                    The Beacon Mosque Awards recognise institutions whose work strengthens worshippers, families and neighbourhoods through practical excellence and reliable stewardship.
+                  </p>
+                  <p className="text-sm leading-7 text-black/58">
+                    Each page in this winner series keeps the presentation intentionally minimal so the archive reads as a coherent national record of recognition.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-20 grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+              <div>
+                <h2 className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl">Biography</h2>
+                <p className="mt-6 text-base leading-8 text-black/62 md:text-lg md:leading-9">
+                  {page.intro}
+                </p>
+                <p className="mt-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
+                  This archive profile presents the recognised winner in a repeatable, editorial page structure that can be reused across every linked winner card without altering the overall experience.
+                </p>
+              </div>
+              <div className="border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:p-8">
+                <h2 className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl">Recognition details</h2>
+                <div className="mt-8 space-y-5">
+                  {[
+                    ["Profile type", "Winner"],
+                    ["Mosque name", winnerName],
+                    ["Award category", category],
+                    ["Archive year", archiveYear],
+                  ].map(([label, value]) => (
+                    <div className="border-b border-black/10 pb-4" key={label}>
+                      <p className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-black/38">{label}</p>
+                      <p className="mt-2 text-lg font-semibold tracking-[-0.02em] text-black">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        {relatedSection ? <CardsSection section={relatedSection} tone="white" /> : null}
+      </main>
+      <SiteFooter />
+    </>
+  );
+}
+
 export function InteriorPage({ page }: { page: InteriorPageData }) {
+  if (isAwardProfilePage(page)) {
+    return <AwardProfileDetailPage page={page} />;
+  }
+
   const hasHeroVideo = Boolean(page.heroVideo);
   const hasHeroVisual = hasHeroVideo || Boolean(page.image);
 

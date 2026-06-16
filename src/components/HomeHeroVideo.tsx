@@ -13,18 +13,11 @@ export function HomeHeroVideo({ poster, src }: HomeHeroVideoProps) {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    const canUseVideo =
-      window.matchMedia("(min-width: 768px)").matches &&
-      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const canUseVideo = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (!canUseVideo) return;
 
-    const loadVideo = () => setEnabled(true);
-    const requestIdle = window.requestIdleCallback ?? ((callback: IdleRequestCallback) => window.setTimeout(callback, 500));
-    const cancelIdle = window.cancelIdleCallback ?? window.clearTimeout;
-    const handle = requestIdle(loadVideo);
-
-    return () => cancelIdle(handle);
+    setEnabled(true);
   }, []);
 
   if (!enabled || failed) return null;
@@ -35,7 +28,7 @@ export function HomeHeroVideo({ poster, src }: HomeHeroVideoProps) {
       autoPlay
       className={[
         "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
-        ready ? "opacity-90" : "opacity-0",
+        ready ? "opacity-100" : "opacity-0",
       ].join(" ")}
       loop
       muted
@@ -43,7 +36,7 @@ export function HomeHeroVideo({ poster, src }: HomeHeroVideoProps) {
       onError={() => setFailed(true)}
       playsInline
       poster={poster}
-      preload="metadata"
+      preload="auto"
     >
       <source src={src} type="video/mp4" />
     </video>

@@ -133,7 +133,7 @@ export function SiteHeader() {
         className={[
           "mx-auto flex h-[88px] max-w-[1880px] items-center justify-between px-5 transition-all duration-300 md:px-8 lg:px-10",
           isSticky
-            ? "w-full max-w-none border-y border-white/12 bg-black/70 shadow-2xl shadow-black/25 backdrop-blur-xl"
+            ? "w-full max-w-none border-y border-white/12 bg-black/50 shadow-2xl shadow-black/25 backdrop-blur-xl"
             : "bg-transparent",
         ].join(" ")}
       >
@@ -151,7 +151,7 @@ export function SiteHeader() {
           <nav aria-label="Primary navigation" className="hidden h-full xl:block">
             <ul className="flex h-full items-stretch">
             {mainNav.map((item) => (
-              <DesktopNavLink currentHash={currentHash} currentPath={currentPath} item={item} key={item.href} />
+              <DesktopNavLink currentHash={currentHash} currentPath={currentPath} item={item} key={`${item.label}-${item.href}`} />
             ))}
             </ul>
           </nav>
@@ -178,7 +178,7 @@ export function SiteHeader() {
           >
             <ul>
               {mainNav.map((item) => (
-                <MobileNavLink currentHash={currentHash} currentPath={currentPath} item={item} key={item.href} />
+                <MobileNavLink currentHash={currentHash} currentPath={currentPath} item={item} key={`${item.label}-${item.href}`} />
               ))}
             </ul>
           </nav>

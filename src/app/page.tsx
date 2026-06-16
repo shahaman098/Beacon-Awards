@@ -11,8 +11,6 @@ import {
   HomeHero,
   HeroStatsBand,
   NetworkSection,
-  NewsSection,
-  PublicationsSection,
   QualityStandardsSection,
   ServicesSection,
   SiteFooter,
@@ -30,7 +28,6 @@ export default async function Home() {
         <HeroStatsBand />
         <BeaconExcellenceIntroSection />
         <AwardsFeatureSection />
-        <PublicationsSection />
         <AwardsArchiveSection />
         <WinnersShowcaseSection />
         <StandardsIntro />
@@ -42,7 +39,6 @@ export default async function Home() {
         <FeaturedSpeakersSection />
         <ExperiencePillarsSection />
         <EventsShowcaseSection />
-        <NewsSection />
         <FinalCta />
       </main>
       <SiteFooter />

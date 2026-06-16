@@ -87,11 +87,10 @@ export type StandardFeature = {
 export const mainNav: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Awards", href: "/awards/" },
+  { label: "Winners", href: "/#winners" },
   { label: "Standards", href: "/standards/" },
   { label: "Resources", href: "/resources/" },
-  { label: "Winners", href: "/#winners" },
-  { label: "Blogs", href: "/category/news/" },
-  { label: "Events", href: "/#events" },
+  { label: "Training", href: "/resources/" },
   { label: "Contact", href: "/contact-us/" },
 ];
 
