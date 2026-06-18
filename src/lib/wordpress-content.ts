@@ -1,13 +1,32 @@
+import { awardCategoryNominationDetails } from "@/lib/content";
 import type { InteriorPage, MediaItem, PageSection } from "@/lib/pages";
-import { getWordPressSourcePage, wordPressBodyHasMedia, wordpressOrigin } from "@/lib/wordpress-source";
+import {
+  getWordPressSourcePage,
+  wordPressBodyHasMedia,
+  wordpressOrigin,
+} from "@/lib/wordpress-source";
 const mediaAttachmentCache = new Map<string, Promise<MediaItem | null>>();
 
 function shouldUseWordPressBody(page: InteriorPage) {
   const curatedSlugs = new Set([
+    "awards",
+    "awards/beacon-mosque-awards-2025",
+    "awards/beacon-mosque-awards-2026",
+    "awards/awards2024",
+    "awards/awards2023",
+    "awards/british-beacon-mosque-awards-2022",
+    "awards/2019-british-beacon-mosque-awards",
+    "awards/2018-british-beacon-mosque-awards",
+    "british-beacon-mosque-awards-2021",
+    "2020-british-beacon-mosque-awards",
     "category/news",
     "contact-us",
     "gallery",
+    "resources",
     "privacy-policy",
+    ...awardCategoryNominationDetails.map((detail) =>
+      detail.href.replace(/^\/|\/$/g, ""),
+    ),
   ]);
 
   return !curatedSlugs.has(page.slug);
@@ -19,21 +38,28 @@ function decodeEntities(value: string) {
     .replace(/&nbsp;|&#160;/g, " ")
     .replace(/&rsquo;|&#8217;/g, "'")
     .replace(/&lsquo;|&#8216;/g, "'")
-    .replace(/&rdquo;|&#8221;/g, "\"")
-    .replace(/&ldquo;|&#8220;/g, "\"")
+    .replace(/&rdquo;|&#8221;/g, '"')
+    .replace(/&ldquo;|&#8220;/g, '"')
     .replace(/&ndash;|&#8211;/g, "-")
     .replace(/&mdash;|&#8212;/g, "-")
     .replace(/&hellip;|&#8230;/g, "...")
-    .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+    .replace(/&#(\d+);/g, (_, code: string) =>
+      String.fromCharCode(Number(code)),
+    )
     .replace(/<[^>]+>/g, "");
 }
 
 function decodeAttribute(value: string) {
-  return decodeEntities(value).replace(/^["']|["']$/g, "").trim();
+  return decodeEntities(value)
+    .replace(/^["']|["']$/g, "")
+    .trim();
 }
 
 function normalise(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 export function resolveWordPressMediaUrl(value?: string | null) {
@@ -55,7 +81,8 @@ export function resolveWordPressMediaUrl(value?: string | null) {
   try {
     if (decoded.startsWith("//")) return `https:${decoded}`;
     if (/^https?:\/\//i.test(decoded)) return decoded;
-    if (decoded.startsWith("/")) return new URL(decoded, wordpressOrigin).toString();
+    if (decoded.startsWith("/"))
+      return new URL(decoded, wordpressOrigin).toString();
     return new URL(decoded, wordpressOrigin).toString();
   } catch {
     return null;
@@ -71,7 +98,9 @@ function attrsFromTag(tag: string) {
   const attrPattern = /([\w:-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/g;
 
   for (const match of tag.matchAll(attrPattern)) {
-    attrs[match[1].toLowerCase()] = decodeAttribute(match[3] ?? match[4] ?? match[5] ?? "");
+    attrs[match[1].toLowerCase()] = decodeAttribute(
+      match[3] ?? match[4] ?? match[5] ?? "",
+    );
   }
 
   return attrs;
@@ -82,7 +111,9 @@ function srcSetToUrls(srcSet?: string) {
 
   return srcSet
     .split(",")
-    .map((candidate) => resolveWordPressMediaUrl(candidate.trim().split(/\s+/)[0]))
+    .map((candidate) =>
+      resolveWordPressMediaUrl(candidate.trim().split(/\s+/)[0]),
+    )
     .filter((url): url is string => Boolean(url));
 }
 
@@ -101,18 +132,39 @@ function firstMediaUrl(...values: Array<string | undefined>) {
 }
 
 function imageSourceFromAttrs(attrs: Record<string, string>) {
-  const srcSetUrls = [...srcSetToUrls(attrs.srcset), ...srcSetToUrls(attrs["data-srcset"])];
-  const src = firstMediaUrl(attrs.src, attrs["data-src"], attrs["data-lazy-src"], attrs["data-original"], srcSetUrls[0]);
+  const srcSetUrls = [
+    ...srcSetToUrls(attrs.srcset),
+    ...srcSetToUrls(attrs["data-srcset"]),
+  ];
+  const src = firstMediaUrl(
+    attrs.src,
+    attrs["data-src"],
+    attrs["data-lazy-src"],
+    attrs["data-original"],
+    srcSetUrls[0],
+  );
 
-  if (src?.endsWith("/wp-content/uploads/2023/06/13765-FA-M-Beacon-Mosque-v4_Facilities-200x200-2.png")) {
-    return srcSetUrls.find((url) => url.endsWith("-150x150.png")) ?? srcSetUrls.find((url) => url !== src) ?? src;
+  if (
+    src?.endsWith(
+      "/wp-content/uploads/2023/06/13765-FA-M-Beacon-Mosque-v4_Facilities-200x200-2.png",
+    )
+  ) {
+    return (
+      srcSetUrls.find((url) => url.endsWith("-150x150.png")) ??
+      srcSetUrls.find((url) => url !== src) ??
+      src
+    );
   }
 
   return src;
 }
 
 function isUploadLikeUrl(src: string) {
-  return /\.(avif|gif|jpe?g|png|webp|svg|mp4|m4v|mov|webm|ogv|pdf)(\?.*)?$/i.test(src) || /\/wp-content\/uploads\//i.test(src);
+  return (
+    /\.(avif|gif|jpe?g|png|webp|svg|mp4|m4v|mov|webm|ogv|pdf)(\?.*)?$/i.test(
+      src,
+    ) || /\/wp-content\/uploads\//i.test(src)
+  );
 }
 
 function isVideoUrl(src: string) {
@@ -122,7 +174,13 @@ function isVideoUrl(src: string) {
 function isTrustedEmbed(src: string) {
   try {
     const hostname = new URL(src).hostname.replace(/^www\./, "");
-    return ["youtube.com", "youtu.be", "youtube-nocookie.com", "player.vimeo.com", "vimeo.com"].some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
+    return [
+      "youtube.com",
+      "youtu.be",
+      "youtube-nocookie.com",
+      "player.vimeo.com",
+      "vimeo.com",
+    ].some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
   } catch {
     return false;
   }
@@ -169,10 +227,16 @@ function extractStyleBackgroundUrls(html: string) {
 
   for (const match of html.matchAll(stylePattern)) {
     const style = decodeAttribute(match[2] ?? match[3] ?? "");
-    for (const urlMatch of style.matchAll(/background(?:-image)?\s*:[^;]*url\(([^)]+)\)/gi)) {
+    for (const urlMatch of style.matchAll(
+      /background(?:-image)?\s*:[^;]*url\(([^)]+)\)/gi,
+    )) {
       const src = resolveWordPressMediaUrl(urlMatch[1]);
       if (src && isUploadLikeUrl(src) && !isSiteChromeMedia(src)) {
-        items.push({ type: isVideoUrl(src) ? "video" : "image", src, caption: "Background media" });
+        items.push({
+          type: isVideoUrl(src) ? "video" : "image",
+          src,
+          caption: "Background media",
+        });
       }
     }
   }
@@ -182,12 +246,17 @@ function extractStyleBackgroundUrls(html: string) {
 
 function extractDataBackgroundUrls(html: string) {
   const items: MediaItem[] = [];
-  const dataPattern = /\s(data-bg|data-background|data-background-image|data-lazy-background)\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/gi;
+  const dataPattern =
+    /\s(data-bg|data-background|data-background-image|data-lazy-background)\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/gi;
 
   for (const match of html.matchAll(dataPattern)) {
     const src = resolveWordPressMediaUrl(match[3] ?? match[4] ?? match[5]);
     if (src && isUploadLikeUrl(src) && !isSiteChromeMedia(src)) {
-      items.push({ type: isVideoUrl(src) ? "video" : "image", src, caption: "Background media" });
+      items.push({
+        type: isVideoUrl(src) ? "video" : "image",
+        src,
+        caption: "Background media",
+      });
     }
   }
 
@@ -210,7 +279,9 @@ function extractImages(html: string) {
       type: isVideoUrl(src) ? "video" : "image",
       src,
       alt: attrs.alt,
-      caption: textFromHtml(figure.match(/<figcaption[\s\S]*?<\/figcaption>/i)?.[0] ?? ""),
+      caption: textFromHtml(
+        figure.match(/<figcaption[\s\S]*?<\/figcaption>/i)?.[0] ?? "",
+      ),
       srcSet: normaliseSrcSet(attrs.srcset ?? attrs["data-srcset"]),
       sizes: attrs.sizes,
     });
@@ -254,7 +325,12 @@ function extractVideos(html: string) {
     const video = videoMatch[0];
     const attrs = attrsFromTag(video.match(/<video\b[^>]*>/i)?.[0] ?? "");
     const sources = [...video.matchAll(/<source\b[^>]*>/gi)]
-      .map((source) => firstMediaUrl(attrsFromTag(source[0]).src, attrsFromTag(source[0])["data-src"]))
+      .map((source) =>
+        firstMediaUrl(
+          attrsFromTag(source[0]).src,
+          attrsFromTag(source[0])["data-src"],
+        ),
+      )
       .filter((src): src is string => Boolean(src));
     const src = firstMediaUrl(attrs.src, attrs["data-src"], sources[0]);
 
@@ -268,8 +344,12 @@ function extractVideos(html: string) {
     }
   }
 
-  for (const linkMatch of html.matchAll(/<a\b[^>]*href\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))[^>]*>/gi)) {
-    const src = resolveWordPressMediaUrl(linkMatch[2] ?? linkMatch[3] ?? linkMatch[4]);
+  for (const linkMatch of html.matchAll(
+    /<a\b[^>]*href\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))[^>]*>/gi,
+  )) {
+    const src = resolveWordPressMediaUrl(
+      linkMatch[2] ?? linkMatch[3] ?? linkMatch[4],
+    );
     if (!src || !isUploadLikeUrl(src)) continue;
     items.push({ type: isVideoUrl(src) ? "video" : "link", src });
   }
@@ -298,7 +378,8 @@ function extractEmbeds(html: string) {
 
 function extractMetaImages(html: string) {
   const items: MediaItem[] = [];
-  const metaPattern = /<meta\b[^>]*(property|name)\s*=\s*["'](?:og:image|twitter:image)["'][^>]*>/gi;
+  const metaPattern =
+    /<meta\b[^>]*(property|name)\s*=\s*["'](?:og:image|twitter:image)["'][^>]*>/gi;
 
   for (const match of html.matchAll(metaPattern)) {
     const attrs = attrsFromTag(match[0]);
@@ -313,10 +394,13 @@ function extractMetaImages(html: string) {
 
 function extractShortcodeAttachmentIds(html: string) {
   const ids = new Set<string>();
-  const shortcodePattern = /\[(?:gallery|vc_[^\]]+|rev_slider|wpvideo)[^\]]+\]/gi;
+  const shortcodePattern =
+    /\[(?:gallery|vc_[^\]]+|rev_slider|wpvideo)[^\]]+\]/gi;
 
   for (const shortcode of html.matchAll(shortcodePattern)) {
-    for (const attr of shortcode[0].matchAll(/\b(?:image|images|ids|include|background_image|poster)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s\]]+))/gi)) {
+    for (const attr of shortcode[0].matchAll(
+      /\b(?:image|images|ids|include|background_image|poster)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s\]]+))/gi,
+    )) {
       const value = decodeAttribute(attr[1] ?? attr[2] ?? attr[3] ?? "");
       for (const id of value.split(/[, ]+/)) {
         if (/^\d+$/.test(id)) ids.add(id);
@@ -331,7 +415,9 @@ async function mediaItemForAttachment(id: string): Promise<MediaItem | null> {
   if (!mediaAttachmentCache.has(id)) {
     mediaAttachmentCache.set(
       id,
-      fetch(`${wordpressOrigin}/wp-json/wp/v2/media/${id}`, { cache: "force-cache" })
+      fetch(`${wordpressOrigin}/wp-json/wp/v2/media/${id}`, {
+        cache: "force-cache",
+      })
         .then(async (response) => {
           if (!response.ok) return null;
           const media = await response.json();
@@ -342,7 +428,9 @@ async function mediaItemForAttachment(id: string): Promise<MediaItem | null> {
             type: isVideoUrl(src) ? "video" : "image",
             src,
             alt: media.alt_text,
-            caption: textFromHtml(media.caption?.rendered ?? media.title?.rendered ?? ""),
+            caption: textFromHtml(
+              media.caption?.rendered ?? media.title?.rendered ?? "",
+            ),
           } satisfies MediaItem;
         })
         .catch(() => null),
@@ -353,7 +441,9 @@ async function mediaItemForAttachment(id: string): Promise<MediaItem | null> {
 }
 
 async function extractShortcodeMedia(html: string) {
-  const items = await Promise.all(extractShortcodeAttachmentIds(html).map((id) => mediaItemForAttachment(id)));
+  const items = await Promise.all(
+    extractShortcodeAttachmentIds(html).map((id) => mediaItemForAttachment(id)),
+  );
   return items.filter((item): item is MediaItem => Boolean(item));
 }
 
@@ -368,7 +458,9 @@ export async function extractWordPressMedia(html: string) {
     ...(await extractShortcodeMedia(html)),
   ];
 
-  return dedupeMedia(items).filter((item) => !isSiteChromeMedia(item.src, item.alt));
+  return dedupeMedia(items).filter(
+    (item) => !isSiteChromeMedia(item.src, item.alt),
+  );
 }
 
 async function getWordPressEnhancements(page: InteriorPage) {
@@ -402,17 +494,26 @@ export async function withWordPressBody(page: InteriorPage) {
   }
 
   const preservedSections = page.sections.filter((section) =>
-    ["form", "cards", "criteria", "standards", "accredited", "audio", "gallery"].includes(section.kind),
+    [
+      "form",
+      "cards",
+      "criteria",
+      "standards",
+      "accredited",
+      "audio",
+      "gallery",
+    ].includes(section.kind),
   );
-  const sections = [
-    enhancements.body,
-    ...preservedSections,
-  ];
+  const sections = [enhancements.body, ...preservedSections];
 
   return {
     ...page,
     intro: enhancements.intro || page.intro,
-    image: wordPressBodyHasMedia(enhancements.body.html) ? undefined : page.image ?? enhancements.image,
+    image:
+      page.image ??
+      (wordPressBodyHasMedia(enhancements.body.html)
+        ? undefined
+        : enhancements.image),
     imageAlt: enhancements.imageAlt ?? page.imageAlt,
     sections,
   };
@@ -425,11 +526,20 @@ export async function auditWordPressMedia(page: InteriorPage) {
     });
 
     if (!response.ok) {
-      return { source: [], unavailable: [`WordPress returned ${response.status}`] };
+      return {
+        source: [],
+        unavailable: [`WordPress returned ${response.status}`],
+      };
     }
 
-    return { source: await extractWordPressMedia(await response.text()), unavailable: [] };
+    return {
+      source: await extractWordPressMedia(await response.text()),
+      unavailable: [],
+    };
   } catch (error) {
-    return { source: [], unavailable: [error instanceof Error ? error.message : String(error)] };
+    return {
+      source: [],
+      unavailable: [error instanceof Error ? error.message : String(error)],
+    };
   }
 }

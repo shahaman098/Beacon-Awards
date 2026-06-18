@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 type HomeHeroVideoProps = {
   poster: string;
@@ -8,17 +8,18 @@ type HomeHeroVideoProps = {
 };
 
 export function HomeHeroVideo({ poster, src }: HomeHeroVideoProps) {
-  const [enabled, setEnabled] = useState(false);
+  const enabled = useSyncExternalStore(
+    (onStoreChange) => {
+      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mediaQuery.addEventListener("change", onStoreChange);
+
+      return () => mediaQuery.removeEventListener("change", onStoreChange);
+    },
+    () => !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    const canUseVideo = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (!canUseVideo) return;
-
-    setEnabled(true);
-  }, []);
 
   if (!enabled || failed) return null;
 

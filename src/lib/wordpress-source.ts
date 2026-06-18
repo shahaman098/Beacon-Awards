@@ -25,7 +25,10 @@ export type WordPressSourcePage = {
 };
 
 export function wordPressBodyHasMedia(html: string) {
-  return /<(?:img|picture|video|iframe|figure|source)\b/i.test(html) || /background(?:-image)?\s*:/i.test(html);
+  return (
+    /<(?:img|picture|video|iframe|figure|source)\b/i.test(html) ||
+    /background(?:-image)?\s*:/i.test(html)
+  );
 }
 
 function routeFromSlug(slug: string) {
@@ -49,12 +52,14 @@ function decodeHtml(value: string) {
     .replace(/&nbsp;|&#160;/g, " ")
     .replace(/&rsquo;|&#8217;/g, "'")
     .replace(/&lsquo;|&#8216;/g, "'")
-    .replace(/&rdquo;|&#8221;/g, "\"")
-    .replace(/&ldquo;|&#8220;/g, "\"")
+    .replace(/&rdquo;|&#8221;/g, '"')
+    .replace(/&ldquo;|&#8220;/g, '"')
     .replace(/&ndash;|&#8211;/g, "-")
     .replace(/&mdash;|&#8212;/g, "-")
     .replace(/&hellip;|&#8230;/g, "...")
-    .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+    .replace(/&#(\d+);/g, (_, code: string) =>
+      String.fromCharCode(Number(code)),
+    )
     .trim();
 }
 
@@ -62,7 +67,10 @@ function textContent(node?: HTMLElement | null) {
   return decodeHtml(node?.textContent.replace(/\s+/g, " ") ?? "");
 }
 
-function normalizeUrl(value?: string | null, { internal = false }: { internal?: boolean } = {}) {
+function normalizeUrl(
+  value?: string | null,
+  { internal = false }: { internal?: boolean } = {},
+) {
   if (!value) return null;
 
   const clean = decodeHtml(value)
@@ -70,7 +78,11 @@ function normalizeUrl(value?: string | null, { internal = false }: { internal?: 
     .replace(/^["']|["']$/g, "")
     .trim();
 
-  if (!clean || clean.startsWith("#") || /^(?:data:|javascript:|mailto:|tel:)/i.test(clean)) {
+  if (
+    !clean ||
+    clean.startsWith("#") ||
+    /^(?:data:|javascript:|mailto:|tel:)/i.test(clean)
+  ) {
     return clean || null;
   }
 
@@ -96,7 +108,9 @@ function normalizeSrcSet(value?: string | null) {
     .map((candidate) => {
       const [src, descriptor] = candidate.split(/\s+/, 2);
       const normalizedSrc = normalizeUrl(src);
-      return normalizedSrc ? `${normalizedSrc}${descriptor ? ` ${descriptor}` : ""}` : null;
+      return normalizedSrc
+        ? `${normalizedSrc}${descriptor ? ` ${descriptor}` : ""}`
+        : null;
     })
     .filter((candidate): candidate is string => Boolean(candidate))
     .join(", ");
@@ -111,7 +125,11 @@ function removeSelectors(root: HTMLElement, selectors: string[]) {
 }
 
 function elementHasMeaningfulContent(node: HTMLElement) {
-  if (node.querySelector("img, picture, video, iframe, figure, form, input, textarea, select, button")) {
+  if (
+    node.querySelector(
+      "img, picture, video, iframe, figure, form, input, textarea, select, button",
+    )
+  ) {
     return true;
   }
 
@@ -122,14 +140,30 @@ function elementHasMeaningfulContent(node: HTMLElement) {
 }
 
 function isShortcodeNoise(value: string) {
-  return /\[(?:\/?(?:vc_|button|image_with_text|contact-form-7|fusion_|qode_)[^\]]*)\]/i.test(value);
+  return /\[(?:\/?(?:vc_|button|image_with_text|contact-form-7|fusion_|qode_)[^\]]*)\]/i.test(
+    value,
+  );
 }
 
 function pruneEmptyElements(root: HTMLElement) {
   const elements = root.querySelectorAll("*").reverse();
 
   elements.forEach((node) => {
-    if (["img", "picture", "video", "iframe", "source", "input", "textarea", "select", "button", "br", "hr"].includes(node.tagName.toLowerCase())) {
+    if (
+      [
+        "img",
+        "picture",
+        "video",
+        "iframe",
+        "source",
+        "input",
+        "textarea",
+        "select",
+        "button",
+        "br",
+        "hr",
+      ].includes(node.tagName.toLowerCase())
+    ) {
       return;
     }
 
@@ -141,7 +175,11 @@ function pruneEmptyElements(root: HTMLElement) {
 
 function removeShortcodeNoise(root: HTMLElement) {
   root.querySelectorAll("p, div, span").forEach((node) => {
-    if (node.querySelector("img, picture, video, iframe, figure, form, input, textarea, select, button")) {
+    if (
+      node.querySelector(
+        "img, picture, video, iframe, figure, form, input, textarea, select, button",
+      )
+    ) {
       return;
     }
 
@@ -189,28 +227,36 @@ function rewriteElementAttributes(root: HTMLElement) {
       node.getAttribute("src");
     if (resolvedSrc) {
       const normalizedSrc = normalizeUrl(resolvedSrc);
-      if (normalizedSrc && (!node.getAttribute("src") || /^data:|^about:blank$/i.test(node.getAttribute("src") ?? ""))) {
+      if (
+        normalizedSrc &&
+        (!node.getAttribute("src") ||
+          /^data:|^about:blank$/i.test(node.getAttribute("src") ?? ""))
+      ) {
         node.setAttribute("src", normalizedSrc);
       }
     }
 
-    const resolvedSrcSet = node.getAttribute("data-srcset") || node.getAttribute("srcset");
+    const resolvedSrcSet =
+      node.getAttribute("data-srcset") || node.getAttribute("srcset");
     if (resolvedSrcSet) {
       const normalizedSrcSet = normalizeSrcSet(resolvedSrcSet);
       if (
         normalizedSrcSet &&
-        (!node.getAttribute("srcset") || /^data:|^about:blank$/i.test(node.getAttribute("srcset") ?? ""))
+        (!node.getAttribute("srcset") ||
+          /^data:|^about:blank$/i.test(node.getAttribute("srcset") ?? ""))
       ) {
         node.setAttribute("srcset", normalizedSrcSet);
       }
     }
 
-    const resolvedPoster = node.getAttribute("data-poster") || node.getAttribute("poster");
+    const resolvedPoster =
+      node.getAttribute("data-poster") || node.getAttribute("poster");
     if (resolvedPoster) {
       const normalizedPoster = normalizeUrl(resolvedPoster);
       if (
         normalizedPoster &&
-        (!node.getAttribute("poster") || /^data:|^about:blank$/i.test(node.getAttribute("poster") ?? ""))
+        (!node.getAttribute("poster") ||
+          /^data:|^about:blank$/i.test(node.getAttribute("poster") ?? ""))
       ) {
         node.setAttribute("poster", normalizedPoster);
       }
@@ -256,23 +302,31 @@ function collectIntro(root: HTMLElement) {
   return candidate.length > 24 ? candidate : "";
 }
 
-function guessTitle(document: HTMLElement, contentRoot: HTMLElement, fallbackSlug: string) {
+function guessTitle(
+  document: HTMLElement,
+  contentRoot: HTMLElement,
+  fallbackSlug: string,
+) {
   const mainHeading = contentRoot.querySelector("h1");
   if (mainHeading) return textContent(mainHeading);
 
-  const ogTitle = document.querySelector('meta[property="og:title"]')?.getAttribute("content");
+  const ogTitle = document
+    .querySelector('meta[property="og:title"]')
+    ?.getAttribute("content");
   if (ogTitle) return decodeHtml(ogTitle.replace(/\s*-\s*Beacon Mosque$/i, ""));
 
   const titleTag = document.querySelector("title")?.textContent ?? "";
   const cleaned = decodeHtml(titleTag.replace(/\s*-\s*Beacon Mosque$/i, ""));
   if (cleaned) return cleaned;
 
-  return fallbackSlug
-    .split("/")
-    .filter(Boolean)
-    .pop()
-    ?.replace(/[-_]+/g, " ")
-    .replace(/\b\w/g, (match) => match.toUpperCase()) ?? "Beacon Mosque";
+  return (
+    fallbackSlug
+      .split("/")
+      .filter(Boolean)
+      .pop()
+      ?.replace(/[-_]+/g, " ")
+      .replace(/\b\w/g, (match) => match.toUpperCase()) ?? "Beacon Mosque"
+  );
 }
 
 function findContentRoot(document: HTMLElement) {
@@ -289,8 +343,18 @@ function sanitizeWordPressBody(html: string, slug: string) {
   const document = parse(html);
   const contentRoot = findContentRoot(document);
   const title = guessTitle(document, contentRoot, slug);
-  const image = normalizeUrl(document.querySelector('meta[property="og:image"]')?.getAttribute("content") ?? null) ?? undefined;
-  const imageAlt = decodeHtml(document.querySelector('meta[property="og:image:alt"]')?.getAttribute("content") ?? "") || undefined;
+  const image =
+    normalizeUrl(
+      document
+        .querySelector('meta[property="og:image"]')
+        ?.getAttribute("content") ?? null,
+    ) ?? undefined;
+  const imageAlt =
+    decodeHtml(
+      document
+        .querySelector('meta[property="og:image:alt"]')
+        ?.getAttribute("content") ?? "",
+    ) || undefined;
 
   removeSelectors(contentRoot, [
     "script",
@@ -354,15 +418,21 @@ async function fetchSitemapSlugs(name: string) {
 }
 
 export async function getWordPressPublicSlugs() {
-  const slugSets = await Promise.all(publicSitemaps.map((name) => fetchSitemapSlugs(name)));
+  const slugSets = await Promise.all(
+    publicSitemaps.map((name) => fetchSitemapSlugs(name)),
+  );
   return Array.from(new Set(slugSets.flat())).sort();
 }
 
-export async function getWordPressSourcePage(slug: string): Promise<WordPressSourcePage | null> {
+export async function getWordPressSourcePage(
+  slug: string,
+): Promise<WordPressSourcePage | null> {
   if (!sourcePageCache.has(slug)) {
     sourcePageCache.set(
       slug,
-      fetch(new URL(routeFromSlug(slug), wordpressOrigin), { cache: "force-cache" })
+      fetch(new URL(routeFromSlug(slug), wordpressOrigin), {
+        cache: "force-cache",
+      })
         .then(async (response) => {
           if (!response.ok) {
             return null;
@@ -388,7 +458,9 @@ export async function getWordPressSourcePage(slug: string): Promise<WordPressSou
   return sourcePageCache.get(slug)!;
 }
 
-export async function getWordPressFallbackPage(slug: string): Promise<InteriorPage | null> {
+export async function getWordPressFallbackPage(
+  slug: string,
+): Promise<InteriorPage | null> {
   const source = await getWordPressSourcePage(slug);
   if (!source) return null;
   const showHeroImage = source.image && !wordPressBodyHasMedia(source.bodyHtml);
@@ -396,10 +468,23 @@ export async function getWordPressFallbackPage(slug: string): Promise<InteriorPa
   return {
     slug,
     title: source.title,
-    eyebrow: slug.startsWith("news/") || slug.startsWith("uncategorized/") ? "News archive" : "Beacon Mosque archive",
-    intro: source.intro || `${source.title} remains available as part of the Beacon Mosque public archive.`,
+    eyebrow:
+      slug.startsWith("news/") || slug.startsWith("uncategorized/")
+        ? "News archive"
+        : "Beacon Mosque archive",
+    intro:
+      source.intro ||
+      `${source.title} remains available as part of the Beacon Mosque public archive.`,
     image: showHeroImage ? source.image : undefined,
     imageAlt: source.imageAlt,
-    sections: source.bodyHtml ? [{ kind: "wordpress", html: source.bodyHtml, sourceUrl: source.sourceUrl }] : [],
+    sections: source.bodyHtml
+      ? [
+          {
+            kind: "wordpress",
+            html: source.bodyHtml,
+            sourceUrl: source.sourceUrl,
+          },
+        ]
+      : [],
   };
 }

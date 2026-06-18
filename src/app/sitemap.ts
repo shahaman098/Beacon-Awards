@@ -18,7 +18,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: absoluteUrl(`/${joined}/`),
         lastModified,
         changeFrequency: "monthly" as const,
-        priority: joined.startsWith("awards") || joined === "standards" ? 0.8 : 0.6,
+        priority:
+          joined.startsWith("awards") || joined === "standards" ? 0.8 : 0.6,
       };
     }),
   ];

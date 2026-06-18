@@ -50,9 +50,15 @@ export default async function FormSubmittedPage({
           <div className="mx-auto mb-7 flex h-16 w-16 items-center justify-center rounded-full border border-gold-200/50 bg-white/10 text-2xl font-semibold text-gold-200">
             BM
           </div>
-          <p className="text-sm font-bold uppercase text-gold-200">{formName}</p>
-          <h1 className="mt-4 text-4xl font-bold leading-tight md:text-6xl">{content.title}</h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-white/78">{content.text}</p>
+          <p className="text-sm font-bold uppercase text-gold-200">
+            {formName}
+          </p>
+          <h1 className="mt-4 text-4xl font-bold leading-tight md:text-6xl">
+            {content.title}
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-white/78">
+            {content.text}
+          </p>
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               className="inline-flex min-h-12 items-center justify-center rounded-lg border border-gold-300 bg-[linear-gradient(135deg,#f3d98c,#d7a948)] px-6 py-3 text-sm font-semibold text-emerald-950 shadow-[0_18px_40px_rgba(216,169,72,0.25)]"

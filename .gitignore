@@ -31,6 +31,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local Codex / QA artifacts
+/.codex/
+/.playwright-mcp/
+/beacon-awards-next/
+/docs/exports/
+/docs/reports/
+/infra/apache/
+/qa/
+/data/wordpress/*.sql
+
 # env files (can opt-in for committing if needed)
 .env*
 

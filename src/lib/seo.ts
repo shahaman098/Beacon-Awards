@@ -16,7 +16,9 @@ export function routePath(slug: string) {
 
 export function pageMetadata(page: InteriorPage): Metadata {
   const path = routePath(page.slug);
-  const image = page.image ? absoluteUrl(page.image) : absoluteUrl("/assets/hero/awards-2025-poster.jpeg");
+  const image = page.image
+    ? absoluteUrl(page.image)
+    : absoluteUrl("/assets/hero/awards-2025-poster.jpeg");
 
   return {
     title: page.title,

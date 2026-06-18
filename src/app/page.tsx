@@ -11,6 +11,7 @@ import {
   HomeHero,
   HeroStatsBand,
   NetworkSection,
+  MosqueMbaSection,
   QualityStandardsSection,
   ServicesSection,
   SiteFooter,
@@ -34,6 +35,7 @@ export default async function Home() {
         <QualityStandardsSection />
         <ServicesSection />
         <NetworkSection />
+        <MosqueMbaSection />
         <AccreditedSection />
         <CeremonyGallerySection />
         <FeaturedSpeakersSection />

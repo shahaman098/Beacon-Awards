@@ -33,12 +33,15 @@ export default function NotFound() {
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_10%,rgba(216,169,72,0.24),transparent_30%)]" />
           <div className="mx-auto grid max-w-[1180px] items-center gap-12 lg:grid-cols-[1fr_0.45fr]">
             <div>
-              <span className="text-xs font-bold uppercase tracking-[0.24em] text-gold-200">Page not found</span>
+              <span className="text-xs font-bold uppercase tracking-[0.24em] text-gold-200">
+                Page not found
+              </span>
               <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.02] md:text-6xl">
                 This Beacon Mosque page is not available
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-white/78 md:text-xl">
-                The route may have moved during the redesign. Continue into the awards archive, standards, resources or homepage.
+                The route may have moved during the redesign. Continue into the
+                awards archive, standards, resources or homepage.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
@@ -58,7 +61,9 @@ export default function NotFound() {
             <div className="hidden justify-items-center lg:grid">
               <div className="rounded-lg border border-gold-200/35 bg-navy-950/75 p-8 shadow-2xl backdrop-blur">
                 <AwardSeal className="h-36 w-36" />
-                <p className="mt-6 text-center text-sm font-bold uppercase tracking-[0.22em] text-gold-200">404</p>
+                <p className="mt-6 text-center text-sm font-bold uppercase tracking-[0.22em] text-gold-200">
+                  404
+                </p>
               </div>
             </div>
           </div>
@@ -71,9 +76,15 @@ export default function NotFound() {
                 href={link.href}
                 key={link.href}
               >
-                <span className="mb-5 inline-block text-xs font-bold uppercase text-emerald-700">{link.meta}</span>
-                <h2 className="text-xl font-semibold leading-snug text-slate-950">{link.title}</h2>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{link.text}</p>
+                <span className="mb-5 inline-block text-xs font-bold uppercase text-emerald-700">
+                  {link.meta}
+                </span>
+                <h2 className="text-xl font-semibold leading-snug text-slate-950">
+                  {link.title}
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                  {link.text}
+                </p>
                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-[linear-gradient(90deg,#d7a948,transparent)] opacity-0 transition group-hover:opacity-100" />
               </Link>
             ))}

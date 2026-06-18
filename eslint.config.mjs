@@ -12,6 +12,13 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Project-specific generated and content-heavy directories:
+    ".vercel/**",
+    ".playwright-mcp/**",
+    ".codex/**",
+    "beacon-awards-next/**",
+    "public/wp-content/**",
+    "wp-content/**",
   ]),
 ]);
 

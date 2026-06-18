@@ -12,8 +12,22 @@ const formLabels = {
 
 const requiredFields = {
   contact: ["name", "email", "subject", "message"],
-  nomination: ["mosque_name", "nominee_name", "award_category", "your_name", "email", "message"],
-  rating: ["mosque_name", "city", "primary_contact", "email", "current_rating", "message"],
+  nomination: [
+    "mosque_name",
+    "nominee_name",
+    "award_category",
+    "your_name",
+    "email",
+    "message",
+  ],
+  rating: [
+    "mosque_name",
+    "city",
+    "primary_contact",
+    "email",
+    "current_rating",
+    "message",
+  ],
 } as const;
 
 type FormType = keyof typeof formLabels;
@@ -34,16 +48,24 @@ function safeReturnPath(formData: FormData) {
 
 function redirectTo(request: NextRequest, params: Record<string, string>) {
   const referer = request.headers.get("referer");
-  const origin = request.headers.get("origin") ?? (referer ? new URL(referer).origin : new URL(request.url).origin);
+  const origin =
+    request.headers.get("origin") ??
+    (referer ? new URL(referer).origin : new URL(request.url).origin);
   const url = new URL("/form-submitted/", origin);
-  Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+  Object.entries(params).forEach(([key, value]) =>
+    url.searchParams.set(key, value),
+  );
   return NextResponse.redirect(url, 303);
 }
 
 async function saveLocalSubmission(payload: unknown) {
   const directory = path.join(process.cwd(), ".data");
   await mkdir(directory, { recursive: true });
-  await appendFile(path.join(directory, "form-submissions.jsonl"), `${JSON.stringify(payload)}\n`, "utf8");
+  await appendFile(
+    path.join(directory, "form-submissions.jsonl"),
+    `${JSON.stringify(payload)}\n`,
+    "utf8",
+  );
 }
 
 export async function POST(request: NextRequest) {
@@ -51,15 +73,25 @@ export async function POST(request: NextRequest) {
   const returnTo = safeReturnPath(formData);
 
   if (formValue(formData, "website")) {
-    return redirectTo(request, { status: "received", form: "contact", returnTo });
+    return redirectTo(request, {
+      status: "received",
+      form: "contact",
+      returnTo,
+    });
   }
 
   const formType = formData.get("form_type");
   if (!isFormType(formType)) {
-    return redirectTo(request, { status: "invalid", form: "contact", returnTo });
+    return redirectTo(request, {
+      status: "invalid",
+      form: "contact",
+      returnTo,
+    });
   }
 
-  const missing = requiredFields[formType].filter((field) => !formValue(formData, field));
+  const missing = requiredFields[formType].filter(
+    (field) => !formValue(formData, field),
+  );
   if (missing.length > 0) {
     return redirectTo(request, { status: "missing", form: formType, returnTo });
   }
@@ -71,7 +103,10 @@ export async function POST(request: NextRequest) {
     source: request.headers.get("referer") ?? "",
     sourcePath: returnTo,
     fields: Object.fromEntries(
-      requiredFields[formType].map((field) => [field, formValue(formData, field)]),
+      requiredFields[formType].map((field) => [
+        field,
+        formValue(formData, field),
+      ]),
     ),
   };
 
@@ -86,15 +121,31 @@ export async function POST(request: NextRequest) {
       });
 
       if (!response.ok) {
-        return redirectTo(request, { status: "delivery-error", form: formType, returnTo });
+        return redirectTo(request, {
+          status: "delivery-error",
+          form: formType,
+          returnTo,
+        });
       }
 
-      return redirectTo(request, { status: "received", form: formType, returnTo });
+      return redirectTo(request, {
+        status: "received",
+        form: formType,
+        returnTo,
+      });
     }
 
     await saveLocalSubmission(payload);
-    return redirectTo(request, { status: "received", form: formType, returnTo });
+    return redirectTo(request, {
+      status: "received",
+      form: formType,
+      returnTo,
+    });
   } catch {
-    return redirectTo(request, { status: "delivery-error", form: formType, returnTo });
+    return redirectTo(request, {
+      status: "delivery-error",
+      form: formType,
+      returnTo,
+    });
   }
 }

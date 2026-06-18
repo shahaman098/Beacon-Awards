@@ -37,7 +37,13 @@ export function ButtonLink({
 
   if (isHttp) {
     return (
-      <a className={classes} href={href} onClick={onClick} rel="noreferrer" target="_blank">
+      <a
+        className={classes}
+        href={href}
+        onClick={onClick}
+        rel="noreferrer"
+        target="_blank"
+      >
         {children}
       </a>
     );
