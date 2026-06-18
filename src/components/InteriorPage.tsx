@@ -102,6 +102,42 @@ function TextSection({
   );
 }
 
+function TextPairSection({
+  section,
+  tone = "white",
+}: {
+  section: Extract<PageSection, { kind: "textPair" }>;
+  tone?: SectionTone;
+}) {
+  return (
+    <section className={bandClass(tone)}>
+      <SectionAwardsDecor left="Context" right="Standards" />
+      <div className="relative z-10 mx-auto max-w-[1180px]">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          {section.items.map((item) => (
+            <div
+              className="grid gap-8 md:grid-cols-[0.82fr_1.18fr] lg:grid-cols-1"
+              key={`${item.title}-${item.paragraphs[0] ?? ""}`}
+            >
+              <div>
+                <SectionKicker>Overview</SectionKicker>
+                <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
+                  {item.title}
+                </h2>
+              </div>
+              <div className="space-y-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
+                {item.paragraphs.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function LinkCard({ card }: { card: CardLink }) {
   const hasImage = Boolean(card.image);
   const isNominationCard = card.meta === "Nominate";
@@ -532,7 +568,9 @@ function CardsSection({
     currentPath === "/winners/" &&
     /^(2024|2023|2022|2021) winners$/.test(sectionTitle);
   const sectionId =
-    currentPath === "/awards/" && sectionTitle === "Award categories"
+    (currentPath === "/awards/" && sectionTitle === "Award categories") ||
+    (currentPath === "/awards/beacon-mosque-awards-2026/" &&
+      sectionTitle === "Nominate Across Our 10 Award Categories for 2026")
       ? "award-categories"
       : undefined;
   const sectionClass = isHeadOfficeSection
@@ -2297,12 +2335,16 @@ function FormSection({
   title,
   text,
   defaultCategory,
+  embedSrc,
+  embedHeight,
   sourcePath,
 }: {
   form: PageForm;
   title: string;
   text: string;
   defaultCategory?: string;
+  embedSrc?: string;
+  embedHeight?: number;
   sourcePath: string;
 }) {
   const config = formConfigs[form];
@@ -2326,6 +2368,16 @@ function FormSection({
           </h2>
           <p className="mt-5 text-sm leading-7 text-black/58">{text}</p>
         </div>
+        {embedSrc ? (
+          <div className="border border-black/10 bg-white p-3 shadow-[0_24px_80px_rgba(0,0,0,0.08)]">
+            <iframe
+              className="w-full border-0"
+              height={embedHeight ?? 700}
+              src={embedSrc}
+              title={title}
+            />
+          </div>
+        ) : (
         <form
           action="/api/forms/"
           className="border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)]"
@@ -2371,6 +2423,7 @@ function FormSection({
             routed through the Beacon Mosque intake workflow.
           </p>
         </form>
+        )}
       </div>
     </section>
   );
@@ -2392,6 +2445,8 @@ function RenderSection({
       return (
         <TextSection currentPath={currentPath} section={section} tone={tone} />
       );
+    case "textPair":
+      return <TextPairSection section={section} tone={tone} />;
     case "cards":
       return (
         <CardsSection currentPath={currentPath} section={section} tone={tone} />
@@ -2416,6 +2471,8 @@ function RenderSection({
       return (
         <FormSection
           defaultCategory={section.defaultCategory}
+          embedHeight={section.embedHeight}
+          embedSrc={section.embedSrc}
           form={section.form}
           sourcePath={currentPath}
           text={section.text}
@@ -2855,12 +2912,13 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
   }
 
   const isAwardsLandingPage = page.slug === "awards";
+  const isContactPage = page.slug === "contact-us";
   const isStandardsSubpage = page.slug.startsWith("standards/");
   const isStandardsAccreditationPage = page.slug === "standards/accreditation";
   const hasHeroVideo = Boolean(page.heroVideo);
   const hasHeroVisual = hasHeroVideo || Boolean(page.image);
   const showHeroVisual =
-    hasHeroVisual && !isAwardsLandingPage && !isStandardsSubpage;
+    hasHeroVisual && !isAwardsLandingPage && !isStandardsSubpage && !isContactPage;
   const heroAwardsArchiveSection = isAwardsLandingPage
     ? page.sections.find(
         (section): section is Extract<PageSection, { kind: "cards" }> =>
@@ -2891,6 +2949,19 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
               : "pb-20 pt-36 md:pb-24 md:pt-40",
           ].join(" ")}
         >
+          {isContactPage ? (
+            <div className="absolute inset-0 -z-10">
+              <Image
+                alt="Beacon Mosque training session"
+                className="object-cover opacity-30"
+                fill
+                priority
+                sizes="100vw"
+                src="/assets/interior/awards-gala.jpg"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,7,10,0.42),rgba(5,7,10,0.68)_36%,rgba(5,7,10,0.94))]" />
+            </div>
+          ) : null}
           {isAwardsLandingPage ? (
             <div
               aria-hidden="true"

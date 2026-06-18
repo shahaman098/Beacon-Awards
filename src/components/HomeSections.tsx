@@ -2,11 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   accreditedMosques,
+  awards2026CategoriesHref,
   awardArchiveFeatureYears,
   ceremonyGallery,
   featureCards,
   mainNav,
-  nominationForm2026Href,
   serviceCards,
   standards,
 } from "@/lib/content";
@@ -145,7 +145,7 @@ export function HomeHero() {
               </p>
               <ButtonLink
                 className="mt-6 w-full justify-center sm:w-auto"
-                href={nominationForm2026Href}
+                href={awards2026CategoriesHref}
               >
                 Submit Your Nomination
               </ButtonLink>
@@ -298,7 +298,7 @@ export function AwardsFeatureSection() {
             </EditorialLink>
             <EditorialLink
               className="!bg-white !text-black hover:!bg-black hover:!text-white"
-              href={nominationForm2026Href}
+              href={awards2026CategoriesHref}
             >
               Submit nomination
             </EditorialLink>
@@ -866,7 +866,7 @@ export function FinalCta() {
         </h2>
         <EditorialLink
           className="mt-7 border-white bg-transparent text-white hover:bg-white hover:text-black"
-          href={nominationForm2026Href}
+          href={awards2026CategoriesHref}
         >
           Submit nomination
         </EditorialLink>

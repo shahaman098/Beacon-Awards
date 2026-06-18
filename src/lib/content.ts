@@ -120,6 +120,8 @@ export const heroStats = [
 
 export const nominationForm2026Href =
   "https://forms.zohopublic.eu/info157/form/BeaconMosqueAwards2026NominationForm/formperma/VWlTCVb_wxgDlI_mYQ2gYFzp7SlpGg3mn1XcgJTbnbQ";
+export const awards2026CategoriesHref =
+  "/awards/beacon-mosque-awards-2026/#award-categories";
 
 const awardCategoryNominationNote =
   "Beacon Mosque Award winners are decided by an independent panel of judges who review the submitted evidence from shortlisted finalists in detail, with the public vote providing a smaller weighting.";
@@ -953,7 +955,7 @@ export const featureCards: ImageCard[] = [
       { label: "Awards 2026", href: "/awards/beacon-mosque-awards-2026/" },
       {
         label: "Submit nomination",
-        href: nominationForm2026Href,
+        href: awards2026CategoriesHref,
       },
     ],
   },

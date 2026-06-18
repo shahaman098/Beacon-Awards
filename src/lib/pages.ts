@@ -24,6 +24,10 @@ export type PageForm = "contact" | "rating" | "nomination";
 
 export type PageSection =
   | { kind: "text"; title?: string; paragraphs: string[] }
+  | {
+      kind: "textPair";
+      items: Array<{ title: string; paragraphs: string[] }>;
+    }
   | { kind: "cards"; title?: string; cards: CardLink[] }
   | {
       kind: "awardHistory";
@@ -47,6 +51,8 @@ export type PageSection =
       title: string;
       text: string;
       defaultCategory?: string;
+      embedSrc?: string;
+      embedHeight?: number;
     };
 
 export type AudioResource = {
@@ -4727,6 +4733,9 @@ const pageMap: Record<string, InteriorPage> = {
         form: "contact",
         title: "Send a message",
         text: "Use this form to contact Beacon Mosque.",
+        embedSrc:
+          "https://forms.zohopublic.eu/info157/form/BeaconMosqueContactUs/formperma/YJzSnUGbhPlgta5vMxXTmzdIee33LgBd9vLtIxEe-g4",
+        embedHeight: 700,
       },
     ],
   },
@@ -4787,16 +4796,23 @@ awardCategoryNominations.forEach((category) => {
   const detail = awardCategoryNominationDetails.find(
     (item) => item.title === category.title,
   );
-  const winnerCardsFromOtherYears = findWinnerCardsForOtherYears(
-    category.title,
-    "2026",
-  );
 
   if (!detail) {
     throw new Error(
       `Missing nomination detail content for ${category.title}`,
     );
   }
+
+  const previousWinnerYears = new Set(
+    detail.previousWinners.map((item) => item.year),
+  );
+  const winnerCardsFromOtherYears = findWinnerCardsForOtherYears(
+    category.title,
+    "2026",
+  ).filter((card) => {
+    const cardYear = card.meta?.match(/\b\d{4}\b/)?.[0];
+    return !cardYear || !previousWinnerYears.has(cardYear);
+  });
 
   pageMap[slug] = {
     slug,
@@ -4819,14 +4835,17 @@ awardCategoryNominations.forEach((category) => {
     ],
     sections: [
       {
-        kind: "text",
-        title: category.title,
-        paragraphs: [...detail.introParagraphs, ...detail.judgingParagraphs],
-      },
-      {
-        kind: "text",
-        title: "Important note",
-        paragraphs: [detail.note],
+        kind: "textPair",
+        items: [
+          {
+            title: category.title,
+            paragraphs: [...detail.introParagraphs, ...detail.judgingParagraphs],
+          },
+          {
+            title: "Important note",
+            paragraphs: [detail.note],
+          },
+        ],
       },
       {
         kind: "awardHistory",
