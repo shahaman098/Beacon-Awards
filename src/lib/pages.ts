@@ -388,6 +388,7 @@ const awardRecognitionCards2025: CardLink[] =
       meta: profile.status,
       image: winner?.image,
       imageAlt: winner?.imageAlt,
+      imageFit: "contain",
     };
   });
 
@@ -404,6 +405,7 @@ const winnerCards2025: CardLink[] = featuredAwardRecognitionProfiles2025.map(
       meta: profile.category,
       image: winner?.image,
       imageAlt: winner?.imageAlt,
+      imageFit: "contain",
     };
   },
 );
@@ -707,6 +709,7 @@ const awardRecognitionCards2024: CardLink[] = awardRecognitionProfiles2024.map(
       meta: profile.status,
       image: winner?.image,
       imageAlt: winner?.imageAlt,
+      imageFit: "contain",
     };
   },
 );
@@ -2175,6 +2178,31 @@ const normalizeAwardCategory = (value: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
+const legacyWinnerWebsiteByYearAndCategory: Record<string, string> = {
+  "2021|Best Outreach Programme": "https://www.liverpoolmuslimsociety.org.uk/",
+  "2021|Best Green Initiative": "https://eastonjamiamasjid.co.uk/",
+  "2021|Most Innovative Service": "https://revivefm.co.uk/",
+  "2021|Most Impactful Alimah":
+    "https://www.albalaghacademy.org/ustaad/ustadah-dr-maysoon-shafiq/",
+  "2020|Most Impactful Alimah":
+    "https://www.guidancehub.org/shaykhanoshingul.html",
+};
+
+const winnerWebsiteHrefFor = (year: string, category: string) => {
+  const nominationCategory = awardCategoryNominationDetails.find(
+    (detail) => detail.title === category,
+  );
+  const nominationWinner = nominationCategory?.previousWinners.find(
+    (winner) => winner.year === year,
+  );
+
+  if (nominationWinner?.href) {
+    return nominationWinner.href;
+  }
+
+  return legacyWinnerWebsiteByYearAndCategory[`${year}|${category}`] ?? null;
+};
+
 const findWinnerCardsForOtherYears = (
   category: string,
   currentYear?: string,
@@ -3512,6 +3540,7 @@ const winnerCards2024: CardLink[] = [
     meta: "Best Run Mosque",
     image: "/assets/awards/2024/winners/best-run-mosque-bilal-academy-walsall.png",
     imageAlt: "Best Run Mosque 2024 winner Bilal Academy Walsall",
+    imageFit: "contain",
   },
   {
     title: "Aberdeen Mosque and Islamic Centre",
@@ -3520,6 +3549,7 @@ const winnerCards2024: CardLink[] = [
     meta: "Best Youth Service",
     image: "/assets/awards/2024/winners/best-youth-service-aberdeen-mosque-and-islamic-centre.png",
     imageAlt: "Best Youth Service 2024 winner Aberdeen Mosque and Islamic Centre",
+    imageFit: "contain",
   },
   {
     title: "DEEN Central / The Hub - Solihull",
@@ -3528,6 +3558,7 @@ const winnerCards2024: CardLink[] = [
     meta: "Best Madrassah Service",
     image: "/assets/awards/2024/winners/best-madrassah-service-deen-central-the-hub-solihull.png",
     imageAlt: "Best Madrassah Service 2024 winner DEEN Central The Hub Solihull",
+    imageFit: "contain",
   },
   {
     title: "Nelson Community Mosque",
@@ -3536,6 +3567,7 @@ const winnerCards2024: CardLink[] = [
     meta: "Best Women's Service",
     image: "/wp-content/uploads/2024/04/Best-Womens-Service-scaled-1-669x272.jpg",
     imageAlt: "Best Women's Service 2024 winner Nelson Community Mosque",
+    imageFit: "contain",
   },
   {
     title: "Adam Kelwick",
@@ -3544,6 +3576,7 @@ const winnerCards2024: CardLink[] = [
     meta: "Most Impactful Imam",
     image: "/assets/awards/2024/winners/most-impactful-imam-imam-adam-kelwick.png",
     imageAlt: "Most Impactful Imam 2024 winner Imam Adam Kelwick",
+    imageFit: "contain",
   },
   {
     title: "The Olton Project - Birmingham",
@@ -3552,6 +3585,7 @@ const winnerCards2024: CardLink[] = [
     meta: "Best Convert Support Service",
     image: "/assets/awards/2024/winners/best-convert-support-service-the-olton-project-birmingham.png",
     imageAlt: "Best Convert Support Service 2024 winner The Olton Project Birmingham",
+    imageFit: "contain",
   },
   {
     title: "Shaykha Saleha Bukhari Islam",
@@ -3560,6 +3594,7 @@ const winnerCards2024: CardLink[] = [
     meta: "Most Impactful Alimah",
     image: "/assets/awards/2024/winners/most-impactful-alimah-shaykha-saleha-bukhari-islam.png",
     imageAlt: "Most Impactful Alimah 2024 winner Shaykha Saleha Bukhari Islam",
+    imageFit: "contain",
   },
   {
     title: "Central Jamia Masjid - Halifax",
@@ -3568,6 +3603,7 @@ const winnerCards2024: CardLink[] = [
     meta: "Best Innovative Service",
     image: "/assets/awards/2024/winners/best-innovative-service-central-jamia-masjid-halifax.png",
     imageAlt: "Best Innovative Service 2024 winner Central Jamia Masjid Halifax",
+    imageFit: "contain",
   },
   {
     title: "The Salaam Centre - London",
@@ -3576,6 +3612,7 @@ const winnerCards2024: CardLink[] = [
     meta: "Best Future Design",
     image: "/assets/awards/2024/winners/best-future-design-the-salaam-centre-london.png",
     imageAlt: "Best Future Design 2024 winner The Salaam Centre London",
+    imageFit: "contain",
   },
   {
     title: "Bilal Mosque",
@@ -3584,6 +3621,7 @@ const winnerCards2024: CardLink[] = [
     meta: "Best Mosque Volunteer",
     image: "/wp-content/uploads/2024/04/Best-Mosque-Volunteer-scaled-1-700x441.jpg",
     imageAlt: "Best Mosque Volunteer 2024 winner Bilal Mosque",
+    imageFit: "contain",
   },
 ];
 
@@ -4012,8 +4050,6 @@ const winnerCards2021: CardLink[] = [
       "Sri Lankan Muslim Cultural Centre",
     ),
     meta: "Best Run Mosque",
-    image: "/assets/awards/2021/awards-2021-hero.jpg",
-    imageAlt: "Best Run Mosque winner at the Beacon Mosque Awards 2021",
   },
   {
     title: "Lantern Academy",
@@ -4024,8 +4060,6 @@ const winnerCards2021: CardLink[] = [
       "Lantern Academy",
     ),
     meta: "Best Youth Service",
-    image: "/assets/awards/2021/awards-2021-hero.jpg",
-    imageAlt: "Best Youth Service winner at the Beacon Mosque Awards 2021",
   },
   {
     title: "Al-Mustafa Centre",
@@ -4036,8 +4070,6 @@ const winnerCards2021: CardLink[] = [
       "Al-Mustafa Centre",
     ),
     meta: "Best Madrassah Service",
-    image: "/assets/awards/2021/awards-2021-hero.jpg",
-    imageAlt: "Best Madrassah Service winner at the Beacon Mosque Awards 2021",
   },
   {
     title: "Al-Rahma Mosque",
@@ -4048,8 +4080,6 @@ const winnerCards2021: CardLink[] = [
       "Al-Rahma Mosque",
     ),
     meta: "Best Outreach Programme",
-    image: "/assets/awards/2021/awards-2021-hero.jpg",
-    imageAlt: "Best Outreach Programme winner at the Beacon Mosque Awards 2021",
   },
   {
     title: "Rumi's Cave",
@@ -4060,8 +4090,6 @@ const winnerCards2021: CardLink[] = [
       "Rumi's Cave",
     ),
     meta: "Best Women's Service",
-    image: "/assets/awards/2021/awards-2021-hero.jpg",
-    imageAlt: "Best Women's Service winner at the Beacon Mosque Awards 2021",
   },
   {
     title: "Shaykh Nuru Mohammad",
@@ -4072,8 +4100,6 @@ const winnerCards2021: CardLink[] = [
       "Shaykh Nuru Mohammad",
     ),
     meta: "Most Impactful Imam",
-    image: "/assets/awards/2021/awards-2021-hero.jpg",
-    imageAlt: "Most Impactful Imam winner at the Beacon Mosque Awards 2021",
   },
   {
     title: "Easton Jamia Mosque",
@@ -4084,8 +4110,6 @@ const winnerCards2021: CardLink[] = [
       "Easton Jamia Mosque",
     ),
     meta: "Best Green Initiative",
-    image: "/assets/awards/2021/awards-2021-hero.jpg",
-    imageAlt: "Best Green Initiative winner at the Beacon Mosque Awards 2021",
   },
   {
     title: "Maysoon Shafiq",
@@ -4096,8 +4120,6 @@ const winnerCards2021: CardLink[] = [
       "Maysoon Shafiq",
     ),
     meta: "Most Impactful Alimah",
-    image: "/assets/awards/2021/awards-2021-hero.jpg",
-    imageAlt: "Most Impactful Alimah winner at the Beacon Mosque Awards 2021",
   },
   {
     title: "Revive FM",
@@ -4108,8 +4130,6 @@ const winnerCards2021: CardLink[] = [
       "Revive FM",
     ),
     meta: "Most Innovative Service",
-    image: "/assets/awards/2021/awards-2021-hero.jpg",
-    imageAlt: "Most Innovative Service winner at the Beacon Mosque Awards 2021",
   },
   {
     title: "Al-Mustafa Centre",
@@ -4120,10 +4140,18 @@ const winnerCards2021: CardLink[] = [
       "Al-Mustafa Centre",
     ),
     meta: "Best Future Design",
-    image: "/assets/awards/2021/awards-2021-hero.jpg",
-    imageAlt: "Best Future Design winner at the Beacon Mosque Awards 2021",
   },
-];
+].map((card) => {
+  const categoryMedia = card.meta ? getAwardCategoryMedia(card.meta) : null;
+
+  return {
+    ...card,
+    image: categoryMedia?.image ?? "/assets/awards/2021/awards-2021-hero.jpg",
+    imageAlt:
+      categoryMedia?.imageAlt ??
+      `${card.meta ?? "Award"} winner at the Beacon Mosque Awards 2021`,
+  };
+});
 
 const pageMap: Record<string, InteriorPage> = {
   "about-us": {
@@ -4180,6 +4208,8 @@ const pageMap: Record<string, InteriorPage> = {
     eyebrow: "Recognition archive",
     intro:
       "Browse Beacon Mosque Awards winners across the awards archive.",
+    heroVideo: "/wp-content/uploads/2023/05/Beacon-Mosque-Home-Intro-Video.mp4",
+    heroVideoPoster: "/assets/interior/awards-gala.jpg",
     image: "/assets/interior/awards-gala.jpg",
     imageAlt: "Beacon Mosque awards ceremony",
     ctas: [
@@ -4873,6 +4903,9 @@ awardCategoryNominations.forEach((category) => {
 featuredAwardRecognitionProfiles2025.forEach((profile) => {
   const slug = profile.href.replace(/^\/|\/$/g, "");
   const winner = getAwardWinnerRecord2025ByHref(profile.href);
+  const winnerWebsiteHref = winner
+    ? winnerWebsiteHrefFor("2025", profile.category)
+    : null;
   const winnerCardsFromOtherYears = winner
     ? findWinnerCardsForOtherYears(profile.category, "2025")
     : [];
@@ -4895,6 +4928,9 @@ featuredAwardRecognitionProfiles2025.forEach((profile) => {
     image: winner?.image ?? "/assets/awards/2025/bbma-2025-identity.png",
     imageAlt: winner?.imageAlt ?? "British Beacon Mosque Awards 2025 identity",
     ctas: [
+      ...(winnerWebsiteHref
+        ? [{ label: "Visit winner website", href: winnerWebsiteHref }]
+        : []),
       {
         label: "Back to Awards 2025",
         href: "/awards/beacon-mosque-awards-2025/",
@@ -5143,6 +5179,9 @@ accreditedMosques.forEach((mosque) => {
 awardCategoryPages2025.forEach((category) => {
   const slug = category.href.replace(/^\/|\/$/g, "");
   const winner = getAwardWinnerRecord2025ByCategory(category.title);
+  const winnerWebsiteHref = winner
+    ? winnerWebsiteHrefFor("2025", category.title)
+    : null;
   const winnerCardsFromOtherYears = winner
     ? findWinnerCardsForOtherYears(category.title, "2025")
     : [];
@@ -5155,6 +5194,9 @@ awardCategoryPages2025.forEach((category) => {
     image: winner?.image ?? "/assets/awards/2025/bbma-2025-identity.png",
     imageAlt: winner?.imageAlt ?? "British Beacon Mosque Awards 2025 identity",
     ctas: [
+      ...(winnerWebsiteHref
+        ? [{ label: "Visit winner website", href: winnerWebsiteHref }]
+        : []),
       {
         label: "Back to Awards 2025",
         href: "/awards/beacon-mosque-awards-2025/",
@@ -5202,6 +5244,9 @@ awardCategoryPages2025.forEach((category) => {
 awardRecognitionProfiles2024.forEach((profile) => {
   const slug = profile.href.replace(/^\/|\/$/g, "");
   const winner = getAwardWinnerRecord2024ByHref(profile.href);
+  const winnerWebsiteHref = winner
+    ? winnerWebsiteHrefFor("2024", profile.category)
+    : null;
   const winnerCardsFromOtherYears = winner
     ? findWinnerCardsForOtherYears(profile.category, "2024")
     : [];
@@ -5222,6 +5267,9 @@ awardRecognitionProfiles2024.forEach((profile) => {
     image: winner?.image ?? "/assets/interior/awards-gala.jpg",
     imageAlt: winner?.imageAlt ?? "Beacon Mosque awards ceremony",
     ctas: [
+      ...(winnerWebsiteHref
+        ? [{ label: "Visit winner website", href: winnerWebsiteHref }]
+        : []),
       { label: "Back to Awards 2024", href: "/awards/awards2024/" },
       { label: "View awards archive", href: "/awards/", variant: "secondary" },
     ],
@@ -5274,6 +5322,9 @@ awardRecognitionProfiles2024.forEach((profile) => {
 awardCategoryPages2024.forEach((category) => {
   const slug = category.href.replace(/^\/|\/$/g, "");
   const winner = getAwardWinnerRecord2024ByCategory(category.title);
+  const winnerWebsiteHref = winner
+    ? winnerWebsiteHrefFor("2024", category.title)
+    : null;
   const categoryProfiles = awardRecognitionCards2024.filter(
     (card) =>
       awardRecognitionProfiles2024.find((profile) => profile.href === card.href)
@@ -5288,6 +5339,9 @@ awardCategoryPages2024.forEach((category) => {
     image: winner?.image ?? "/assets/interior/awards-gala.jpg",
     imageAlt: winner?.imageAlt ?? "Beacon Mosque awards ceremony",
     ctas: [
+      ...(winnerWebsiteHref
+        ? [{ label: "Visit winner website", href: winnerWebsiteHref }]
+        : []),
       { label: "Back to Awards 2024", href: "/awards/awards2024/" },
       {
         label: "View Awards 2025",
@@ -5397,6 +5451,7 @@ awardCategoryPages2023.forEach((category) => {
   cards.forEach((card) => {
     const slug = card.href.replace(/^\/|\/$/g, "");
     const category = card.meta ?? `${year} winner`;
+    const winnerWebsiteHref = winnerWebsiteHrefFor(year, category);
 
     pageMap[slug] = {
       slug,
@@ -5406,6 +5461,9 @@ awardCategoryPages2023.forEach((category) => {
       image: card.image ?? "/assets/interior/awards-gala.jpg",
       imageAlt: card.imageAlt ?? `${card.title} ${year} winner`,
       ctas: [
+        ...(winnerWebsiteHref
+          ? [{ label: "Visit winner website", href: winnerWebsiteHref }]
+          : []),
         { label: `Back to Awards ${year}`, href: awardsHref },
         { label: "View awards archive", href: "/awards/", variant: "secondary" },
       ],
@@ -7315,8 +7373,21 @@ legacyRouteItems.forEach((item) => {
 export const pages = pageMap;
 
 export async function getPage(slugSegments: string[]) {
-  const slug = slugSegments.join("/");
-  return pages[slug] ?? (await getWordPressFallbackPage(slug));
+  const slug = slugSegments
+    .map((segment) => decodeURIComponent(segment).trim())
+    .filter(Boolean)
+    .join("/");
+
+  if (pages[slug]) {
+    return pages[slug];
+  }
+
+  const publicWordPressSlugs = await getWordPressPublicSlugs();
+  if (!publicWordPressSlugs.includes(slug)) {
+    return null;
+  }
+
+  return getWordPressFallbackPage(slug);
 }
 
 export async function getPageStaticParams() {

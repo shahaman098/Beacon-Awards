@@ -33,5 +33,3 @@ export default async function DynamicPage({ params }: PageProps) {
 
   return <InteriorPage page={await withWordPressBody(page)} />;
 }
-
-export const dynamicParams = false;
