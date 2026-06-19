@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import {
   accreditedMosques,
   getAwardWinnerRecord2024ByCategory,
@@ -15,6 +15,7 @@ import type {
 } from "@/lib/pages";
 import { ButtonLink } from "@/components/ButtonLink";
 import { AutoScrollRail } from "@/components/AutoScrollRail";
+import { HomeHeroVideo } from "@/components/HomeHeroVideo";
 import {
   SectionAwardsDecor,
   SectionKicker,
@@ -142,6 +143,7 @@ function LinkCard({ card }: { card: CardLink }) {
   const hasImage = Boolean(card.image);
   const isNominationCard = card.meta === "Nominate";
   const isAwardCategoryCard = /category/i.test(card.meta ?? "");
+  const imageFit = card.imageFit ?? "cover";
   const ctaLabel = isNominationCard
     ? "Nominate"
     : isAwardCategoryCard
@@ -152,10 +154,20 @@ function LinkCard({ card }: { card: CardLink }) {
   const content = (
     <>
       {hasImage ? (
-        <div className="relative mb-5 aspect-[1.45] overflow-hidden bg-white">
+        <div
+          className={[
+            "relative mb-5 aspect-[1.45] overflow-hidden",
+            imageFit === "contain" ? "bg-[#111]" : "bg-white",
+          ].join(" ")}
+        >
           <Image
             alt={card.imageAlt ?? ""}
-            className="object-cover transition duration-500 group-hover:scale-105"
+            className={[
+              "transition duration-500",
+              imageFit === "contain"
+                ? "object-contain p-4"
+                : "object-cover group-hover:scale-105",
+            ].join(" ")}
             fill
             sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
             src={card.image!}
@@ -827,10 +839,20 @@ function CardsSection({
                     key={`${card.title}-${card.href}`}
                   >
                     {card.image ? (
-                      <div className="relative mb-4 aspect-[1.35] overflow-hidden bg-[#f3f1ed]">
+                      <div
+                        className={[
+                          "relative mb-4 aspect-[1.35] overflow-hidden",
+                          card.imageFit === "contain" ? "bg-[#111]" : "bg-[#f3f1ed]",
+                        ].join(" ")}
+                      >
                         <Image
                           alt={card.imageAlt ?? card.title}
-                          className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                          className={[
+                            "transition duration-500",
+                            card.imageFit === "contain"
+                              ? "object-contain p-4"
+                              : "object-cover group-hover:scale-[1.03]",
+                          ].join(" ")}
                           fill
                           loading="eager"
                           sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
@@ -935,7 +957,7 @@ function AwardHistorySection({
                   rel="noreferrer"
                   target="_blank"
                 >
-                  Link
+                  Website
                 </a>
               ) : null}
             </article>
@@ -1072,6 +1094,10 @@ function GallerySection({
   section: Extract<PageSection, { kind: "gallery" }>;
 }) {
   const isWinnersGalleryPage = currentPath === "/winners/";
+  const galleryArchiveYear = section.title?.match(/\b(20\d{2})\b/u)?.[1];
+  const galleryDescription = isWinnersGalleryPage
+    ? `Official winner posters from the Beacon Mosque Awards ${galleryArchiveYear ?? "archive"} archive.`
+    : "Visual moments from the Beacon Mosque public archive.";
 
   return (
     <section className={bandClass("warm")}>
@@ -1090,9 +1116,7 @@ function GallerySection({
               {section.title}
             </h2>
             <p className="mt-5 text-sm leading-7 text-black/58">
-              {isWinnersGalleryPage
-                ? "Official winner posters from the Beacon Mosque Awards 2025 archive."
-                : "Visual moments from the Beacon Mosque public archive."}
+              {galleryDescription}
             </p>
           </div>
         ) : null}
@@ -1100,31 +1124,30 @@ function GallerySection({
           className={[
             "grid gap-5",
             isWinnersGalleryPage
-              ? "sm:grid-cols-2 xl:grid-cols-3"
+              ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
               : "sm:grid-cols-2 lg:grid-cols-4",
           ].join(" ")}
         >
-          {section.images.map((image, index) => (
-            <figure
-              className={[
-                "group overflow-hidden border border-black/10 shadow-[0_24px_80px_rgba(0,0,0,0.08)]",
-                isWinnersGalleryPage ? "bg-white" : "relative bg-black",
-              ].join(" ")}
-              key={image.src}
-            >
-              <div
-                className={`relative ${isWinnersGalleryPage ? "aspect-[3/4]" : "aspect-square"}`}
-              >
-                <Image
-                  alt={image.alt}
-                  className={[
-                    "transition duration-500 group-hover:scale-105",
-                    isWinnersGalleryPage ? "object-cover" : "object-cover",
-                  ].join(" ")}
-                  fill
-                  loading={isWinnersGalleryPage ? "eager" : undefined}
-                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                  src={image.src}
+	          {section.images.map((image, index) => (
+	            <figure
+	              className={[
+	                "group overflow-hidden border border-black/10 shadow-[0_24px_80px_rgba(0,0,0,0.08)]",
+	                isWinnersGalleryPage ? "bg-[#111]" : "relative bg-black",
+	              ].join(" ")}
+	              key={image.src}
+	            >
+	              <div className="relative aspect-square">
+	                <Image
+	                  alt={image.alt}
+	                  className={[
+	                    "transition duration-500",
+	                    isWinnersGalleryPage
+	                      ? "object-contain p-4 group-hover:scale-[1.02]"
+	                      : "object-cover group-hover:scale-105",
+	                  ].join(" ")}
+	                  fill
+	                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+	                  src={image.src}
                 />
                 {!isWinnersGalleryPage ? (
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_48%,rgba(7,21,36,0.82))]" />
@@ -1663,13 +1686,26 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
       href: "https://mosque.mba/",
       image: "/assets/home/mosque-mba-programme.png",
       imageAlt: "Mosque MBA programme visual",
+      imageWrapperClassName: "h-28",
+      imageClassName: "scale-[1.2]",
       external: true,
     },
     {
       title: "Mosque Expo",
       href: "https://mosqueexpo.com/",
-      image: "/assets/network/mosque-expo-cover.png",
-      imageAlt: "Mosque Expo cover visual",
+      image: "/wp-content/uploads/2025/12/Original.png",
+      imageAlt: "Mosque Expo 2026 logo",
+      imageWrapperClassName: "h-28",
+      imageClassName: "scale-[1.04]",
+      external: true,
+    },
+    {
+      title: "Mosque Security",
+      href: "https://www.mosquesecurity.com/",
+      image: "/assets/network/mosque-security-logo.png",
+      imageAlt: "Mosque Security logo",
+      imageWrapperClassName: "h-28",
+      imageClassName: "scale-[1.04]",
       external: true,
     },
     {
@@ -1807,17 +1843,26 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
         >
           <SectionAwardsDecor left="Network" right="Academy" />
           <div className="relative z-10 mx-auto max-w-[1180px]">
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
               {networkTiles.map((tile) => {
                 const tileContent = (
                   <div className="flex h-full flex-col items-center justify-center gap-5 rounded-[1.4rem] border border-black/10 bg-white px-6 py-8 text-center shadow-[0_18px_54px_rgba(8,19,31,0.06)]">
-                    <div className="relative flex h-24 w-full items-center justify-center overflow-hidden">
+                    <div
+                      className={[
+                        "relative flex h-24 w-full items-center justify-center overflow-hidden",
+                        tile.imageWrapperClassName,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
                       <Image
                         alt={tile.imageAlt}
-                        className="h-full w-auto object-contain"
-                        height={96}
+                        className={["object-contain", tile.imageClassName]
+                          .filter(Boolean)
+                          .join(" ")}
+                        fill
+                        sizes="220px"
                         src={tile.image}
-                        width={220}
                       />
                     </div>
                     <p className="text-sm font-semibold uppercase tracking-[0.14em] text-black/72">
@@ -3124,19 +3169,17 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
               {showHeroVisual ? (
                 <div className="arch-frame hidden border border-gold-200/40 bg-emerald-950 p-2 shadow-2xl lg:block">
                   {hasHeroVideo ? (
-                    <video
-                      aria-label={page.title}
-                      autoPlay
+                    <HomeHeroVideo
+                      ariaLabel={page.title}
                       className="arch-frame-inner aspect-[0.9] w-full bg-navy-950 object-cover"
                       controls
+                      decorative={false}
                       loop
                       muted
-                      playsInline
                       poster={page.heroVideoPoster}
                       preload="metadata"
-                    >
-                      <source src={page.heroVideo!} type="video/mp4" />
-                    </video>
+                      src={page.heroVideo!}
+                    />
                   ) : (
                     <Image
                       alt={page.imageAlt ?? ""}
@@ -3195,14 +3238,16 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
             </div>
           ) : null}
         </section>
-        {pageSections.map((section, index) => (
-          <RenderSection
-            currentPath={`/${page.slug}/`}
-            index={index}
-            key={`${section.kind}-${index}`}
-            section={section}
-          />
-        ))}
+        <div className="deferred-content">
+          {pageSections.map((section, index) => (
+            <RenderSection
+              currentPath={`/${page.slug}/`}
+              index={index}
+              key={`${section.kind}-${index}`}
+              section={section}
+            />
+          ))}
+        </div>
       </main>
       <SiteFooter />
     </>
