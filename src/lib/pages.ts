@@ -4199,7 +4199,7 @@ const pageMap: Record<string, InteriorPage> = {
     ],
     sections: [
       { kind: "cards", title: "Awards archive", cards: awardsArchive },
-      { kind: "cards", title: "Award categories", cards: awardCategoryCards },
+      { kind: "cards", title: "Nominate 2026", cards: awardCategoryCards },
     ],
   },
   winners: {

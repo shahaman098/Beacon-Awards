@@ -580,7 +580,7 @@ function CardsSection({
     currentPath === "/winners/" &&
     /^(2024|2023|2022|2021) winners$/.test(sectionTitle);
   const sectionId =
-    (currentPath === "/awards/" && sectionTitle === "Award categories") ||
+    (currentPath === "/awards/" && sectionTitle === "Nominate 2026") ||
     (currentPath === "/awards/beacon-mosque-awards-2026/" &&
       sectionTitle === "Nominate Across Our 10 Award Categories for 2026")
       ? "award-categories"
