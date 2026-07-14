@@ -11,6 +11,7 @@ export type CardLink = {
   meta?: string;
   image?: string;
   imageAlt?: string;
+  imageFit?: "cover" | "contain";
 };
 
 export type GalleryItem = {

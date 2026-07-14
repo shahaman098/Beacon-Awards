@@ -881,9 +881,20 @@ export function SiteFooter() {
   return (
     <footer className="overflow-hidden bg-[#05070a] px-5 py-14 text-white md:px-8">
       <div className="mx-auto flex max-w-[1180px] flex-col gap-8 md:flex-row md:items-center md:justify-between">
-        <p className="text-xs text-white/55">
-          Copyright 2018 - 2026 | Beacon Mosque | All Rights Reserved
-        </p>
+        <div className="space-y-2">
+          <p className="text-xs text-white/55">
+            Copyright 2018 - 2026 | Beacon Mosque | All Rights Reserved
+          </p>
+          <p className="text-sm text-white/78">
+            Email:{" "}
+            <Link
+              className="font-medium text-[#d8c0a6] hover:text-white"
+              href="mailto:info@faithassociates.co.uk"
+            >
+              info@faithassociates.co.uk
+            </Link>
+          </p>
+        </div>
         <Image
           alt="Beacon Mosque"
           className="h-auto w-36"

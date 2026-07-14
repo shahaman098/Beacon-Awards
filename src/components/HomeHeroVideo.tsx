@@ -1,13 +1,30 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 type HomeHeroVideoProps = {
-  poster: string;
+  ariaLabel?: string;
+  className?: string;
+  controls?: boolean;
+  decorative?: boolean;
+  loop?: boolean;
+  muted?: boolean;
   src: string;
+  poster?: string;
+  preload?: "auto" | "metadata" | "none";
 };
 
-export function HomeHeroVideo({ poster, src }: HomeHeroVideoProps) {
+export function HomeHeroVideo({
+  ariaLabel,
+  className,
+  controls = false,
+  decorative = true,
+  loop = true,
+  muted = true,
+  poster,
+  preload = "auto",
+  src,
+}: HomeHeroVideoProps) {
   const enabled = useSyncExternalStore(
     (onStoreChange) => {
       const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -18,26 +35,80 @@ export function HomeHeroVideo({ poster, src }: HomeHeroVideoProps) {
     () => !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     () => false,
   );
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const retryTimeoutsRef = useRef<number[]>([]);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!enabled || failed) return;
+
+    const clearResumeTimeouts = () => {
+      retryTimeoutsRef.current.forEach((timeoutId) =>
+        window.clearTimeout(timeoutId),
+      );
+      retryTimeoutsRef.current = [];
+    };
+
+    const attemptPlayback = () => {
+      if (document.visibilityState === "hidden") return;
+
+      const video = videoRef.current;
+      if (!video) return;
+
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {});
+      }
+    };
+
+    const resumePlayback = () => {
+      clearResumeTimeouts();
+      attemptPlayback();
+
+      [180, 600, 1400].forEach((delay) => {
+        const timeoutId = window.setTimeout(attemptPlayback, delay);
+        retryTimeoutsRef.current.push(timeoutId);
+      });
+    };
+
+    resumePlayback();
+    document.addEventListener("visibilitychange", resumePlayback);
+    window.addEventListener("focus", resumePlayback);
+    window.addEventListener("pageshow", resumePlayback);
+
+    return () => {
+      clearResumeTimeouts();
+      document.removeEventListener("visibilitychange", resumePlayback);
+      window.removeEventListener("focus", resumePlayback);
+      window.removeEventListener("pageshow", resumePlayback);
+    };
+  }, [enabled, failed]);
 
   if (!enabled || failed) return null;
 
   return (
     <video
-      aria-hidden="true"
+      aria-hidden={decorative ? "true" : undefined}
+      aria-label={decorative ? undefined : ariaLabel}
       autoPlay
-      className={[
-        "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
-        ready ? "opacity-100" : "opacity-0",
-      ].join(" ")}
-      loop
-      muted
+      className={
+        className ??
+        [
+          "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
+          ready ? "opacity-100" : "opacity-0",
+        ].join(" ")
+      }
+      controls={controls}
+      loop={loop}
+      muted={muted}
       onCanPlay={() => setReady(true)}
       onError={() => setFailed(true)}
+      onPlaying={() => setReady(true)}
       playsInline
       poster={poster}
-      preload="auto"
+      preload={preload}
+      ref={videoRef}
     >
       <source src={src} type="video/mp4" />
     </video>

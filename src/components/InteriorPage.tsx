@@ -2400,10 +2400,7 @@ function FormSection({
   );
 
   return (
-    <section
-      id={form === "nomination" ? "nomination-form" : undefined}
-      className={bandClass("warm")}
-    >
+    <section className={bandClass("warm")}>
       <SectionAwardsDecor left="Contact" right="Enquiry" />
       <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[0.75fr_1fr]">
         <div>

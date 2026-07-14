@@ -2196,7 +2196,7 @@ const winnerWebsiteHrefFor = (year: string, category: string) => {
     (winner) => winner.year === year,
   );
 
-  if (nominationWinner?.href) {
+  if (nominationWinner && "href" in nominationWinner && nominationWinner.href) {
     return nominationWinner.href;
   }
 
@@ -2654,8 +2654,8 @@ const resilienceOptionCriteria = [
 const contactCards: CardLink[] = [
   {
     title: "Email Beacon Mosque",
-    text: "Contact the team about accreditation, awards, resources or community excellence support.",
-    href: "mailto:info@beaconmosque.com",
+    text: "Contact the team at info@faithassociates.co.uk about accreditation, awards, resources or community excellence support.",
+    href: "mailto:info@faithassociates.co.uk",
     meta: "Email",
   },
   {
@@ -4309,12 +4309,6 @@ const pageMap: Record<string, InteriorPage> = {
         title: "Nominate Across Our 10 Award Categories for 2026",
         cards: awardCategoryCards,
       },
-      {
-        kind: "form",
-        form: "nomination",
-        title: "Enter your Mosque details",
-        text: "Share the nominee, category and supporting details for consideration by the Beacon Mosque Awards team.",
-      },
     ],
   },
   nominate: {
@@ -4339,16 +4333,10 @@ const pageMap: Record<string, InteriorPage> = {
         title: "Nominate The Mosque",
         paragraphs: [
           "Nominate a mosque through the dedicated Beacon Mosque Awards nomination pathway.",
-          "Use the form below to share the nominee, award category and supporting details for review.",
+          "Use the award categories below to explore the current Beacon Mosque Awards nomination pathway.",
         ],
       },
       { kind: "cards", title: "Award categories", cards: awardCategoryCards },
-      {
-        kind: "form",
-        form: "nomination",
-        title: "Enter nomination details",
-        text: "Share the nominee, category and supporting details for consideration by the Beacon Mosque Awards team.",
-      },
     ],
   },
   "awards/beacon-mosque-awards-2025": {
@@ -4737,11 +4725,11 @@ const pageMap: Record<string, InteriorPage> = {
     slug: "contact-us",
     title: "Contact Us",
     eyebrow: "Get in touch",
-    intro: "Visit us or send us a message.",
+    intro: "Visit us, email info@faithassociates.co.uk or send us a message.",
     image: "/assets/interior/about-hero.jpg",
     imageAlt: "Beacon Mosque interior architectural detail",
     ctas: [
-      { label: "Email Beacon Mosque", href: "mailto:info@beaconmosque.com" },
+      { label: "Email Beacon Mosque", href: "mailto:info@faithassociates.co.uk" },
       {
         label: "Call Beacon Mosque",
         href: "tel:01494416202",
@@ -4753,7 +4741,7 @@ const pageMap: Record<string, InteriorPage> = {
         kind: "text",
         title: "Visit us or send us a message",
         paragraphs: [
-          "Contact Beacon Mosque to discuss accreditation, awards, resources or community excellence support.",
+          "Contact Beacon Mosque at info@faithassociates.co.uk to discuss accreditation, awards, resources or community excellence support.",
           "The Beacon Mosque head office is based at 41 Baker Street, High Wycombe, HP11 2RX.",
         ],
       },
@@ -6687,18 +6675,6 @@ legacyRouteItems.forEach((item) => {
           "The Beacon Mosque Awards celebrate excellent mosque service, leadership, education, outreach and community achievement across the UK.",
         ],
       },
-      ...(isNomination
-        ? [
-            {
-              kind: "form" as const,
-              form: "nomination" as const,
-              title: `${category} nomination details`,
-              text: "Share the nominee, mosque or institution, contact details and supporting evidence for consideration by the Beacon Mosque Awards team.",
-              defaultCategory:
-                category === "Beacon Mosque Awards" ? undefined : category,
-            },
-          ]
-        : []),
       {
         kind: "cards",
         title:
