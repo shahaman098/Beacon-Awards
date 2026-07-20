@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useSiteCms } from "@/components/cms/SiteCmsProvider";
 
 type AutoScrollRailProps = {
   children: React.ReactNode;
@@ -15,13 +16,17 @@ export function AutoScrollRail({
   contentClassName = "",
   delayMs = 2800,
 }: AutoScrollRailProps) {
+  const { editMode } = useSiteCms();
   const railRef = useRef<HTMLDivElement | null>(null);
   const pausedRef = useRef(false);
 
   useEffect(() => {
     const rail = railRef.current;
 
-    if (!rail) return;
+    if (!rail || editMode) return;
+
+    // Always start with the first card fully in view (e.g. 2026 on homepage).
+    rail.scrollLeft = 0;
 
     const advance = () => {
       if (pausedRef.current) return;
@@ -48,10 +53,18 @@ export function AutoScrollRail({
       });
     };
 
-    const timer = window.setInterval(advance, delayMs);
+    let intervalId = 0;
+    // Give visitors a beat to see the lead card before auto-advance.
+    const startTimer = window.setTimeout(() => {
+      advance();
+      intervalId = window.setInterval(advance, delayMs);
+    }, Math.max(delayMs, 3600));
 
-    return () => window.clearInterval(timer);
-  }, [delayMs]);
+    return () => {
+      window.clearTimeout(startTimer);
+      if (intervalId) window.clearInterval(intervalId);
+    };
+  }, [delayMs, editMode]);
 
   return (
     <div

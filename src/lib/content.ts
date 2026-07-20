@@ -196,6 +196,10 @@ const awardCategoryMediaByKey = {
     image: "/assets/categories/best-outreach-service.png",
     imageAlt: "Best Outreach Service category image",
   },
+  "best outreach programme": {
+    image: "/assets/categories/best-outreach-service.png",
+    imageAlt: "Best Outreach Service category image",
+  },
   "best future design": {
     image: "/assets/categories/best-future-design.png",
     imageAlt: "Best Future Design category image",
@@ -231,13 +235,21 @@ export const awardCategoryNominationDetails = [
     nominateHref: nominationForm2026Href,
     note: awardCategoryNominationNote,
     previousWinners: [
-      { year: "2025", winner: "Cheadle Masjid - Manchester" },
+      {
+        year: "2025",
+        winner: "Cheadle Masjid - Manchester",
+        href: "https://cheadlemasjid.org/",
+      },
       {
         year: "2024",
         winner: "Bilal Academy",
-        href: "https://beaconmosque.com/bilal-academy-shortlisted-mosque-best-run-mosque2024/",
+        href: "https://bilalacademy.co.uk/",
       },
-      { year: "2023", winner: "Ashton Central Mosque" },
+      {
+        year: "2023",
+        winner: "Ashton Central Mosque",
+        href: "https://www.ashtoncentralmosque.com/",
+      },
       {
         year: "2022",
         winner: "Maidenhead Mosque",
@@ -279,18 +291,46 @@ export const awardCategoryNominationDetails = [
     nominateHref: nominationForm2026Href,
     note: awardCategoryNominationNote,
     previousWinners: [
-      { year: "2025", winner: "Lozells Central Mosque Birmingham" },
+      {
+        year: "2025",
+        winner: "Lozells Central Mosque Birmingham",
+        href: "https://www.lozellscentralmosque.co.uk/",
+      },
       {
         year: "2024",
         winner: "Aberdeen Mosque and Islamic Centre",
         href: "https://beaconmosque.com/best-youth-service-shortlisted-mosques-2024/",
       },
-      { year: "2023", winner: "Al Manaar MCHC" },
-      { year: "2022", winner: "EMCA Mosque & Centre, London" },
-      { year: "2021", winner: "Lantern Academy, Rochdale" },
-      { year: "2020", winner: "Hayes Muslim Centre, London" },
-      { year: "2019", winner: "Guidance Hub, Manchester" },
-      { year: "2018", winner: "Al Madina Mosque Barking, London" },
+      {
+        year: "2023",
+        winner: "Al Manaar MCHC",
+        href: "https://www.almanaar.org.uk/",
+      },
+      {
+        year: "2022",
+        winner: "EMCA Mosque & Centre, London",
+        href: "https://emca.org.uk/",
+      },
+      {
+        year: "2021",
+        winner: "Lantern Academy, Rochdale",
+        href: "https://lanternacademy.org.uk/",
+      },
+      {
+        year: "2020",
+        winner: "Hayes Muslim Centre, London",
+        href: "https://hayesmuslimcentre.org.uk/",
+      },
+      {
+        year: "2019",
+        winner: "Guidance Hub, Manchester",
+        href: "https://www.guidancehub.org/",
+      },
+      {
+        year: "2018",
+        winner: "Al Madina Mosque Barking, London",
+        href: "https://www.barkingmosque.org.uk/",
+      },
     ],
   },
   {
@@ -307,13 +347,21 @@ export const awardCategoryNominationDetails = [
     nominateHref: nominationForm2026Href,
     note: awardCategoryNominationNote,
     previousWinners: [
-      { year: "2025", winner: "Taqwa Institute - Oldham" },
+      {
+        year: "2025",
+        winner: "Taqwa Institute - Oldham",
+        href: "https://taqwainstitute.org/",
+      },
       {
         year: "2024",
         winner: "Deen Central",
         href: "https://www.facebook.com/BeaconMosque/photos/winner-of-the-best-madrassah-service-2024-deen-central-well-deserved-award-for-t/883179360640414/",
       },
-      { year: "2023", winner: "Al Arqam Arabic School" },
+      {
+        year: "2023",
+        winner: "Al Arqam Arabic School",
+        href: "https://alarqamarabic.co.uk/",
+      },
       {
         year: "2022",
         winner: "Maidenhead Mosque",
@@ -355,14 +403,46 @@ export const awardCategoryNominationDetails = [
     nominateHref: nominationForm2026Href,
     note: awardCategoryNominationNote,
     previousWinners: [
-      { year: "2025", winner: "Al-Manaar - London" },
-      { year: "2024", winner: "Nelson Community Mosque" },
-      { year: "2023", winner: "Easton Jamia Masjid" },
-      { year: "2022", winner: "Guidance Hub, Manchester" },
-      { year: "2021", winner: "Rumi's Cave, London" },
-      { year: "2020", winner: "Ashford and Staines Mosque" },
-      { year: "2019", winner: "Al Madina Mosque Barking, London" },
-      { year: "2018", winner: "Khizra Mosque, Manchester" },
+      {
+        year: "2025",
+        winner: "Al-Manaar - London",
+        href: "https://www.almanaar.org.uk/",
+      },
+      {
+        year: "2024",
+        winner: "Nelson Community Mosque",
+        href: "https://myncm.co.uk/",
+      },
+      {
+        year: "2023",
+        winner: "Easton Jamia Masjid",
+        href: "https://eastonjamiamasjid.co.uk/",
+      },
+      {
+        year: "2022",
+        winner: "Guidance Hub, Manchester",
+        href: "https://www.guidancehub.org/",
+      },
+      {
+        year: "2021",
+        winner: "Rumi's Cave, London",
+        href: "https://www.rumis.org/cave",
+      },
+      {
+        year: "2020",
+        winner: "Ashford and Staines Mosque",
+        href: "https://ascc.uk.com/",
+      },
+      {
+        year: "2019",
+        winner: "Al Madina Mosque Barking, London",
+        href: "https://www.barkingmosque.org.uk/",
+      },
+      {
+        year: "2018",
+        winner: "Khizra Mosque, Manchester",
+        href: "https://www.khizramosque.org/",
+      },
     ],
   },
   {
@@ -379,7 +459,11 @@ export const awardCategoryNominationDetails = [
     nominateHref: nominationForm2026Href,
     note: awardCategoryNominationNote,
     previousWinners: [
-      { year: "2025", winner: "Shaykh Dr. Saalim Al-Azhari" },
+      {
+        year: "2025",
+        winner: "Shaykh Dr. Saalim Al-Azhari",
+        href: "https://saalimalazhari.com/",
+      },
       {
         year: "2024",
         winner: "Adam Kelwick - Al-Rahma Mosque",
@@ -388,6 +472,7 @@ export const awardCategoryNominationDetails = [
       {
         year: "2023",
         winner: "Imam Ghulam Mohyuddin of Ashton Central Mosque in Ashton-under-Lyne",
+        href: "https://www.ashtoncentralmosque.com/",
       },
       {
         year: "2022",
@@ -431,7 +516,11 @@ export const awardCategoryNominationDetails = [
     nominateHref: nominationForm2026Href,
     note: awardCategoryNominationNote,
     previousWinners: [
-      { year: "2025", winner: "The London Central Mosque" },
+      {
+        year: "2025",
+        winner: "The London Central Mosque",
+        href: "https://www.iccuk.org/",
+      },
       {
         year: "2024",
         winner: "The Olton Project",
@@ -440,7 +529,7 @@ export const awardCategoryNominationDetails = [
       {
         year: "2023",
         winner: "Leeds Grand Mosque",
-        href: "http://newtoislam.co.uk/",
+        href: "https://www.leedsgrandmosque.com/",
       },
       {
         year: "2022",
@@ -464,22 +553,37 @@ export const awardCategoryNominationDetails = [
     nominateHref: nominationForm2026Href,
     note: awardCategoryNominationNote,
     previousWinners: [
-      { year: "2025", winner: "Shaykha Sabia Rehman" },
-      { year: "2024", winner: "Shaykha Saleha Bukhari Islam" },
-      { year: "2023", winner: "Ustadha Aniqa Rashid" },
+      {
+        year: "2025",
+        winner: "Shaykha Sabia Rehman",
+        href: "https://beaconmosque.com/sabia-rehman-finalist-for-most-impactful-alimah-2025/",
+      },
+      {
+        year: "2024",
+        winner: "Shaykha Saleha Bukhari Islam",
+        href: "https://beaconmosque.com/saleha-islam-shortlisted-most-impactful-alimah-2024/",
+      },
+      {
+        year: "2023",
+        winner: "Ustadha Aniqa Rashid",
+        href: "https://beaconmosque.com/finalist/ustadah-aniqa-rashid/",
+      },
       {
         year: "2022",
         winner: "Ustadha Ameena Blake",
+        href: "https://www.albalaghacademy.org/ustaad/ustadha-ameena-blake/",
         supportingText: "Markfield Institute, Sheffield",
       },
       {
         year: "2021",
         winner: "Ustadha Maysoon Shafiq",
+        href: "https://www.albalaghacademy.org/ustaad/ustadah-dr-maysoon-shafiq/",
         supportingText: "Al Mu'Minun (The Believers), Huddersfield",
       },
       {
         year: "2020",
         winner: "Ustadha Noshin Gul",
+        href: "https://www.guidancehub.org/shaykhanoshingul.html",
         supportingText: "Guidance Hub, Manchester",
       },
     ],
@@ -499,7 +603,11 @@ export const awardCategoryNominationDetails = [
     nominateHref: nominationForm2026Href,
     note: awardCategoryNominationNote,
     previousWinners: [
-      { year: "2025", winner: "Wirral Deen Centre - Birkenhead/Liverpool" },
+      {
+        year: "2025",
+        winner: "Wirral Deen Centre - Birkenhead/Liverpool",
+        href: "https://www.wirraldeencentre.org.uk/",
+      },
     ],
   },
   {
@@ -517,13 +625,21 @@ export const awardCategoryNominationDetails = [
     nominateHref: nominationForm2026Href,
     note: awardCategoryNominationNote,
     previousWinners: [
-      { year: "2025", winner: "ICOB - Islamic Centre of Britain" },
+      {
+        year: "2025",
+        winner: "ICOB - Islamic Centre of Britain",
+        href: "https://icob.uk/",
+      },
       {
         year: "2024",
         winner: "The Salaam Centre",
         href: "https://beaconmosque.com/best-future-design-shortlisted-mosque-2024/",
       },
-      { year: "2023", winner: "Al-Abbas Islamic Center (KSIMC)" },
+      {
+        year: "2023",
+        winner: "Al-Abbas Islamic Center (KSIMC)",
+        href: "https://www.al-abbas.org.uk/",
+      },
       {
         year: "2022",
         winner: "Madinat al Zahra, Bradford",
@@ -553,14 +669,23 @@ export const awardCategoryNominationDetails = [
       {
         year: "2025",
         winner: "Mohammed Wasim - Jamiyat Tabligh Ul Islam (JTI)",
+        href: "https://www.jamiyat.org/",
       },
       {
         year: "2024",
         winner: "Bilal Mosque",
         href: "https://beaconmosque.com/best-mosque-volunteer-shortlist-2024",
       },
-      { year: "2023", winner: "Mohammed Ali Dhorat" },
-      { year: "2022", winner: "Noor Miah, Shah Jalal Masjid, Burnley" },
+      {
+        year: "2023",
+        winner: "Mohammed Ali Dhorat",
+        href: "https://beaconmosque.com/finalist/mohammed-ali-dhorat/",
+      },
+      {
+        year: "2022",
+        winner: "Noor Miah, Shah Jalal Masjid, Burnley",
+        href: "https://www.facebook.com/ShahjalalmasjidandBurnleyIslamicCulturalCentre/",
+      },
     ],
   },
 ] satisfies AwardCategoryNominationDetail[];
@@ -1163,6 +1288,7 @@ export const ceremonyGallery: GalleryItem[] = [
 export type WinnerCard = {
   src: string;
   alt: string;
+  title: string;
 };
 
 export type WinnerShowcaseItem = {
@@ -1261,7 +1387,7 @@ export const awardWinnerRecords2025: AwardWinnerRecord[] = [
     category: "Most Impactful Imam",
     href: "/shaykh-dr-saalim-ai-azhari-shortlisted-for-most-impactful-imam-2025-2/",
     image:
-      "/assets/awards/2025/winners/most-impactful-imam-shaykh-dr-saalim-al-azhari.png",
+      "/assets/awards/2025/winners/most-impactful-imam-shaykh-dr-saalim-al-azhari.webp",
     imageAlt:
       "Most Impactful Imam 2025 winner Shaykh Dr. Saalim Al-Azhari holding the Beacon Mosque Awards trophy",
     label: "Most impactful imam",
@@ -1274,7 +1400,7 @@ export const awardWinnerRecords2025: AwardWinnerRecord[] = [
     category: "Best Run Mosque",
     href: "/cheadle-masjid-shortlisted-mosque-best-run-mosque2025/",
     image:
-      "/assets/awards/2025/winners/best-run-mosque-cheadle-masjid-manchester.png",
+      "/assets/awards/2025/winners/best-run-mosque-cheadle-masjid-manchester.webp",
     imageAlt:
       "Best Run Mosque 2025 winner Cheadle Masjid Manchester receiving the Beacon Mosque Awards trophy",
     label: "Best run mosque",
@@ -1287,7 +1413,7 @@ export const awardWinnerRecords2025: AwardWinnerRecord[] = [
     category: "Best Mosque Volunteer",
     href: "/jamiyat-tabligh-ul-islam-jti-best-best-mosque-volunteer-2025/",
     image:
-      "/assets/awards/2025/winners/best-mosque-volunteer-mohammed-wasim-jti.png",
+      "/assets/awards/2025/winners/best-mosque-volunteer-mohammed-wasim-jti.webp",
     imageAlt:
       "Best Mosque Volunteer 2025 winner Mohammed Wasim of Jamiyat Tabligh Ul Islam receiving the Beacon Mosque Awards trophy",
     label: "Best mosque volunteer",
@@ -1300,7 +1426,7 @@ export const awardWinnerRecords2025: AwardWinnerRecord[] = [
     category: "Most Impactful Alimah",
     href: "/sabia-rehman-finalist-for-most-impactful-alimah-2025/",
     image:
-      "/assets/awards/2025/winners/most-impactful-alimah-shaykha-sabia-rehman.png",
+      "/assets/awards/2025/winners/most-impactful-alimah-shaykha-sabia-rehman.webp",
     imageAlt:
       "Most Impactful Alimah 2025 winner Shaykha Sabia Rehman holding the Beacon Mosque Awards trophy",
     label: "Most impactful alimah",
@@ -1313,7 +1439,7 @@ export const awardWinnerRecords2025: AwardWinnerRecord[] = [
     category: "Best Madrassah Service",
     href: "/taqwa-institute-shortlisted-for-best-madrassah-services-2025/",
     image:
-      "/assets/awards/2025/winners/best-madrassah-service-taqwa-institute-oldham.png",
+      "/assets/awards/2025/winners/best-madrassah-service-taqwa-institute-oldham.webp",
     imageAlt:
       "Best Madrassah Service 2025 winner Taqwa Institute Oldham receiving the Beacon Mosque Awards trophy",
     label: "Best madrassah service",
@@ -1326,7 +1452,7 @@ export const awardWinnerRecords2025: AwardWinnerRecord[] = [
     category: "Best Convert Support Service",
     href: "/london-central-mosque-finalist-for-best-convert-system/",
     image:
-      "/assets/awards/2025/winners/best-convert-support-service-london-central-mosque.png",
+      "/assets/awards/2025/winners/best-convert-support-service-london-central-mosque.webp",
     imageAlt:
       "Best Convert Support Service 2025 winner The London Central Mosque holding the Beacon Mosque Awards trophy",
     label: "Best convert support service",
@@ -1338,7 +1464,7 @@ export const awardWinnerRecords2025: AwardWinnerRecord[] = [
   {
     category: "Best Future Design",
     href: "/icob-islamic-centre-of-britain-best-future-design-mosque-2025/",
-    image: "/assets/awards/2025/winners/best-future-design-icob.png",
+    image: "/assets/awards/2025/winners/best-future-design-icob.webp",
     imageAlt:
       "Best Future Design 2025 winner ICOB Islamic Centre of Britain receiving the Beacon Mosque Awards trophy",
     label: "Best future design",
@@ -1351,7 +1477,7 @@ export const awardWinnerRecords2025: AwardWinnerRecord[] = [
     category: "Best Women's Service",
     href: "/al-manaar-mchc-shortlisted-for-best-womens-services-mosque-2025/",
     image:
-      "/assets/awards/2025/winners/best-womens-service-al-manaar-london.png",
+      "/assets/awards/2025/winners/best-womens-service-al-manaar-london.webp",
     imageAlt:
       "Best Women's Service 2025 winner Al-Manaar London receiving the Beacon Mosque Awards trophy",
     label: "Best women's service",
@@ -1364,7 +1490,7 @@ export const awardWinnerRecords2025: AwardWinnerRecord[] = [
     category: "Best Outreach Services",
     href: "/wirrel-dean-centre-bearkhead-best-outreach-services-2025/",
     image:
-      "/assets/awards/2025/winners/best-outreach-services-wirral-deen-centre-birkenhead.png",
+      "/assets/awards/2025/winners/best-outreach-services-wirral-deen-centre-birkenhead.webp",
     imageAlt:
       "Best Outreach Services 2025 winner Wirral Deen Centre Birkenhead receiving the Beacon Mosque Awards trophy",
     label: "Best outreach services",
@@ -1377,7 +1503,7 @@ export const awardWinnerRecords2025: AwardWinnerRecord[] = [
     category: "Best Youth Service",
     href: "/lozells-central-mosque-shortlisted-for-best-youth-services-mosque-2025/",
     image:
-      "/assets/awards/2025/winners/best-youth-service-lozells-central-mosque-birmingham.png",
+      "/assets/awards/2025/winners/best-youth-service-lozells-central-mosque-birmingham.webp",
     imageAlt:
       "Best Youth Service 2025 winner Lozells Central Mosque Birmingham receiving the Beacon Mosque Awards trophy",
     label: "Best youth service",
@@ -1571,6 +1697,7 @@ export const awardWinners2025: WinnerCard[] = awardWinnerRecords2025.map(
   (winner) => ({
     src: winner.image,
     alt: `${winner.title} 2025 winner - ${winner.winnerName}`,
+    title: winner.winnerName,
   }),
 );
 
@@ -1578,6 +1705,7 @@ export const awardWinners2024: WinnerCard[] = awardWinnerRecords2024.map(
   (winner) => ({
     src: winner.image,
     alt: `${winner.title} 2024 winner - ${winner.winnerName}`,
+    title: winner.winnerName,
   }),
 );
 

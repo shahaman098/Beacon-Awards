@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
+import { CmsImage } from "@/components/cms/CmsImage";
+import Link from "@/components/AppLink";
 import { useState } from "react";
 import type { AwardCategoryHighlight } from "@/lib/content";
 import { AwardSeal } from "@/components/AwardMotifs";
@@ -32,7 +32,7 @@ export function AwardsCategoryShowcase({ items }: AwardsCategoryShowcaseProps) {
                 : "aspect-[9/10] bg-black",
             ].join(" ")}
           >
-            <Image
+            <CmsImage
               alt={activeAward.imageAlt}
               className={[
                 "transition duration-500",

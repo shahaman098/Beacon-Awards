@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
+import { CmsImage } from "@/components/cms/CmsImage";
+import Link from "@/components/AppLink";
 import { useState } from "react";
 import type { EventShowcaseItem } from "@/lib/content";
 
@@ -63,7 +63,7 @@ export function EventsShowcase({ items }: EventsShowcaseProps) {
 
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="relative min-h-[24rem] overflow-hidden bg-white/5">
-            <Image
+            <CmsImage
               alt={activeItem.imageAlt}
               className="object-cover"
               fill

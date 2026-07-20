@@ -1,49 +1,23 @@
+import { EditableHome } from "@/components/EditableHome";
 import {
-  AccreditedSection,
-  AwardsArchiveSection,
-  AwardsFeatureSection,
-  BeaconExcellenceIntroSection,
-  CeremonyGallerySection,
-  ExperiencePillarsSection,
-  EventsShowcaseSection,
-  FeaturedSpeakersSection,
-  FinalCta,
-  HomeHero,
-  HeroStatsBand,
-  NetworkSection,
-  MosqueMbaSection,
-  QualityStandardsSection,
-  ServicesSection,
-  SiteFooter,
-  StandardsIntro,
-  WinnersShowcaseSection,
-} from "@/components/HomeSections";
-import { SiteHeader } from "@/components/SiteHeader";
+  getHomepageContent,
+  getOptionalCmsUser,
+} from "@/lib/cms";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const [content, user] = await Promise.all([
+    getHomepageContent(),
+    getOptionalCmsUser(),
+  ]);
+
   return (
-    <>
-      <SiteHeader />
-      <main className="overflow-x-hidden bg-white text-black">
-        <HomeHero />
-        <HeroStatsBand />
-        <BeaconExcellenceIntroSection />
-        <AwardsFeatureSection />
-        <AwardsArchiveSection />
-        <WinnersShowcaseSection />
-        <StandardsIntro />
-        <QualityStandardsSection />
-        <ServicesSection />
-        <NetworkSection />
-        <MosqueMbaSection />
-        <AccreditedSection />
-        <CeremonyGallerySection />
-        <FeaturedSpeakersSection />
-        <ExperiencePillarsSection />
-        <EventsShowcaseSection />
-        <FinalCta />
-      </main>
-      <SiteFooter />
-    </>
+    <EditableHome
+      canEdit={Boolean(user)}
+      content={content}
+      editorEmail={user?.email ?? null}
+      initialEditMode={false}
+    />
   );
 }

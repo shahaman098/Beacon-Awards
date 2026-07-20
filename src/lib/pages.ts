@@ -14,6 +14,10 @@ import {
   standards,
   type CardLink,
 } from "@/lib/content";
+import {
+  cmsEntryToInteriorPage,
+  getPublishedCmsEntryByRouteSlug,
+} from "@/lib/cms";
 import { legacyRouteItems, type LegacyRouteItem } from "@/lib/legacy-routes";
 import {
   getWordPressFallbackPage,
@@ -3400,7 +3404,7 @@ const referenceBlogCards: CardLink[] = referenceBlogArticles.map((article) => ({
   meta: article.meta,
 }));
 
-const communityStoryCards: CardLink[] = [
+export const communityStoryCards: CardLink[] = [
   ...newsCards,
   ...referenceNewsCards,
   ...referenceBlogCards,
@@ -4232,23 +4236,19 @@ const pageMap: Record<string, InteriorPage> = {
       {
         kind: "gallery",
         title: "2025 official winner gallery",
-        images: awardWinners2025.map((image, index) => ({
+        images: awardWinners2025.map((image) => ({
           src: image.src,
           alt: image.alt,
-          title: /8th British Beacon Mosque Awards 2025 winner/i.test(image.alt)
-            ? `2025 winner portrait ${String(index + 1).padStart(2, "0")}`
-            : image.alt,
+          title: image.title,
         })),
       },
       {
         kind: "gallery",
         title: "2024 official winner gallery",
-        images: awardWinners2024.map((image, index) => ({
+        images: awardWinners2024.map((image) => ({
           src: image.src,
           alt: image.alt,
-          title: /2024 winner/i.test(image.alt)
-            ? `2024 winner portrait ${String(index + 1).padStart(2, "0")}`
-            : image.alt,
+          title: image.title,
         })),
       },
       {
@@ -4382,7 +4382,7 @@ const pageMap: Record<string, InteriorPage> = {
   },
   standards: {
     slug: "standards",
-    title: "10 Global Standards to make a Beacon Mosque",
+    title: "Beacon Mosque Standards",
     eyebrow: "Standards",
     intro:
       "Beacon Mosque standards help mosques build excellent governance, safeguarding, facilities, communication and community service.",
@@ -6360,12 +6360,10 @@ for (const [year, detail] of Object.entries(historicAwardArchiveDetails)) {
             {
               kind: "gallery" as const,
               title: "2024 official winner gallery",
-              images: awardWinners2024.map((image, index) => ({
+              images: awardWinners2024.map((image) => ({
                 src: image.src,
                 alt: image.alt,
-                title: /2024 winner/i.test(image.alt)
-                  ? `2024 winner portrait ${String(index + 1).padStart(2, "0")}`
-                  : image.alt,
+                title: image.title,
               })),
             },
           ]
@@ -7359,11 +7357,16 @@ export async function getPage(slugSegments: string[]) {
   }
 
   const publicWordPressSlugs = await getWordPressPublicSlugs();
-  if (!publicWordPressSlugs.includes(slug)) {
-    return null;
+  if (publicWordPressSlugs.includes(slug)) {
+    return getWordPressFallbackPage(slug);
   }
 
-  return getWordPressFallbackPage(slug);
+  const cmsEntry = await getPublishedCmsEntryByRouteSlug(slug);
+  if (cmsEntry) {
+    return cmsEntryToInteriorPage(cmsEntry);
+  }
+
+  return null;
 }
 
 export async function getPageStaticParams() {

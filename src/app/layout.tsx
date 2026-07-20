@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
+import { SiteCmsRoot } from "@/components/cms/SiteCmsRoot";
 import { absoluteUrl, siteDescription, siteName, siteUrl } from "@/lib/seo";
 import "./globals.css";
 
@@ -21,7 +22,11 @@ export const metadata: Metadata = {
   },
   applicationName: siteName,
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/icon.png", type: "image/png", sizes: "256x256" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     title: siteName,
@@ -46,7 +51,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${manrope.variable} h-full`}>
-      <body className="flex min-h-full flex-col antialiased">{children}</body>
+      <body className="flex min-h-full flex-col antialiased">
+        <SiteCmsRoot>{children}</SiteCmsRoot>
+      </body>
     </html>
   );
 }

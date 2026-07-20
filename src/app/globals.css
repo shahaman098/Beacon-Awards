@@ -46,6 +46,11 @@ body {
   overflow-x: hidden;
 }
 
+.deferred-content {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 3200px;
+}
+
 img,
 video {
   max-width: 100%;

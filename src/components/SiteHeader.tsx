@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { mainNav, type NavItem } from "@/lib/content";

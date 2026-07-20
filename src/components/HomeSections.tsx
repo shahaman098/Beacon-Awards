@@ -1,5 +1,8 @@
-import Image from "next/image";
-import Link from "next/link";
+"use client";
+
+import { CmsImage } from "@/components/cms/CmsImage";
+import { CmsEditSafeLink } from "@/components/cms/CmsEditSafeLink";
+import Link from "@/components/AppLink";
 import {
   accreditedMosques,
   awards2026CategoriesHref,
@@ -10,10 +13,16 @@ import {
   serviceCards,
   standards,
 } from "@/lib/content";
+import {
+  defaultHomepageContent,
+  type HomepageContent,
+} from "@/lib/cms-homepage";
 import { AutoScrollRail } from "@/components/AutoScrollRail";
 import { ButtonLink } from "@/components/ButtonLink";
 import { AwardSeal, StarRating } from "@/components/AwardMotifs";
 import { HomeHeroVideo } from "@/components/HomeHeroVideo";
+import { EditableImage } from "@/components/visual-editor/EditableImage";
+import { EditableText } from "@/components/visual-editor/EditableText";
 import { WinnersShowcaseInteractive } from "@/components/WinnersShowcaseInteractive";
 
 export function EditorialLink({
@@ -92,20 +101,19 @@ export function SectionAwardsDecor({
 
 export function HomeHero() {
   const heroPoster = "/assets/hero/awards-2025-poster.jpeg";
-  const heroVideo =
-    "https://beaconmosque.com/wp-content/uploads/2023/05/Beacon-Mosque-Home-Intro-Video.mp4";
+  const heroVideo = "/wp-content/uploads/2023/05/Beacon-Mosque-Home-Intro-Video.mp4";
 
   return (
     <section className="relative isolate min-h-screen overflow-hidden bg-[#040816] px-5 pt-20 text-white md:px-8 md:pt-28">
       <div aria-hidden="true" className="absolute inset-0 -z-20 bg-navy-950">
-        <Image
+        <CmsImage
           alt=""
           className="h-full w-full object-cover"
           fill
           priority
           src={heroPoster}
         />
-        <HomeHeroVideo poster={heroPoster} src={heroVideo} />
+        <HomeHeroVideo poster={heroPoster} preload="metadata" src={heroVideo} />
       </div>
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,6,18,0.34),rgba(3,6,18,0.08)_48%,rgba(3,6,18,0.38))]" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_28%,rgba(39,89,255,0.10),transparent_24%),radial-gradient(circle_at_80%_30%,rgba(10,42,146,0.10),transparent_26%),linear-gradient(180deg,rgba(1,4,14,0.02),rgba(1,4,14,0.22))]" />
@@ -161,108 +169,96 @@ export function HeroStatsBand() {
   return null;
 }
 
-export function BeaconExcellenceIntroSection() {
-  const highlightCards = [
-    {
-      title: "Winners",
-      eyebrow: "Awards archive",
-      text: "Explore the latest finalists and winners recognised for measurable community impact, leadership and service excellence.",
-      href: "/awards/beacon-mosque-awards-2025/",
-      image: "/assets/awards/2025/awards-2025-01.jpg",
-      imageAlt: "Beacon Mosque Awards winners artwork",
-      mediaMode: "cover",
-      mediaClassName: "scale-[1.12]",
-    },
-    {
-      title: "Standards",
-      eyebrow: "Beacon framework",
-      text: "Review the Beacon Mosque standards that support stronger governance, accountability, communication and community trust.",
-      href: "/standards/",
-      image: "/assets/interior/standards-wide.jpg",
-      imageAlt: "Beacon Mosque standards visual",
-      mediaMode: "cover",
-      mediaClassName: "",
-    },
-    {
-      title: "Training",
-      eyebrow: "Leadership support",
-      text: "Access practical training resources, guides and leadership materials to help mosque teams improve delivery and long-term planning.",
-      href: "/training/",
-      image: "/assets/cards/training-card.png",
-      imageAlt: "Beacon Mosque training and leadership support",
-      mediaMode: "contain",
-      mediaClassName: "",
-    },
-  ];
+export function BeaconExcellenceIntroSection({
+  content = defaultHomepageContent().excellenceIntro,
+}: {
+  content?: HomepageContent["excellenceIntro"];
+}) {
+  const highlightCards = content.cards;
 
   return (
     <section className="relative isolate overflow-hidden bg-white px-5 py-20 text-black md:px-8 md:py-28">
       <SectionAwardsDecor left="Recognition" right="Impact" />
       <div className="relative z-10 mx-auto w-full max-w-[1360px]">
-        <div className="max-w-[840px]">
-          <SectionKicker>National recognition</SectionKicker>
-          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
-            Striving for excellence
-          </h2>
-          <p className="section-word-motion mt-5 text-sm leading-7 text-black/58 md:text-base">
-            Beacon Mosque helps mosques evidence strong practice, celebrate
-            outstanding service and share models of leadership that strengthen
-            communities across the UK.
-          </p>
+        <div className="mx-auto max-w-[840px] text-center">
+          <SectionKicker>
+            <EditableText path="excellenceIntro.kicker" value={content.kicker} />
+          </SectionKicker>
+          <EditableText
+            as="h2"
+            className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl"
+            multiline
+            path="excellenceIntro.heading"
+            value={content.heading}
+          />
+          <EditableText
+            as="p"
+            className="section-word-motion mt-5 text-sm leading-7 text-black/58 md:text-base"
+            multiline
+            path="excellenceIntro.body"
+            value={content.body}
+          />
         </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+
+        <div className="mt-14 grid gap-x-8 gap-y-12 md:grid-cols-3 md:gap-x-10">
           {highlightCards.map((card, index) => (
-            <Link
-              className="group relative flex min-h-[280px] flex-col justify-between border border-black/10 bg-[#f7f4ee] p-5 transition hover:-translate-y-1 hover:border-black/25 hover:bg-white md:p-6"
+            <CmsEditSafeLink
+              className="group flex flex-col items-center text-center"
               href={card.href}
-              key={card.title}
+              key={`${card.title}-${index}`}
             >
-              <div
-                className={[
-                  "overflow-hidden border border-black/8",
-                  card.mediaMode === "contain"
-                    ? "bg-white px-4 py-3"
-                    : "bg-black/5",
-                ].join(" ")}
-              >
-                <Image
+              <div className="relative aspect-square w-full max-w-[280px] overflow-hidden bg-[#efebe4]">
+                <EditableImage
                   alt={card.imageAlt}
                   className={[
-                    "aspect-[4/3] w-full transition duration-500",
-                    card.mediaMode === "contain"
-                      ? "object-contain"
-                      : "object-cover group-hover:scale-[1.03]",
-                    card.mediaClassName,
+                    "h-full w-full transition duration-700 ease-out group-hover:scale-[1.04]",
+                    card.fit === "contain"
+                      ? "object-contain p-4 md:p-5"
+                      : "object-cover",
                   ].join(" ")}
-                  height={720}
+                  fill
+                  imageScale={card.imageScale}
+                  objectPosition={card.objectPosition}
+                  path={`excellenceIntro.cards.${index}.image`}
                   src={card.image}
-                  width={960}
                 />
               </div>
-              <div className="flex items-start justify-between gap-4">
-                <span className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-emerald-700">
-                  {card.eyebrow}
+
+              <div className="mt-5 flex w-full max-w-[280px] items-baseline justify-between gap-4 border-b border-black/10 pb-3">
+                <span className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-gold-400">
+                  <EditableText
+                    path={`excellenceIntro.cards.${index}.eyebrow`}
+                    value={card.eyebrow}
+                  />
                 </span>
-                <span className="text-xs font-semibold text-black/28">{`0${index + 1}`}</span>
+                <span className="font-mono text-[0.7rem] tabular-nums tracking-[0.08em] text-black/30">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
               </div>
-              <div className="mt-7">
-                <h3 className="text-[2rem] font-semibold tracking-[-0.04em] text-black md:text-[2.15rem]">
-                  {card.title}
-                </h3>
-                <p className="mt-4 text-sm leading-7 text-black/60">
-                  {card.text}
-                </p>
-              </div>
-              <span className="mt-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-black">
+
+              <EditableText
+                as="h3"
+                className="mt-4 text-[1.65rem] font-semibold leading-none tracking-[-0.04em] text-black md:text-[1.85rem]"
+                path={`excellenceIntro.cards.${index}.title`}
+                value={card.title}
+              />
+              <EditableText
+                as="p"
+                className="mt-3 max-w-[34ch] text-sm leading-7 text-black/58"
+                multiline
+                path={`excellenceIntro.cards.${index}.text`}
+                value={card.text}
+              />
+              <span className="mt-6 inline-flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-black">
                 Explore
                 <span
                   aria-hidden="true"
-                  className="transition-transform group-hover:translate-x-1"
+                  className="translate-x-0 transition-transform duration-300 group-hover:translate-x-1"
                 >
-                  +
+                  →
                 </span>
               </span>
-            </Link>
+            </CmsEditSafeLink>
           ))}
         </div>
       </div>
@@ -277,7 +273,7 @@ export function AwardsFeatureSection() {
     <section className="relative isolate overflow-hidden bg-[#f3f1ed] px-5 py-20 text-black md:px-8 md:py-28">
       <SectionAwardsDecor left="Nomination" right="Shortlist" />
       <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-        <Image
+        <CmsImage
           alt={awards.imageAlt}
           className="aspect-[4/3] w-full object-contain bg-black p-6"
           height={780}
@@ -374,7 +370,11 @@ export function PublicationsSection() {
   );
 }
 
-export function AwardsArchiveSection() {
+export function AwardsArchiveSection({
+  content = defaultHomepageContent().awardsArchive,
+}: {
+  content?: HomepageContent["awardsArchive"];
+}) {
   const archiveYears = [
     ...awardArchiveFeatureYears,
     {
@@ -389,9 +389,9 @@ export function AwardsArchiveSection() {
     { image: string; imageAlt: string; imageClassName?: string }
   > = {
     "2026": {
-      image: "/assets/awards/2026/awards-2026-card.png",
+      image: "/assets/awards/2026/awards-2026-archive.jpg",
       imageAlt: "Beacon Mosque Awards 2026 archive artwork",
-      imageClassName: "object-contain bg-black",
+      imageClassName: "object-cover",
     },
     "2025": {
       image: "/assets/awards/2025/awards-2025-01.jpg",
@@ -426,111 +426,64 @@ export function AwardsArchiveSection() {
       imageAlt: "Beacon Mosque Awards 2018 archive preview",
     },
   };
-  const archiveCardLayouts = [
-    {
-      outerClassName:
-        "w-[17rem] min-w-[17rem] md:w-[20rem] md:min-w-[20rem] lg:w-[22rem] lg:min-w-[22rem]",
-      mediaClassName: "aspect-[3/4]",
-      titleClassName: "text-xl md:text-[1.65rem]",
-    },
-    {
-      outerClassName:
-        "w-[17rem] min-w-[17rem] md:w-[20rem] md:min-w-[20rem] lg:w-[22rem] lg:min-w-[22rem]",
-      mediaClassName: "aspect-[4/5]",
-      titleClassName: "text-2xl md:text-[2.2rem]",
-    },
-    {
-      outerClassName:
-        "w-[17rem] min-w-[17rem] md:w-[20rem] md:min-w-[20rem] lg:w-[22rem] lg:min-w-[22rem]",
-      mediaClassName: "aspect-square",
-      titleClassName: "text-[1.7rem] md:text-[1.95rem]",
-    },
-    {
-      outerClassName:
-        "w-[17rem] min-w-[17rem] md:w-[20rem] md:min-w-[20rem] lg:w-[22rem] lg:min-w-[22rem]",
-      mediaClassName: "aspect-[4/5]",
-      titleClassName: "text-2xl md:text-[2.15rem]",
-    },
-    {
-      outerClassName:
-        "w-[17rem] min-w-[17rem] md:w-[20rem] md:min-w-[20rem] lg:w-[22rem] lg:min-w-[22rem]",
-      mediaClassName: "aspect-[3/4]",
-      titleClassName: "text-[1.45rem] md:text-[1.7rem]",
-    },
-  ] as const;
 
   return (
     <section className="relative isolate overflow-hidden bg-white px-5 pb-24 pt-8 text-black md:px-8 md:pb-32 md:pt-12">
       <SectionAwardsDecor left="Archive" right="Honours" />
       <div className="relative z-10 mx-auto max-w-[1680px]">
         <AutoScrollRail
-          className="no-scrollbar -ml-6 overflow-x-auto overflow-y-hidden pr-2 md:-ml-10 md:pr-3 lg:-ml-12 lg:pr-4"
-          contentClassName="flex snap-x snap-mandatory items-start gap-7 md:gap-8 lg:gap-10"
+          className="no-scrollbar overflow-x-auto overflow-y-hidden"
+          contentClassName="flex snap-x snap-mandatory items-end gap-7 pr-5 md:gap-8 md:pr-8 lg:gap-10 lg:pr-10"
         >
-          {archiveYears.map((archive, index) => {
-            const layout =
-              archiveCardLayouts[index % archiveCardLayouts.length] ??
-              archiveCardLayouts[2];
-
-            return (
-              <Link
-                className={[
-                  "group block shrink-0 snap-start",
-                  layout.outerClassName,
-                ].join(" ")}
-                href={archive.href}
-                key={archive.year}
-              >
-                <div
+          {archiveYears.map((archive) => (
+            <CmsEditSafeLink
+              className="group block w-[17rem] min-w-[17rem] shrink-0 snap-start md:w-[20rem] md:min-w-[20rem] lg:w-[22rem] lg:min-w-[22rem]"
+              href={archive.href}
+              key={archive.year}
+            >
+              <div className="relative aspect-[4/5] overflow-hidden bg-[#111]">
+                <CmsImage
+                  adjustKey={`awards-archive:${archive.year}`}
+                  alt={
+                    archivePreviewByYear[archive.year]?.imageAlt ??
+                    `Beacon Mosque Awards ${archive.year} archive`
+                  }
                   className={[
-                    "relative overflow-hidden bg-[#f3f1ed]",
-                    layout.mediaClassName,
+                    "transition duration-500 group-hover:scale-[1.035]",
+                    archivePreviewByYear[archive.year]?.imageClassName ??
+                      "object-cover",
                   ].join(" ")}
+                  fill
+                  sizes="(min-width: 1024px) 352px, (min-width: 768px) 320px, 272px"
+                  src={
+                    archivePreviewByYear[archive.year]?.image ??
+                    "/assets/awards/2025/awards-2025-01.jpg"
+                  }
+                />
+              </div>
+              <div className="mt-5 flex items-end justify-between gap-5">
+                <p className="text-[1.85rem] font-semibold tracking-[-0.04em] text-black md:text-[2.05rem]">
+                  {archive.year}
+                </p>
+                <span
+                  aria-hidden="true"
+                  className="text-3xl leading-none text-black/88 transition-transform group-hover:translate-x-1"
                 >
-                  <Image
-                    alt={
-                      archivePreviewByYear[archive.year]?.imageAlt ??
-                      `Beacon Mosque Awards ${archive.year} archive`
-                    }
-                    className={[
-                      "transition duration-500 group-hover:scale-[1.035]",
-                      archivePreviewByYear[archive.year]?.imageClassName ??
-                        "object-cover",
-                    ].join(" ")}
-                    fill
-                    sizes="(min-width: 1024px) 460px, (min-width: 768px) 380px, 78vw"
-                    src={
-                      archivePreviewByYear[archive.year]?.image ??
-                      "/assets/awards/2025/awards-2025-01.jpg"
-                    }
-                  />
-                </div>
-                <div className="mt-5 flex items-end justify-between gap-5">
-                  <p
-                    className={[
-                      "font-semibold tracking-[-0.04em] text-black",
-                      layout.titleClassName,
-                    ].join(" ")}
-                  >
-                    {archive.year}
-                  </p>
-                  <span
-                    aria-hidden="true"
-                    className="text-3xl leading-none text-black/88 transition-transform group-hover:translate-x-1"
-                  >
-                    →
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
+                  →
+                </span>
+              </div>
+            </CmsEditSafeLink>
+          ))}
         </AutoScrollRail>
         <div className="mt-12 flex justify-center md:mt-16">
           <ButtonLink
             className="max-w-full px-6 text-center sm:px-8"
             href="/awards/#award-categories"
           >
-            Submit Your Nomination for Beacon Mosque Awards 2026
+            <EditableText
+              path="awardsArchive.ctaLabel"
+              value={content.ctaLabel}
+            />
           </ButtonLink>
         </div>
       </div>
@@ -550,29 +503,46 @@ export function WinnersShowcaseSection() {
   );
 }
 
-export function StandardsIntro() {
+export function StandardsIntro({
+  content = defaultHomepageContent().standardsIntro,
+}: {
+  content?: HomepageContent["standardsIntro"];
+}) {
   return (
     <section className="relative isolate overflow-hidden bg-white px-5 py-20 text-black md:px-8 md:py-28">
       <SectionAwardsDecor left="Standards" right="Trust" />
       <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 md:grid-cols-[0.95fr_1.05fr] md:items-center">
         <div>
-          <SectionKicker>Standards</SectionKicker>
-          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
-            Where mosque standards meet public service and trust
-          </h2>
+          <SectionKicker>
+            <EditableText path="standardsIntro.kicker" value={content.kicker} />
+          </SectionKicker>
+          <EditableText
+            as="h2"
+            className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl"
+            multiline
+            path="standardsIntro.heading"
+            value={content.heading}
+          />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {standards.slice(0, 4).map((standard) => (
-            <Link
-              className="border-t border-black/18 py-5 transition hover:text-emerald-700"
-              href={standard.href}
-              key={standard.title}
-            >
-              <h3 className="text-base font-semibold tracking-[-0.02em]">
-                {standard.title}
-              </h3>
-            </Link>
-          ))}
+          {content.standardTitles.map((title, index) => {
+            const standard = standards[index];
+            const href = standard?.href ?? "/standards/";
+            return (
+              <CmsEditSafeLink
+                className="border-t border-black/18 py-5 transition hover:text-emerald-700"
+                href={href}
+                key={`${title}-${index}`}
+              >
+                <EditableText
+                  as="h3"
+                  className="text-base font-semibold tracking-[-0.02em]"
+                  path={`standardsIntro.standardTitles.${index}`}
+                  value={title}
+                />
+              </CmsEditSafeLink>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -583,42 +553,67 @@ export function QualityStandardsSection() {
   return null;
 }
 
-export function ServicesSection() {
+export function ServicesSection({
+  content = defaultHomepageContent().services,
+}: {
+  content?: HomepageContent["services"];
+}) {
+  const items = content.titles.map((title, index) => ({
+    title,
+    href: serviceCards[index]?.href ?? "/",
+  }));
+
   return (
     <section className="relative isolate overflow-hidden border-y border-black bg-white py-3 text-black">
       <SectionAwardsDecor left="Service" right="Excellence" />
       <div className="relative z-10 flex gap-8 overflow-hidden whitespace-nowrap text-xs font-semibold">
-        {[...serviceCards, ...serviceCards].map((card, index) => (
-          <Link
+        {[...items, ...items].map((card, index) => (
+          <CmsEditSafeLink
             className="inline-flex items-center gap-3"
             href={card.href}
             key={`${card.title}-${index}`}
           >
             <span aria-hidden="true">+</span>
-            {card.title}
-          </Link>
+            <EditableText
+              path={`services.titles.${index % items.length}`}
+              value={card.title}
+            />
+          </CmsEditSafeLink>
         ))}
       </div>
     </section>
   );
 }
 
-export function NetworkSection() {
-  const expo = featureCards[1];
-
+export function NetworkSection({
+  content = defaultHomepageContent().network,
+  expo = defaultHomepageContent().featureCards[1],
+}: {
+  content?: HomepageContent["network"];
+  expo?: HomepageContent["featureCards"][number];
+}) {
   return (
     <section className="relative isolate overflow-hidden bg-white px-5 py-20 text-black md:px-8 md:py-28">
       <SectionAwardsDecor left="Network" right="Beacon" />
       <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 md:grid-cols-[1fr_0.95fr] md:items-center">
         <div>
-          <SectionKicker>National network</SectionKicker>
-          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
-            Beacon Mosque network
-          </h2>
-          <p className="section-word-motion mt-6 max-w-xl text-sm leading-7 text-black/58">
-            A growing network of accredited mosques, award winners and community
-            projects demonstrating measurable impact.
-          </p>
+          <SectionKicker>
+            <EditableText path="network.kicker" value={content.kicker} />
+          </SectionKicker>
+          <EditableText
+            as="h2"
+            className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl"
+            multiline
+            path="network.heading"
+            value={content.heading}
+          />
+          <EditableText
+            as="p"
+            className="section-word-motion mt-6 max-w-xl text-sm leading-7 text-black/58"
+            multiline
+            path="network.body"
+            value={content.body}
+          />
           <ul className="mt-8 space-y-4">
             {accreditedMosques.map((mosque) => (
               <li className="border-t border-black/12 pt-4" key={mosque.title}>
@@ -634,20 +629,35 @@ export function NetworkSection() {
           </ul>
         </div>
         <div className="rounded-lg border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)]">
-          <Image
-            alt={expo.imageAlt}
-            className="h-auto w-full"
-            height={315}
-            src={expo.image}
-            width={851}
-          />
+          <div className="relative w-full overflow-hidden">
+            <EditableImage
+              alt={expo.imageAlt}
+              className="h-auto w-full"
+              height={315}
+              imageScale={expo.imageScale}
+              objectPosition={expo.objectPosition}
+              path="featureCards.1.image"
+              src={expo.image}
+              width={851}
+            />
+          </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <SectionKicker>Partner platform</SectionKicker>
-              <p className="mt-2 text-sm text-black/58">{expo.title}</p>
+              <SectionKicker>
+                <EditableText
+                  path="network.partnerKicker"
+                  value={content.partnerKicker}
+                />
+              </SectionKicker>
+              <EditableText
+                as="p"
+                className="mt-2 text-sm text-black/58"
+                path="featureCards.1.title"
+                value={expo.title}
+              />
             </div>
             <EditorialLink href="/beacon-mosques/">
-              View beacon mosques
+              <EditableText path="network.ctaLabel" value={content.ctaLabel} />
             </EditorialLink>
           </div>
         </div>
@@ -656,13 +666,11 @@ export function NetworkSection() {
   );
 }
 
-export function MosqueMbaSection() {
-  const programmeStats = [
-    ["200+", "online seminars"],
-    ["12-18", "months"],
-    ["42", "core modules"],
-  ];
-
+export function MosqueMbaSection({
+  content = defaultHomepageContent().mosqueMba,
+}: {
+  content?: HomepageContent["mosqueMba"];
+}) {
   return (
     <section className="relative isolate overflow-hidden bg-[#f3f1ed] px-5 py-20 text-black md:px-8 md:py-28">
       <SectionAwardsDecor left="Leadership" right="Mosque MBA" />
@@ -670,13 +678,23 @@ export function MosqueMbaSection() {
       <div className="relative z-10 mx-auto max-w-[1260px]">
         <div className="grid gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div className="max-w-[34rem]">
-            <SectionKicker>Faith Associates Academy</SectionKicker>
-            <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
-              Mosque MBA for modern mosque leadership
-            </h2>
-            <p className="section-word-motion mt-6 max-w-2xl text-base leading-8 text-black/62 md:text-lg md:leading-9">
-              A masters-level professional pathway for mosque founders, executives and volunteers building stronger institutions, clearer leadership and sustainable community projects.
-            </p>
+            <SectionKicker>
+              <EditableText path="mosqueMba.kicker" value={content.kicker} />
+            </SectionKicker>
+            <EditableText
+              as="h2"
+              className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl"
+              multiline
+              path="mosqueMba.heading"
+              value={content.heading}
+            />
+            <EditableText
+              as="p"
+              className="section-word-motion mt-6 max-w-2xl text-base leading-8 text-black/62 md:text-lg md:leading-9"
+              multiline
+              path="mosqueMba.body"
+              value={content.body}
+            />
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 className="inline-flex min-h-12 items-center justify-center border border-black bg-black px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-white hover:text-black"
@@ -684,46 +702,54 @@ export function MosqueMbaSection() {
                 rel="noreferrer"
                 target="_blank"
               >
-                Visit Mosque MBA
+                <EditableText path="mosqueMba.ctaLabel" value={content.ctaLabel} />
               </a>
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              {programmeStats.map(([value, label]) => (
+              {content.stats.map((stat, index) => (
                 <div
                   className="border-t border-black/14 pt-4"
-                  key={label}
+                  key={`${stat.label}-${index}`}
                 >
-                  <p className="text-2xl font-semibold tracking-[-0.05em] text-black">
-                    {value}
-                  </p>
-                  <p className="mt-1 text-sm text-black/56">
-                    {label}
-                  </p>
+                  <EditableText
+                    as="p"
+                    className="text-2xl font-semibold tracking-[-0.05em] text-black"
+                    path={`mosqueMba.stats.${index}.value`}
+                    value={stat.value}
+                  />
+                  <EditableText
+                    as="p"
+                    className="mt-1 text-sm text-black/56"
+                    path={`mosqueMba.stats.${index}.label`}
+                    value={stat.label}
+                  />
                 </div>
               ))}
             </div>
           </div>
           <div className="grid items-start gap-5">
             <div className="self-start overflow-hidden rounded-[28px] border border-black/10 bg-white p-3 shadow-[0_32px_110px_rgba(0,0,0,0.12)]">
-              <Image
-                alt="Mosque MBA programme visual"
+              <EditableImage
+                alt={content.imageAlt}
                 className="h-auto w-full rounded-[22px]"
                 height={864}
-                src="/assets/home/mosque-mba-programme.png"
+                imageScale={content.imageScale}
+                objectPosition={content.objectPosition}
+                path="mosqueMba.image"
+                src={content.image}
                 width={1536}
               />
             </div>
             <div className="grid gap-4 md:grid-cols-3">
-              {[
-                "Tailored for mosque leaders",
-                "Interactive global learning",
-                "Sustainable project design",
-              ].map((item) => (
+              {content.pills.map((item, index) => (
                 <div
                   className="flex min-h-[108px] items-end border border-black/10 bg-white p-5 text-lg font-semibold tracking-[-0.03em] text-black shadow-[0_24px_80px_rgba(0,0,0,0.06)]"
-                  key={item}
+                  key={`${item}-${index}`}
                 >
-                  {item}
+                  <EditableText
+                    path={`mosqueMba.pills.${index}`}
+                    value={item}
+                  />
                 </div>
               ))}
             </div>
@@ -743,7 +769,7 @@ export function CeremonyGallerySection() {
     <section className="relative isolate overflow-hidden bg-[#f3f1ed] py-20 text-black md:py-28">
       <SectionAwardsDecor left="Gallery" right="Moments" />
       <div className="relative z-10 mx-auto max-w-[1320px] px-5 md:px-8">
-        <div className="mb-10 max-w-xl">
+        <div className="mx-auto mb-10 max-w-xl text-center">
           <SectionKicker>Gallery</SectionKicker>
           <h2 className="section-word-motion mt-3 text-3xl font-semibold tracking-[-0.04em] md:text-4xl">
             Ceremony moments and community stories
@@ -769,7 +795,7 @@ export function CeremonyGallerySection() {
                     key={`${item.src}-${loop}-${index}`}
                   >
                     <div className="relative aspect-[4/5] overflow-hidden bg-white">
-                      <Image
+                      <CmsImage
                         alt={item.alt}
                         className="object-cover"
                         fill
@@ -795,49 +821,76 @@ export function FeaturedSpeakersSection() {
   return null;
 }
 
-export function ExperiencePillarsSection() {
+export function ExperiencePillarsSection({
+  content = defaultHomepageContent().experiencePillars,
+}: {
+  content?: HomepageContent["experiencePillars"];
+}) {
   return (
     <section className="relative isolate overflow-hidden bg-white px-5 py-20 text-black md:px-8 md:py-28">
       <SectionAwardsDecor left="Pathways" right="Progress" />
-      <div className="relative z-10 mx-auto grid max-w-[980px] gap-12 md:grid-cols-[0.95fr_1.05fr]">
-        <div>
-          <SectionKicker>Pathways</SectionKicker>
-          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
-            Recognition, standards and accreditation in one national platform
-          </h2>
+      <div className="relative z-10 mx-auto w-full max-w-[1180px]">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-16">
+          <div>
+            <SectionKicker>
+              <EditableText
+                path="experiencePillars.kicker"
+                value={content.kicker}
+              />
+            </SectionKicker>
+            <EditableText
+              as="h2"
+              className="section-word-motion mt-4 max-w-[14ch] text-3xl font-semibold leading-[1.05] tracking-[-0.04em] md:text-4xl"
+              multiline
+              path="experiencePillars.heading"
+              value={content.heading}
+            />
+          </div>
+          <EditableText
+            as="p"
+            className="section-word-motion max-w-xl text-sm leading-7 text-black/58 md:text-base lg:justify-self-end"
+            multiline
+            path="experiencePillars.body"
+            value={content.body}
+          />
         </div>
-        <div className="space-y-8">
-          {[
-            [
-              "Awards",
-              "/awards/",
-              "National recognition for mosques, teams and individuals raising the bar.",
-            ],
-            [
-              "Standards",
-              "/standards/",
-              "Practical benchmarks for governance, communication and service delivery.",
-            ],
-            [
-              "Accreditation",
-              "/accreditation-process/",
-              "A route for evidencing quality and progressing toward Beacon status.",
-            ],
-          ].map(([title, href, text]) => (
-            <Link
-              className="block border-b border-black/14 pb-8 transition hover:text-emerald-700"
-              href={href}
-              key={title}
-            >
-              <h3 className="text-4xl font-semibold tracking-[-0.06em] md:text-6xl">
-                {title}
-              </h3>
-              <p className="mt-4 max-w-lg text-sm leading-7 text-black/58">
-                {text}
-              </p>
-            </Link>
+
+        <ol className="mt-14 divide-y divide-black/10 border-y border-black/10">
+          {content.pathways.map((pathway, index) => (
+            <li key={`${pathway.title}-${index}`}>
+              <CmsEditSafeLink
+                className="group grid items-center gap-4 py-7 transition md:grid-cols-[4.5rem_minmax(0,0.85fr)_minmax(0,1.25fr)_auto] md:gap-8 md:py-8"
+                href={pathway.href}
+              >
+                <span className="font-mono text-sm tabular-nums tracking-[0.12em] text-black/28">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <EditableText
+                  as="h3"
+                  className="text-2xl font-semibold tracking-[-0.04em] text-black transition group-hover:text-emerald-700 md:text-[1.85rem]"
+                  path={`experiencePillars.pathways.${index}.title`}
+                  value={pathway.title}
+                />
+                <EditableText
+                  as="p"
+                  className="max-w-[42ch] text-sm leading-7 text-black/58"
+                  multiline
+                  path={`experiencePillars.pathways.${index}.text`}
+                  value={pathway.text}
+                />
+                <span className="inline-flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-black md:justify-self-end">
+                  Explore
+                  <span
+                    aria-hidden="true"
+                    className="transition-transform duration-300 group-hover:translate-x-1"
+                  >
+                    →
+                  </span>
+                </span>
+              </CmsEditSafeLink>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );
@@ -851,7 +904,7 @@ export function FinalCta() {
   return (
     <section className="relative isolate min-h-[520px] overflow-hidden bg-black px-5 py-20 text-center text-white md:px-8 md:py-28">
       <SectionAwardsDecor left="Nominate" right="2026" tone="dark" />
-      <Image
+      <CmsImage
         alt="Beacon Mosque Awards final call to action"
         className="object-cover object-[50%_18%]"
         fill
@@ -895,9 +948,10 @@ export function SiteFooter() {
             </Link>
           </p>
         </div>
-        <Image
+        <CmsImage
           alt="Beacon Mosque"
           className="h-auto w-36"
+          editable={false}
           height={1120}
           src="/assets/brand/beacon-mosque-white.png"
           width={3820}

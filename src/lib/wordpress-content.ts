@@ -9,6 +9,7 @@ const mediaAttachmentCache = new Map<string, Promise<MediaItem | null>>();
 
 function shouldUseWordPressBody(page: InteriorPage) {
   const curatedSlugs = new Set([
+    "about-us",
     "awards",
     "awards/beacon-mosque-awards-2025",
     "awards/beacon-mosque-awards-2026",
@@ -23,6 +24,9 @@ function shouldUseWordPressBody(page: InteriorPage) {
     "contact-us",
     "gallery",
     "resources",
+    "standards",
+    "training",
+    "winners",
     "privacy-policy",
     ...awardCategoryNominationDetails.map((detail) =>
       detail.href.replace(/^\/|\/$/g, ""),
@@ -420,7 +424,12 @@ async function mediaItemForAttachment(id: string): Promise<MediaItem | null> {
       })
         .then(async (response) => {
           if (!response.ok) return null;
-          const media = await response.json();
+          const media = (await response.json()) as {
+            source_url?: string;
+            alt_text?: string;
+            caption?: { rendered?: string };
+            title?: { rendered?: string };
+          };
           const src = resolveWordPressMediaUrl(media.source_url);
           if (!src || isSiteChromeMedia(src, media.alt_text)) return null;
 

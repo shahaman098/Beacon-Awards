@@ -1,4 +1,6 @@
-import Image from "next/image";
+import { CmsImage } from "@/components/cms/CmsImage";
+import { CmsEditSafeLink } from "@/components/cms/CmsEditSafeLink";
+import { EditableGalleryGrid } from "@/components/cms/EditableGalleryGrid";
 import Link from "@/components/AppLink";
 import {
   accreditedMosques,
@@ -23,6 +25,7 @@ import {
 } from "@/components/HomeSections";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AwardCardAccent, AwardSeal } from "@/components/AwardMotifs";
+import { EditableText } from "@/components/visual-editor/EditableText";
 
 type SectionTone = "white" | "warm";
 
@@ -36,15 +39,18 @@ function bandClass(tone: SectionTone = "white") {
 function TextSection({
   currentPath,
   section,
+  sectionIndex,
   tone = "white",
 }: {
   currentPath?: string;
   section: Extract<PageSection, { kind: "text" }>;
+  sectionIndex: number;
   tone?: SectionTone;
 }) {
   const hasTitle = Boolean(section.title);
   const isAwards2026Intro =
     currentPath === "/awards/beacon-mosque-awards-2026/" && !hasTitle;
+  const basePath = `sections.${sectionIndex}`;
 
   return (
     <section className={bandClass(tone)}>
@@ -56,13 +62,22 @@ function TextSection({
         <div className="relative z-10 mx-auto grid max-w-[980px] gap-10 md:grid-cols-[0.82fr_1.18fr]">
           <div>
             <SectionKicker>Overview</SectionKicker>
-            <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
-              {section.title}
-            </h2>
+            <EditableText
+              as="h2"
+              className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl"
+              path={`${basePath}.title`}
+              value={section.title ?? ""}
+            />
           </div>
           <div className="space-y-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
-            {section.paragraphs.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
+            {section.paragraphs.map((paragraph, paragraphIndex) => (
+              <EditableText
+                as="p"
+                key={`${basePath}.paragraphs.${paragraphIndex}`}
+                multiline
+                path={`${basePath}.paragraphs.${paragraphIndex}`}
+                value={paragraph}
+              />
             ))}
           </div>
         </div>
@@ -78,15 +93,21 @@ function TextSection({
           <div>
             <SectionKicker>Beacon Mosque</SectionKicker>
             <div className="mt-6 max-w-[860px] space-y-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
-              {section.paragraphs.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+              {section.paragraphs.map((paragraph, paragraphIndex) => (
+                <EditableText
+                  as="p"
+                  key={`${basePath}.paragraphs.${paragraphIndex}`}
+                  multiline
+                  path={`${basePath}.paragraphs.${paragraphIndex}`}
+                  value={paragraph}
+                />
               ))}
             </div>
           </div>
           {isAwards2026Intro ? (
             <aside className="lg:sticky lg:top-28">
               <div className="overflow-hidden border border-black/12 bg-black shadow-[0_20px_56px_rgba(0,0,0,0.1)]">
-                <Image
+                <CmsImage
                   alt="9th Beacon Mosque Awards 2026 poster"
                   className="h-auto w-full object-cover"
                   height={1024}
@@ -105,30 +126,42 @@ function TextSection({
 
 function TextPairSection({
   section,
+  sectionIndex,
   tone = "white",
 }: {
   section: Extract<PageSection, { kind: "textPair" }>;
+  sectionIndex: number;
   tone?: SectionTone;
 }) {
+  const basePath = `sections.${sectionIndex}`;
   return (
     <section className={bandClass(tone)}>
       <SectionAwardsDecor left="Context" right="Standards" />
       <div className="relative z-10 mx-auto max-w-[1180px]">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-          {section.items.map((item) => (
+          {section.items.map((item, itemIndex) => (
             <div
               className="grid gap-8 md:grid-cols-[0.82fr_1.18fr] lg:grid-cols-1"
-              key={`${item.title}-${item.paragraphs[0] ?? ""}`}
+              key={`${basePath}.items.${itemIndex}`}
             >
               <div>
                 <SectionKicker>Overview</SectionKicker>
-                <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
-                  {item.title}
-                </h2>
+                <EditableText
+                  as="h2"
+                  className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl"
+                  path={`${basePath}.items.${itemIndex}.title`}
+                  value={item.title}
+                />
               </div>
               <div className="space-y-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
-                {item.paragraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
+                {item.paragraphs.map((paragraph, paragraphIndex) => (
+                  <EditableText
+                    as="p"
+                    key={`${basePath}.items.${itemIndex}.paragraphs.${paragraphIndex}`}
+                    multiline
+                    path={`${basePath}.items.${itemIndex}.paragraphs.${paragraphIndex}`}
+                    value={paragraph}
+                  />
                 ))}
               </div>
             </div>
@@ -139,7 +172,13 @@ function TextPairSection({
   );
 }
 
-function LinkCard({ card }: { card: CardLink }) {
+function LinkCard({
+  card,
+  pathPrefix,
+}: {
+  card: CardLink;
+  pathPrefix?: string;
+}) {
   const hasImage = Boolean(card.image);
   const isNominationCard = card.meta === "Nominate";
   const isAwardCategoryCard = /category/i.test(card.meta ?? "");
@@ -160,7 +199,8 @@ function LinkCard({ card }: { card: CardLink }) {
             imageFit === "contain" ? "bg-[#111]" : "bg-white",
           ].join(" ")}
         >
-          <Image
+          <CmsImage
+            adjustKey={pathPrefix ? `${pathPrefix}.image` : undefined}
             alt={card.imageAlt ?? ""}
             className={[
               "transition duration-500",
@@ -175,7 +215,11 @@ function LinkCard({ card }: { card: CardLink }) {
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.38))]" />
           {card.meta && !isNominationCard ? (
             <span className="absolute left-4 top-4 bg-gold-400/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-black">
-              {card.meta}
+              {pathPrefix ? (
+                <EditableText path={`${pathPrefix}.meta`} value={card.meta} />
+              ) : (
+                card.meta
+              )}
             </span>
           ) : null}
           {isNominationCard || isAwardCategoryCard ? (
@@ -191,15 +235,40 @@ function LinkCard({ card }: { card: CardLink }) {
         <AwardCardAccent className="opacity-35" />
         {!hasImage && card.meta ? (
           <span className="relative z-10 mb-4 inline-block text-[0.62rem] font-bold uppercase tracking-[0.18em] text-black/42">
-            {card.meta}
+            {pathPrefix ? (
+              <EditableText path={`${pathPrefix}.meta`} value={card.meta} />
+            ) : (
+              card.meta
+            )}
           </span>
         ) : null}
-        <h3 className="relative z-10 text-lg font-semibold leading-snug tracking-[-0.02em] text-current">
-          {card.title}
-        </h3>
-        <p className="relative z-10 mt-3 text-sm leading-7 text-black/58">
-          {card.text}
-        </p>
+        {pathPrefix ? (
+          <EditableText
+            as="h3"
+            className="relative z-10 text-lg font-semibold leading-snug tracking-[-0.02em] text-current"
+            path={`${pathPrefix}.title`}
+            value={card.title}
+          />
+        ) : (
+          <h3 className="relative z-10 text-lg font-semibold leading-snug tracking-[-0.02em] text-current">
+            {card.title}
+          </h3>
+        )}
+        {card.text || pathPrefix ? (
+          pathPrefix ? (
+            <EditableText
+              as="p"
+              className="relative z-10 mt-3 text-sm leading-7 text-black/58"
+              multiline
+              path={`${pathPrefix}.text`}
+              value={card.text ?? ""}
+            />
+          ) : (
+            <p className="relative z-10 mt-3 text-sm leading-7 text-black/58">
+              {card.text}
+            </p>
+          )
+        ) : null}
       </div>
       {isNominationCard || isAwardCategoryCard ? null : (
         <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.14em] text-black/40 transition group-hover:text-emerald-700">
@@ -231,9 +300,9 @@ function LinkCard({ card }: { card: CardLink }) {
   }
 
   return (
-    <Link className={className} href={card.href}>
+    <CmsEditSafeLink className={className} href={card.href}>
       {content}
-    </Link>
+    </CmsEditSafeLink>
   );
 }
 
@@ -358,10 +427,10 @@ function AwardArchiveEditorialCarousel({
     }
   > = {
     "2026": {
-      image: "/assets/awards/2026/awards-2026-card.png",
+      image: "/assets/awards/2026/awards-2026-archive.jpg",
       imageAlt: "Beacon Mosque Awards 2026 archive preview",
       mediaClassName: "aspect-[5/4]",
-      imageClassName: "object-contain bg-[#f3f1ed] p-6",
+      imageClassName: "object-cover object-center",
     },
     "2025": {
       image: "/assets/awards/2025/awards-2025-01.jpg",
@@ -437,7 +506,7 @@ function AwardArchiveEditorialCarousel({
         };
 
         return (
-          <Link
+          <CmsEditSafeLink
             className={[
               "group block w-[17rem] min-w-[17rem] shrink-0 snap-start md:w-[20rem] md:min-w-[20rem] lg:w-[22rem] lg:min-w-[22rem]",
               waveOffsets[index % waveOffsets.length],
@@ -452,7 +521,8 @@ function AwardArchiveEditorialCarousel({
                 preview.mediaClassName,
               ].join(" ")}
             >
-              <Image
+              <CmsImage
+                adjustKey={`awards-archive:${year}`}
                 alt={preview.imageAlt}
                 className={[
                   "object-cover transition duration-500 group-hover:scale-[1.035]",
@@ -494,7 +564,7 @@ function AwardArchiveEditorialCarousel({
                 →
               </span>
             </div>
-          </Link>
+          </CmsEditSafeLink>
         );
       })}
     </AutoScrollRail>
@@ -560,12 +630,15 @@ function ResourceLibraryCard({
 function CardsSection({
   currentPath,
   section,
+  sectionIndex = 0,
   tone = "warm",
 }: {
   currentPath?: string;
   section: Extract<PageSection, { kind: "cards" }>;
+  sectionIndex?: number;
   tone?: SectionTone;
 }) {
+  const basePath = `sections.${sectionIndex}`;
   const hasImages = section.cards.some((card) => card.image);
   const sectionTitle = section.title ?? "";
   const isHeadOfficeSection = sectionTitle === "Head Office";
@@ -655,9 +728,12 @@ function CardsSection({
           ) : isAwardCategoriesSection ? (
             <div className="mb-10 max-w-3xl">
               <SectionKicker>Explore</SectionKicker>
-              <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-                {section.title}
-              </h2>
+              <EditableText
+                as="h2"
+                className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+                path={`${basePath}.title`}
+                value={section.title ?? ""}
+              />
             </div>
           ) : (
             <div
@@ -666,9 +742,12 @@ function CardsSection({
               }
             >
               <SectionKicker>Explore</SectionKicker>
-              <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-                {section.title}
-              </h2>
+              <EditableText
+                as="h2"
+                className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+                path={`${basePath}.title`}
+                value={section.title ?? ""}
+              />
             </div>
           )
         ) : null}
@@ -826,17 +905,17 @@ function CardsSection({
               </div>
             ) : isAwardCategoriesSection ? (
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {section.cards.map((card) => (
-                  <LinkCard card={card} key={`${card.title}-${card.href}`} />
+                {section.cards.map((card, cardIndex) => (
+                  <LinkCard card={card} key={`${card.title}-${card.href}-${cardIndex}`} pathPrefix={`${basePath}.cards.${cardIndex}`} />
                 ))}
               </div>
             ) : isWinnerProfilesSection || isHistoricalWinnersSection ? (
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {section.cards.map((card) => (
-                  <Link
+                {section.cards.map((card, cardIndex) => (
+                  <CmsEditSafeLink
                     className="group flex h-full flex-col border border-black/10 bg-white p-4 shadow-[0_18px_48px_rgba(8,19,31,0.04)] transition hover:-translate-y-1 hover:border-black/24 hover:shadow-[0_24px_64px_rgba(8,19,31,0.08)]"
                     href={card.href}
-                    key={`${card.title}-${card.href}`}
+                    key={`${card.title}-${card.href}-${cardIndex}`}
                   >
                     {card.image ? (
                       <div
@@ -845,7 +924,8 @@ function CardsSection({
                           card.imageFit === "contain" ? "bg-[#111]" : "bg-[#f3f1ed]",
                         ].join(" ")}
                       >
-                        <Image
+                        <CmsImage
+                          adjustKey={`${basePath}.cards.${cardIndex}.image`}
                           alt={card.imageAlt ?? card.title}
                           className={[
                             "transition duration-500",
@@ -874,7 +954,7 @@ function CardsSection({
                     <span className="mt-auto pt-6 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-black/42 transition group-hover:text-emerald-700">
                       Open
                     </span>
-                  </Link>
+                  </CmsEditSafeLink>
                 ))}
               </div>
             ) : (
@@ -886,8 +966,8 @@ function CardsSection({
                     : "md:grid-cols-2 xl:grid-cols-3",
                 ].join(" ")}
               >
-                {section.cards.map((card) => (
-                  <LinkCard card={card} key={`${card.title}-${card.href}`} />
+                {section.cards.map((card, cardIndex) => (
+                  <LinkCard card={card} key={`${card.title}-${card.href}-${cardIndex}`} pathPrefix={`${basePath}.cards.${cardIndex}`} />
                 ))}
               </div>
             )}
@@ -916,38 +996,54 @@ function WordPressSection({
 
 function AwardHistorySection({
   section,
+  sectionIndex,
   tone = "white",
 }: {
   section: Extract<PageSection, { kind: "awardHistory" }>;
+  sectionIndex: number;
   tone?: SectionTone;
 }) {
+  const basePath = `sections.${sectionIndex}`;
   return (
     <section className={bandClass(tone)}>
       <SectionAwardsDecor left="History" right="Winners" />
       <div className="relative z-10 mx-auto max-w-[980px]">
         <div className="mb-10 max-w-2xl">
           <SectionKicker>History</SectionKicker>
-          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-            {section.title}
-          </h2>
+          <EditableText
+            as="h2"
+            className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+            path={`${basePath}.title`}
+            value={section.title}
+          />
         </div>
         <div className="border-t border-black/14">
-          {section.items.map((item) => (
+          {section.items.map((item, itemIndex) => (
             <article
               className="grid gap-4 border-b border-black/10 py-6 md:grid-cols-[6rem_minmax(0,1fr)_auto] md:items-start md:gap-6"
-              key={`${item.year}-${item.winner}`}
+              key={`${item.year}-${item.winner}-${itemIndex}`}
             >
-              <p className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-emerald-700">
-                {item.year}
-              </p>
+              <EditableText
+                as="p"
+                className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-emerald-700"
+                path={`${basePath}.items.${itemIndex}.year`}
+                value={item.year}
+              />
               <div>
-                <h3 className="text-lg font-semibold leading-snug tracking-[-0.02em] text-black">
-                  {item.winner}
-                </h3>
+                <EditableText
+                  as="h3"
+                  className="text-lg font-semibold leading-snug tracking-[-0.02em] text-black"
+                  path={`${basePath}.items.${itemIndex}.winner`}
+                  value={item.winner}
+                />
                 {item.supportingText ? (
-                  <p className="mt-2 text-sm leading-7 text-black/58">
-                    {item.supportingText}
-                  </p>
+                  <EditableText
+                    as="p"
+                    className="mt-2 text-sm leading-7 text-black/58"
+                    multiline
+                    path={`${basePath}.items.${itemIndex}.supportingText`}
+                    value={item.supportingText}
+                  />
                 ) : null}
               </div>
               {item.href ? (
@@ -993,9 +1089,12 @@ function MediaLinkFallback({ href }: { href: string }) {
 
 export function MediaSection({
   section,
+  sectionIndex = 0,
 }: {
   section: Extract<PageSection, { kind: "media" }>;
+  sectionIndex?: number;
 }) {
+  const basePath = `sections.${sectionIndex}`;
   return (
     <section className={bandClass("warm")}>
       <SectionAwardsDecor left="Media" right="Archive" />
@@ -1003,13 +1102,20 @@ export function MediaSection({
         {section.title ? (
           <div className="mb-10 max-w-xl">
             <SectionKicker>Media</SectionKicker>
-            <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-              {section.title}
-            </h2>
+            <EditableText
+              as="h2"
+              className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+              path={`${basePath}.title`}
+              value={section.title}
+            />
             {section.text ? (
-              <p className="mt-5 text-sm leading-7 text-black/58">
-                {section.text}
-              </p>
+              <EditableText
+                as="p"
+                className="mt-5 text-sm leading-7 text-black/58"
+                multiline
+                path={`${basePath}.text`}
+                value={section.text}
+              />
             ) : null}
           </div>
         ) : null}
@@ -1021,7 +1127,7 @@ export function MediaSection({
             >
               {item.type === "image" &&
               !shouldUseMediaLinkFallback(item.src) ? (
-                <Image
+                <CmsImage
                   alt={item.alt ?? item.caption ?? ""}
                   className="aspect-[1.35] w-full bg-navy-950 object-contain"
                   height={720}
@@ -1089,10 +1195,13 @@ export function MediaSection({
 function GallerySection({
   currentPath,
   section,
+  sectionIndex = 0,
 }: {
   currentPath?: string;
   section: Extract<PageSection, { kind: "gallery" }>;
+  sectionIndex?: number;
 }) {
+  const basePath = `sections.${sectionIndex}`;
   const isWinnersGalleryPage = currentPath === "/winners/";
   const galleryArchiveYear = section.title?.match(/\b(20\d{2})\b/u)?.[1];
   const galleryDescription = isWinnersGalleryPage
@@ -1110,71 +1219,25 @@ function GallerySection({
         }
       >
         {section.title ? (
-          <div className="mb-10 max-w-xl">
+          <div className="mx-auto mb-10 max-w-3xl text-center">
             <SectionKicker>Gallery</SectionKicker>
-            <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-              {section.title}
-            </h2>
+            <EditableText
+              as="h2"
+              className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+              path={`${basePath}.title`}
+              value={section.title ?? ""}
+            />
             <p className="mt-5 text-sm leading-7 text-black/58">
               {galleryDescription}
             </p>
           </div>
         ) : null}
-        <div
-          className={[
-            "grid gap-5",
-            isWinnersGalleryPage
-              ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              : "sm:grid-cols-2 lg:grid-cols-4",
-          ].join(" ")}
-        >
-	          {section.images.map((image, index) => (
-	            <figure
-	              className={[
-	                "group overflow-hidden border border-black/10 shadow-[0_24px_80px_rgba(0,0,0,0.08)]",
-	                isWinnersGalleryPage ? "bg-[#111]" : "relative bg-black",
-	              ].join(" ")}
-	              key={image.src}
-	            >
-	              <div className="relative aspect-square">
-	                <Image
-	                  alt={image.alt}
-	                  className={[
-	                    "transition duration-500",
-	                    isWinnersGalleryPage
-	                      ? "object-contain p-4 group-hover:scale-[1.02]"
-	                      : "object-cover group-hover:scale-105",
-	                  ].join(" ")}
-	                  fill
-	                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-	                  src={image.src}
-                />
-                {!isWinnersGalleryPage ? (
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_48%,rgba(7,21,36,0.82))]" />
-                ) : null}
-              </div>
-              {isWinnersGalleryPage ? (
-                <figcaption className="border-t border-black/10 bg-white p-4">
-                  <span className="block text-[0.68rem] font-bold uppercase tracking-[0.22em] text-gold-500">
-                    Winner {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <strong className="mt-2 block text-base font-semibold leading-snug text-black">
-                    {image.title}
-                  </strong>
-                </figcaption>
-              ) : (
-                <figcaption className="absolute inset-x-0 bottom-0 p-5">
-                  <span className="block text-xs font-bold uppercase tracking-[0.22em] text-gold-200">
-                    Gallery {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <strong className="mt-2 block text-lg font-semibold text-white">
-                    {image.title}
-                  </strong>
-                </figcaption>
-              )}
-            </figure>
-          ))}
-        </div>
+        <EditableGalleryGrid
+          images={section.images}
+          isWinnersGalleryPage={isWinnersGalleryPage}
+          routeSlug={currentPath?.replace(/^\/|\/$/g, "") || "page"}
+          sectionIndex={sectionIndex}
+        />
       </div>
     </section>
   );
@@ -1183,10 +1246,13 @@ function GallerySection({
 function AudioSection({
   currentPath,
   section,
+  sectionIndex = 0,
 }: {
   currentPath?: string;
   section: Extract<PageSection, { kind: "audio" }>;
+  sectionIndex?: number;
 }) {
+  const basePath = `sections.${sectionIndex}`;
   const isResourcesPage = currentPath === "/resources/";
   const decorLeft = isResourcesPage ? "Resources" : "Training";
   const decorRight = isResourcesPage ? "Audio" : "Resources";
@@ -1203,12 +1269,22 @@ function AudioSection({
         <div className="grid gap-10 border-b border-black/12 pb-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-end">
           <div className="max-w-xl">
             <SectionKicker>{kicker}</SectionKicker>
-            <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-              {section.title}
-            </h2>
+            <EditableText
+              as="h2"
+              className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+              path={`${basePath}.title`}
+              value={section.title}
+            />
           </div>
           <div className="space-y-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
-            <p>{section.text}</p>
+            {section.text ? (
+              <EditableText
+                as="p"
+                multiline
+                path={`${basePath}.text`}
+                value={section.text}
+              />
+            ) : null}
             <p>{followUpCopy}</p>
           </div>
         </div>
@@ -1444,22 +1520,46 @@ function StandardsLandingPage({ page }: { page: InteriorPageData }) {
   const orderedStandards = standardsOrder
     .map((title) => standards.find((item) => item.title === title))
     .filter((item): item is (typeof standards)[number] => Boolean(item));
-  const standardsIntro =
-    page.sections.find(
-      (section): section is Extract<PageSection, { kind: "text" }> =>
-        section.kind === "text",
-    )?.paragraphs[0] ?? page.intro;
-  const frameworkThemes = [
-    "Governance, policies and accountability",
-    "Facilities, staffing and sustainable finance",
-    "Madrassah, communication and community development",
+  const standardTones = [
+    "bg-[#4c6ef5]",
+    "bg-[#12b886]",
+    "bg-[#7950f2]",
+    "bg-[#fd7e14]",
+    "bg-[#e03131]",
+    "bg-[#1c7ed6]",
+    "bg-[#0ca678]",
+    "bg-[#ae3ec9]",
+    "bg-[#f59f00]",
+    "bg-[#1098ad]",
+  ];
+  const heroIconTones = standardTones.slice(0, 6);
+  const heroIcons = orderedStandards.slice(0, 6).map((standard, index) => ({
+    ...standard,
+    tone: heroIconTones[index] ?? "bg-[#4c6ef5]",
+  }));
+  const pathwaySteps = [
+    {
+      step: "01",
+      title: "Review the framework",
+      text: "Explore all ten standards and understand what excellence looks like in practice.",
+    },
+    {
+      step: "02",
+      title: "Gather evidence",
+      text: "Map your mosque's current systems, policies and community impact against each standard.",
+    },
+    {
+      step: "03",
+      title: "Pursue accreditation",
+      text: "Work with Beacon Mosque toward a clear 3, 4 or 5-star accreditation pathway.",
+    },
   ];
 
   return (
     <>
       <SiteHeader />
       <main className="bg-white text-black">
-        <section className="relative isolate overflow-hidden bg-[#040816] px-5 pb-18 pt-34 text-white md:px-8 md:pb-22 md:pt-40">
+        <section className="relative isolate flex min-h-svh items-center overflow-hidden bg-[#040816] px-5 pb-10 pt-28 text-white md:px-8 md:pb-12 md:pt-32">
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,6,18,0.92),rgba(3,6,18,0.82)_45%,rgba(3,6,18,0.9)),radial-gradient(circle_at_18%_20%,rgba(39,89,255,0.12),transparent_24%),radial-gradient(circle_at_82%_16%,rgba(10,42,146,0.12),transparent_26%),linear-gradient(180deg,rgba(1,4,14,0.2),rgba(1,4,14,0.72))]" />
           <div className="absolute inset-0 opacity-[0.12]" aria-hidden="true">
             <div className="h-full w-full bg-[linear-gradient(90deg,transparent_0,transparent_46%,rgba(240,201,106,0.22)_46%,rgba(240,201,106,0.22)_54%,transparent_54%,transparent_100%),linear-gradient(0deg,transparent_0,transparent_46%,rgba(240,201,106,0.18)_46%,rgba(240,201,106,0.18)_54%,transparent_54%,transparent_100%)] bg-[length:96px_96px]" />
@@ -1470,21 +1570,19 @@ function StandardsLandingPage({ page }: { page: InteriorPageData }) {
             tone="dark"
           />
           <div className="relative z-10 mx-auto w-full max-w-[1240px]">
-            <div className="grid gap-14 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-              <div>
+            <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
+              <div className="max-w-2xl">
                 <SectionKicker>Standards</SectionKicker>
-                <h1 className="section-word-motion mt-5 max-w-4xl text-4xl font-black leading-[0.98] tracking-[-0.05em] md:text-[4.2rem]">
-                  Beacon Mosque Standards
-                </h1>
-                <p className="mt-4 text-lg font-medium text-sky-100 md:text-[1.7rem]">
+                <EditableText
+                  as="h1"
+                  className="section-word-motion mt-3 max-w-4xl text-[2.6rem] font-black leading-[0.96] tracking-[-0.05em] md:mt-4 md:text-[3.6rem]"
+                  path="title"
+                  value={page.title}
+                />
+                <p className="mt-3 max-w-xl text-base font-medium text-sky-100 md:mt-4 md:text-xl">
                   10 Global Standards to make a Beacon Mosque
                 </p>
-                <p className="mt-8 max-w-2xl text-base leading-8 text-white/76 md:text-[1.08rem] md:leading-9">
-                  {page.intro} The standards help mosques strengthen governance,
-                  policies, facilities, staffing, finance, community
-                  development, accountability, education and communication.
-                </p>
-                <div className="mt-11 flex flex-wrap gap-4">
+                <div className="mt-7 flex flex-wrap gap-3 md:mt-8">
                   <ButtonLink href={`#${standardsSectionId}`}>
                     Explore Standards
                   </ButtonLink>
@@ -1496,143 +1594,189 @@ function StandardsLandingPage({ page }: { page: InteriorPageData }) {
                   </ButtonLink>
                 </div>
               </div>
-              <div className="overflow-hidden rounded-[2rem] border border-white/12 bg-white/6 backdrop-blur-sm">
-                {page.image ? (
-                  <div className="relative aspect-[4/3] border-b border-white/10">
-                    <Image
-                      alt={page.imageAlt ?? page.title}
-                      className="object-cover"
-                      fill
-                      priority
-                      sizes="(min-width: 1024px) 42vw, 100vw"
-                      src={page.image}
-                    />
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,8,22,0.02),rgba(4,8,22,0.5))]" />
-                  </div>
-                ) : null}
-                <div className="grid gap-8 p-7 md:p-8">
-                  <div>
-                    <p className="text-[0.72rem] font-bold uppercase tracking-[0.24em] text-gold-200">
-                      Framework overview
+              <div
+                aria-label="Beacon Mosque standards icons"
+                className="mx-auto hidden w-full max-w-[28rem] grid-cols-3 gap-5 lg:grid"
+              >
+                {heroIcons.map((item) => (
+                  <Link
+                    className="group flex aspect-square flex-col items-center justify-center rounded-[1.6rem] border border-white/10 bg-white/[0.04] p-4 transition duration-300 hover:-translate-y-1 hover:border-gold-300/40 hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-gold-300/70"
+                    href={item.href}
+                    key={item.title}
+                    title={item.title}
+                  >
+                    <span
+                      className={[
+                        "flex h-[4.6rem] w-[4.6rem] items-center justify-center rounded-full text-white shadow-[0_12px_28px_rgba(0,0,0,0.28)] transition duration-300 group-hover:scale-105",
+                        item.tone,
+                      ].join(" ")}
+                    >
+                      <StandardCardIcon
+                        className="h-8 w-8"
+                        title={item.title}
+                      />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="relative isolate overflow-hidden border-b border-black/8 bg-[#f8f9fb] px-5 py-16 md:px-8 md:py-20">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(216,169,72,0.1),transparent_28%),radial-gradient(circle_at_88%_20%,rgba(28,126,214,0.06),transparent_26%)]" />
+          <div className="relative z-10 mx-auto grid w-full max-w-[1240px] gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end lg:gap-16">
+            <div>
+              <p className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-gold-400">
+                The framework
+              </p>
+              <p className="mt-4 text-[5.5rem] font-black leading-none tracking-[-0.08em] text-[#040816] md:text-[7rem]">
+                10
+              </p>
+              <p className="mt-3 text-lg font-medium text-black/55 md:text-xl">
+                Global standards. One clear pathway.
+              </p>
+            </div>
+            <div className="max-w-2xl">
+              <h2 className="section-word-motion text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-[2.6rem]">
+                A practical quality system for mosque leadership teams
+              </h2>
+              <EditableText
+                as="p"
+                className="mt-5 text-base leading-8 text-black/62 md:text-[1.05rem] md:leading-9"
+                multiline
+                path="intro"
+                value={page.intro}
+              />
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                {[
+                  { label: "Governance", detail: "Leadership & trust" },
+                  { label: "Operations", detail: "Systems & delivery" },
+                  { label: "Community", detail: "Service & impact" },
+                ].map((item) => (
+                  <div
+                    className="border-t border-black/12 pt-4"
+                    key={item.label}
+                  >
+                    <p className="text-sm font-semibold tracking-[-0.02em] text-black">
+                      {item.label}
                     </p>
-                    <p className="mt-4 text-lg leading-8 text-white/72 md:text-[1.05rem] md:leading-8">
-                      {standardsIntro}
-                    </p>
+                    <p className="mt-1 text-sm text-black/48">{item.detail}</p>
                   </div>
-                  <div className="grid gap-4">
-                    {frameworkThemes.map((theme) => (
-                      <div
-                        className="border-t border-white/12 pt-4 text-sm leading-7 text-white/72"
-                        key={theme}
-                      >
-                        {theme}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </section>
 
         <section
-          className="relative isolate overflow-hidden bg-white px-5 py-24 md:px-8 md:py-32"
+          className="relative isolate overflow-hidden bg-white px-5 py-20 md:px-8 md:py-28"
           id={standardsSectionId}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(216,169,72,0.07),transparent_18%),radial-gradient(circle_at_100%_8%,rgba(0,0,0,0.03),transparent_22%)]" />
-          <SectionAwardsDecor left="Framework" right="10 Standards" />
-          <div className="relative z-10 w-full">
-            <div className="mb-14 grid gap-10 border-b border-black/12 pb-10 lg:grid-cols-[0.98fr_1.02fr] lg:items-end">
-              <div className="max-w-[52rem]">
-                <SectionKicker>Standards</SectionKicker>
+          <SectionAwardsDecor left="Directory" right="Standards" />
+          <div className="relative z-10 mx-auto w-full max-w-[1240px]">
+            <div className="mb-12 flex flex-col gap-4 border-b border-black/10 pb-10 md:mb-14 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-2xl">
+                <SectionKicker>All standards</SectionKicker>
                 <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-                  10 Global Standards to make a Beacon Mosque
+                  Explore each standard in detail
                 </h2>
               </div>
-              <div className="space-y-5 text-base leading-8 text-black/62 md:text-[1.04rem] md:leading-9">
-                <p>
-                  Each standard below draws directly from the internal Beacon
-                  Mosque framework already published across the codebase. Use
-                  the cards to move from accreditation overview into each
-                  detailed standard page.
-                </p>
-                <p>
-                  Together they create a practical route for mosque leadership
-                  teams to review evidence, strengthen systems and improve the
-                  worshipper and community experience.
-                </p>
-              </div>
+              <p className="max-w-md text-sm leading-7 text-black/52 md:text-right md:text-base md:leading-8">
+                Select a standard to review expectations, evidence themes and
+                how it supports Beacon Mosque accreditation.
+              </p>
             </div>
-            <div className="grid auto-rows-fr gap-7 md:grid-cols-2 lg:grid-cols-4">
-              {orderedStandards.map((standard, index) => (
-                <Link
-                  className="group flex h-full flex-col overflow-hidden rounded-[1.8rem] border border-[#e6dcc8] bg-[#f7f4ee] px-7 py-7 shadow-[0_18px_48px_rgba(8,19,31,0.05)] transition duration-300 hover:-translate-y-1 hover:border-[#d2bd8a] hover:bg-[#fbf8f2] hover:shadow-[0_24px_60px_rgba(8,19,31,0.08)] focus:outline-none focus:ring-2 focus:ring-gold-300 focus:ring-offset-2"
-                  href={standard.href}
-                  key={standard.title}
-                >
-                  <div className="flex items-start gap-5">
-                    <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-[1.35rem] border border-black/8 bg-white text-black transition group-hover:border-gold-300/60">
-                      <StandardCardIcon
-                        className="h-9 w-9"
-                        title={standard.title}
-                      />
+
+            <div className="grid gap-3 md:grid-cols-2">
+              {orderedStandards.map((standard, index) => {
+                const tone = standardTones[index] ?? "bg-[#4c6ef5]";
+                return (
+                  <Link
+                    className="group relative flex min-h-[11.5rem] gap-5 overflow-hidden rounded-[1.4rem] border border-black/8 bg-[#fbfbfc] p-6 transition duration-300 hover:-translate-y-0.5 hover:border-gold-400/50 hover:bg-white hover:shadow-[0_20px_48px_rgba(8,19,31,0.08)] focus:outline-none focus:ring-2 focus:ring-gold-300 focus:ring-offset-2 md:p-7"
+                    href={standard.href}
+                    key={standard.title}
+                  >
+                    <div className="flex shrink-0 flex-col items-center gap-3">
+                      <span className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-black/35">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span
+                        className={[
+                          "flex h-14 w-14 items-center justify-center rounded-full text-white shadow-[0_10px_24px_rgba(8,19,31,0.16)] transition duration-300 group-hover:scale-105",
+                          tone,
+                        ].join(" ")}
+                      >
+                        <StandardCardIcon
+                          className="h-7 w-7"
+                          title={standard.title}
+                        />
+                      </span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[0.72rem] font-bold uppercase tracking-[0.24em] text-gold-500">
-                        Standard {String(index + 1).padStart(2, "0")}
+                      <div className="flex items-start justify-between gap-4">
+                        <h3 className="text-[1.2rem] font-semibold leading-tight tracking-[-0.03em] text-black md:text-[1.35rem]">
+                          {standard.title}
+                        </h3>
+                        <span
+                          aria-hidden="true"
+                          className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/10 text-black/40 transition duration-300 group-hover:border-gold-400 group-hover:bg-gold-300 group-hover:text-black"
+                        >
+                          →
+                        </span>
+                      </div>
+                      <p className="mt-3 text-[0.95rem] leading-7 text-black/58 md:leading-8">
+                        {standard.description}
                       </p>
-                      <h3 className="mt-4 text-[1.45rem] font-semibold leading-[1.12] tracking-[-0.03em] text-black md:text-[1.55rem]">
-                        {standard.title}
-                      </h3>
                     </div>
-                  </div>
-                  <p className="mt-6 text-[1rem] leading-8 text-black/64 md:text-[1.05rem] md:leading-[1.9]">
-                    {standard.description}
-                  </p>
-                  <blockquote className="mt-6 rounded-[1.2rem] border border-black/8 bg-white px-5 py-4 text-[0.93rem] leading-7 text-black/56">
-                    <p>{standard.quote}</p>
-                    <footer className="mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-black/38">
-                      {standard.reference}
-                    </footer>
-                  </blockquote>
-                  <div className="mt-auto pt-8">
-                    <span className="inline-flex min-h-12 items-center gap-2 rounded-full border border-gold-300 bg-[linear-gradient(135deg,#f3d98c,#d7a948)] px-6 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-black shadow-[0_10px_20px_rgba(215,169,72,0.14)] transition group-hover:bg-[linear-gradient(135deg,#f7e3a8,#c99935)]">
-                      View Standard
-                      <span aria-hidden="true" className="text-sm leading-none">
-                        →
-                      </span>
-                    </span>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        <section className="pb-20 md:pb-28">
-          <div className="w-full overflow-hidden bg-[linear-gradient(135deg,#040816_0%,#0d1428_58%,#151f34_100%)] px-6 py-12 text-white shadow-[0_24px_80px_rgba(8,19,31,0.18)] md:px-10 md:py-14">
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center xl:gap-12">
-              <div>
-                <SectionKicker>Accreditation pathway</SectionKicker>
-                <h2 className="section-word-motion mt-4 max-w-2xl text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
-                  Begin a Beacon Mosque journey grounded in trust, evidence and
-                  community service
-                </h2>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-white/72 md:text-lg md:leading-9">
-                  Explore the standards in detail, review the accreditation
-                  pathway and start building the governance, facilities,
-                  communication and community systems that define mosque
-                  excellence.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 lg:justify-self-end">
-                <ButtonLink href="/accreditation-process/">
-                  Start Your Beacon Mosque Journey
-                </ButtonLink>
-                <ButtonLink href="/contact-us/" variant="secondary">
-                  Speak to the team
-                </ButtonLink>
-              </div>
+        <section className="relative isolate overflow-hidden bg-[#070b16] px-5 py-20 text-white md:px-8 md:py-28">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(215,169,72,0.12),transparent_28%),radial-gradient(circle_at_90%_30%,rgba(39,89,255,0.12),transparent_24%)]" />
+          <div className="absolute inset-0 opacity-[0.08]" aria-hidden="true">
+            <div className="h-full w-full bg-[linear-gradient(90deg,transparent_0,transparent_46%,rgba(240,201,106,0.2)_46%,rgba(240,201,106,0.2)_54%,transparent_54%),linear-gradient(0deg,transparent_0,transparent_46%,rgba(240,201,106,0.14)_46%,rgba(240,201,106,0.14)_54%,transparent_54%)] bg-[length:88px_88px]" />
+          </div>
+          <div className="relative z-10 mx-auto w-full max-w-[1240px]">
+            <div className="mb-12 max-w-2xl md:mb-16">
+              <SectionKicker>Accreditation pathway</SectionKicker>
+              <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
+                From review to recognition in three clear stages
+              </h2>
+              <p className="mt-5 max-w-xl text-base leading-8 text-white/68 md:text-lg md:leading-9">
+                Use the standards as a working guide, then move into the
+                accreditation process with confidence and evidence.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+              {pathwaySteps.map((item) => (
+                <div
+                  className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-6 md:p-7"
+                  key={item.step}
+                >
+                  <p className="text-[0.72rem] font-bold uppercase tracking-[0.24em] text-gold-200">
+                    Step {item.step}
+                  </p>
+                  <h3 className="mt-5 text-xl font-semibold tracking-[-0.03em] text-white md:text-[1.35rem]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-7 text-white/62 md:text-[0.98rem] md:leading-8">
+                    {item.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-12 flex flex-wrap items-center gap-4 border-t border-white/10 pt-10 md:mt-14">
+              <ButtonLink href="/accreditation-process/">
+                Start Your Beacon Mosque Journey
+              </ButtonLink>
+              <ButtonLink href="/contact-us/" variant="secondary">
+                Speak to the team
+              </ButtonLink>
             </div>
           </div>
         </section>
@@ -1734,7 +1878,7 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
       <main className="bg-white text-black">
         <section className="relative isolate overflow-hidden bg-[#05070a] px-5 pt-24 text-white md:px-8 md:pt-28">
           <div className="absolute inset-0">
-            <Image
+            <CmsImage
               alt="Beacon Mosque training session"
               className="object-cover opacity-30"
               fill
@@ -1749,12 +1893,19 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
             <div className="flex min-h-[16rem] items-end justify-center text-center">
               <div className="max-w-3xl">
                 <SectionKicker>{page.eyebrow ?? "Training"}</SectionKicker>
-                <h1 className="section-word-motion mt-5 text-4xl font-black leading-[0.98] tracking-[-0.05em] md:text-[4.1rem]">
-                  {page.title}
-                </h1>
-                <p className="mt-5 text-base leading-8 text-white/76 md:text-lg md:leading-9">
-                  {page.intro}
-                </p>
+                <EditableText
+                  as="h1"
+                  className="section-word-motion mt-5 text-4xl font-black leading-[0.98] tracking-[-0.05em] md:text-[4.1rem]"
+                  path="title"
+                  value={page.title}
+                />
+                <EditableText
+                  as="p"
+                  className="mt-5 text-base leading-8 text-white/76 md:text-lg md:leading-9"
+                  multiline
+                  path="intro"
+                  value={page.intro}
+                />
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                   {page.ctas?.map((cta) => (
                     <ButtonLink
@@ -1794,7 +1945,7 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
                 const content = (
                   <>
                     <div className="relative min-h-[31rem] overflow-hidden md:min-h-[33rem]">
-                      <Image
+                      <CmsImage
                         alt={card.imageAlt}
                         className="object-cover transition duration-500 group-hover:scale-105"
                         fill
@@ -1855,7 +2006,7 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
                         .filter(Boolean)
                         .join(" ")}
                     >
-                      <Image
+                      <CmsImage
                         alt={tile.imageAlt}
                         className={["object-contain", tile.imageClassName]
                           .filter(Boolean)
@@ -1970,12 +2121,19 @@ function ResourcesLandingPage({ page }: { page: InteriorPageData }) {
             <div className="grid gap-12 lg:grid-cols-[1fr_0.92fr] lg:items-end">
               <div className="max-w-3xl">
                 <SectionKicker>{page.eyebrow ?? "Resources"}</SectionKicker>
-                <h1 className="section-word-motion mt-5 text-4xl font-black leading-[0.98] tracking-[-0.05em] md:text-[4.2rem]">
-                  {page.title}
-                </h1>
-                <p className="mt-7 text-base leading-8 text-white/76 md:text-lg md:leading-9">
-                  {page.intro}
-                </p>
+                <EditableText
+                  as="h1"
+                  className="section-word-motion mt-5 text-4xl font-black leading-[0.98] tracking-[-0.05em] md:text-[4.2rem]"
+                  path="title"
+                  value={page.title}
+                />
+                <EditableText
+                  as="p"
+                  className="mt-7 text-base leading-8 text-white/76 md:text-lg md:leading-9"
+                  multiline
+                  path="intro"
+                  value={page.intro}
+                />
                 <div className="mt-10 flex flex-wrap gap-3">
                   <ButtonLink href="/resources/#resource-library">
                     Browse resource library
@@ -2098,7 +2256,14 @@ function ResourcesLandingPage({ page }: { page: InteriorPageData }) {
 
         {audioSection ? (
           <div id="audio-library">
-            <AudioSection currentPath="/resources/" section={audioSection} />
+            <AudioSection
+              currentPath="/resources/"
+              section={audioSection}
+              sectionIndex={Math.max(
+                0,
+                page.sections.findIndex((section) => section === audioSection),
+              )}
+            />
           </div>
         ) : null}
 
@@ -2107,6 +2272,10 @@ function ResourcesLandingPage({ page }: { page: InteriorPageData }) {
             <CardsSection
               currentPath="/resources/"
               section={librarySection}
+              sectionIndex={Math.max(
+                0,
+                page.sections.findIndex((section) => section === librarySection),
+              )}
               tone="white"
             />
           </div>
@@ -2172,7 +2341,7 @@ function AccreditedSection() {
               key={mosque.title}
             >
               <div className="relative aspect-[1.42] bg-white">
-                <Image
+                <CmsImage
                   alt={mosque.imageAlt}
                   className="object-cover"
                   fill
@@ -2198,33 +2367,48 @@ function AccreditedSection() {
 
 function CriteriaSection({
   section,
+  sectionIndex,
 }: {
   section: Extract<PageSection, { kind: "criteria" }>;
+  sectionIndex: number;
 }) {
+  const basePath = `sections.${sectionIndex}`;
   return (
     <section className={bandClass("white")}>
       <SectionAwardsDecor left="Criteria" right="Rating" />
       <div className="relative z-10 mx-auto max-w-[1180px]">
         <div className="mb-10 max-w-xl">
           <SectionKicker>Criteria</SectionKicker>
-          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-            {section.title}
-          </h2>
+          <EditableText
+            as="h2"
+            className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+            path={`${basePath}.title`}
+            value={section.title}
+          />
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
-          {section.groups.map((group) => (
+          {section.groups.map((group, groupIndex) => (
             <article
               className="border-t border-black/14 pt-5"
-              key={group.title}
+              key={`${basePath}.groups.${groupIndex}`}
             >
-              <h3 className="text-xl font-semibold tracking-[-0.02em] text-black">
-                {group.title}
-              </h3>
+              <EditableText
+                as="h3"
+                className="text-xl font-semibold tracking-[-0.02em] text-black"
+                path={`${basePath}.groups.${groupIndex}.title`}
+                value={group.title}
+              />
               <ul className="mt-5 space-y-3 text-sm leading-6 text-black/58">
-                {group.items.map((item) => (
-                  <li className="relative pl-6" key={item}>
+                {group.items.map((item, itemIndex) => (
+                  <li
+                    className="relative pl-6"
+                    key={`${basePath}.groups.${groupIndex}.items.${itemIndex}`}
+                  >
                     <span className="absolute left-0 top-2 h-2 w-2 bg-gold-400" />
-                    {item}
+                    <EditableText
+                      path={`${basePath}.groups.${groupIndex}.items.${itemIndex}`}
+                      value={item}
+                    />
                   </li>
                 ))}
               </ul>
@@ -2382,6 +2566,7 @@ function FormSection({
   defaultCategory,
   embedSrc,
   embedHeight,
+  sectionIndex,
   sourcePath,
 }: {
   form: PageForm;
@@ -2390,8 +2575,10 @@ function FormSection({
   defaultCategory?: string;
   embedSrc?: string;
   embedHeight?: number;
+  sectionIndex: number;
   sourcePath: string;
 }) {
+  const basePath = `sections.${sectionIndex}`;
   const config = formConfigs[form];
   const fields = config.fields.map((field) =>
     field.name === "award_category" && defaultCategory
@@ -2405,10 +2592,19 @@ function FormSection({
       <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[0.75fr_1fr]">
         <div>
           <SectionKicker>Form</SectionKicker>
-          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-            {title}
-          </h2>
-          <p className="mt-5 text-sm leading-7 text-black/58">{text}</p>
+          <EditableText
+            as="h2"
+            className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+            path={`${basePath}.title`}
+            value={title}
+          />
+          <EditableText
+            as="p"
+            className="mt-5 text-sm leading-7 text-black/58"
+            multiline
+            path={`${basePath}.text`}
+            value={text}
+          />
         </div>
         {embedSrc ? (
           <div className="border border-black/10 bg-white p-3 shadow-[0_24px_80px_rgba(0,0,0,0.08)]">
@@ -2485,30 +2681,64 @@ function RenderSection({
   switch (section.kind) {
     case "text":
       return (
-        <TextSection currentPath={currentPath} section={section} tone={tone} />
+        <TextSection
+          currentPath={currentPath}
+          section={section}
+          sectionIndex={index}
+          tone={tone}
+        />
       );
     case "textPair":
-      return <TextPairSection section={section} tone={tone} />;
+      return (
+        <TextPairSection
+          section={section}
+          sectionIndex={index}
+          tone={tone}
+        />
+      );
     case "cards":
       return (
-        <CardsSection currentPath={currentPath} section={section} tone={tone} />
+        <CardsSection
+          currentPath={currentPath}
+          section={section}
+          sectionIndex={index}
+          tone={tone}
+        />
       );
     case "awardHistory":
-      return <AwardHistorySection section={section} tone={tone} />;
+      return (
+        <AwardHistorySection
+          section={section}
+          sectionIndex={index}
+          tone={tone}
+        />
+      );
     case "wordpress":
       return <WordPressSection section={section} />;
     case "media":
-      return <MediaSection section={section} />;
+      return <MediaSection section={section} sectionIndex={index} />;
     case "gallery":
-      return <GallerySection currentPath={currentPath} section={section} />;
+      return (
+        <GallerySection
+          currentPath={currentPath}
+          section={section}
+          sectionIndex={index}
+        />
+      );
     case "audio":
-      return <AudioSection currentPath={currentPath} section={section} />;
+      return (
+        <AudioSection
+          currentPath={currentPath}
+          section={section}
+          sectionIndex={index}
+        />
+      );
     case "standards":
       return <StandardsSection />;
     case "accredited":
       return <AccreditedSection />;
     case "criteria":
-      return <CriteriaSection section={section} />;
+      return <CriteriaSection section={section} sectionIndex={index} />;
     case "form":
       return (
         <FormSection
@@ -2516,6 +2746,7 @@ function RenderSection({
           embedHeight={section.embedHeight}
           embedSrc={section.embedSrc}
           form={section.form}
+          sectionIndex={index}
           sourcePath={currentPath}
           text={section.text}
           title={section.title}
@@ -2613,9 +2844,16 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
     { label: "Great leadership", value: 90 },
     { label: "Great performance", value: 94 },
   ];
+  const introSectionIndex = page.sections.findIndex(
+    (section) => section.kind === "text",
+  );
   const biographyParagraphs = introSection?.paragraphs?.length
     ? introSection.paragraphs
     : [page.intro];
+  const biographyPathBase =
+    introSectionIndex >= 0
+      ? `sections.${introSectionIndex}.paragraphs`
+      : null;
 
   return (
     <>
@@ -2641,7 +2879,7 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
                   ].join(" ")}
                 >
                   {heroImageSrc ? (
-                    <Image
+                    <CmsImage
                       alt={heroImageAlt}
                       className={
                         usePosterHeroLayout
@@ -2718,9 +2956,25 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
                   Biography
                 </h2>
                 <div className="mt-6 space-y-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
-                  {biographyParagraphs.map((paragraph) => (
-                    <p key={paragraph}>{paragraph}</p>
-                  ))}
+                  {biographyParagraphs.map((paragraph, paragraphIndex) =>
+                    biographyPathBase ? (
+                      <EditableText
+                        as="p"
+                        key={`${biographyPathBase}.${paragraphIndex}`}
+                        multiline
+                        path={`${biographyPathBase}.${paragraphIndex}`}
+                        value={paragraph}
+                      />
+                    ) : (
+                      <EditableText
+                        as="p"
+                        key={`intro-${paragraphIndex}`}
+                        multiline
+                        path="intro"
+                        value={paragraph}
+                      />
+                    ),
+                  )}
                   <p>
                     This internal category page keeps the archive presentation
                     consistent while still linking visitors into the full awards
@@ -2757,6 +3011,10 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
           <CardsSection
             key={`${page.slug}-${section.title ?? "cards"}`}
             section={section}
+            sectionIndex={Math.max(
+              0,
+              page.sections.findIndex((item) => item === section),
+            )}
             tone="white"
           />
         ))}
@@ -2806,7 +3064,7 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
                   ].join(" ")}
                 >
                   {page.image ? (
-                    <Image
+                    <CmsImage
                       alt={page.imageAlt ?? winnerName}
                       className={
                         usePosterHeroLayout ? "object-contain" : "object-cover"
@@ -2883,9 +3141,13 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
                 <h2 className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl">
                   Biography
                 </h2>
-                <p className="mt-6 text-base leading-8 text-black/62 md:text-lg md:leading-9">
-                  {page.intro}
-                </p>
+                <EditableText
+                  as="p"
+                  className="mt-6 text-base leading-8 text-black/62 md:text-lg md:leading-9"
+                  multiline
+                  path="intro"
+                  value={page.intro}
+                />
                 <p className="mt-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
                   This archive profile presents the recognised winner in a
                   repeatable, editorial page structure that can be reused across
@@ -2923,6 +3185,10 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
             currentPath={`/${page.slug}/`}
             key={`${page.slug}-${section.title ?? "cards"}`}
             section={section}
+            sectionIndex={Math.max(
+              0,
+              page.sections.findIndex((item) => item === section),
+            )}
             tone="white"
           />
         ))}
@@ -2993,7 +3259,7 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
         >
           {isContactPage ? (
             <div className="absolute inset-0 -z-10">
-              <Image
+              <CmsImage
                 alt="Beacon Mosque training session"
                 className="object-cover opacity-30"
                 fill
@@ -3031,39 +3297,48 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
             >
               <div className={showHeroVisual ? "" : "max-w-4xl"}>
                 {page.eyebrow ? (
-                  <span
+                  <EditableText
+                    as="span"
                     className={[
                       "text-xs font-bold uppercase tracking-[0.24em]",
                       isStandardsAccreditationPage
                         ? "text-gold-500"
                         : "text-gold-200",
                     ].join(" ")}
-                  >
-                    {page.eyebrow}
-                  </span>
+                    path="eyebrow"
+                    value={page.eyebrow}
+                  />
                 ) : null}
-                <h1 className="mt-5 text-4xl font-black leading-[0.98] md:text-6xl">
-                  {page.title}
-                </h1>
-                <p
+                <EditableText
+                  as="h1"
+                  className="mt-5 text-4xl font-black leading-[0.98] md:text-6xl"
+                  path="title"
+                  value={page.title}
+                />
+                <EditableText
+                  as="p"
                   className={[
                     "mt-6 max-w-3xl text-lg leading-8 md:text-xl",
                     isStandardsAccreditationPage
                       ? "text-black/68"
                       : "text-white/78",
                   ].join(" ")}
-                >
-                  {page.intro}
-                </p>
+                  multiline
+                  path="intro"
+                  value={page.intro}
+                />
                 {page.ctas?.length ? (
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                    {page.ctas.map((cta) => (
+                    {page.ctas.map((cta, index) => (
                       <ButtonLink
                         href={cta.href}
-                        key={cta.href}
+                        key={`${cta.href}-${index}`}
                         variant={cta.variant ?? "primary"}
                       >
-                        {cta.label}
+                        <EditableText
+                          path={`ctas.${index}.label`}
+                          value={cta.label}
+                        />
                       </ButtonLink>
                     ))}
                   </div>
@@ -3178,7 +3453,7 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
                       src={page.heroVideo!}
                     />
                   ) : (
-                    <Image
+                    <CmsImage
                       alt={page.imageAlt ?? ""}
                       className="arch-frame-inner aspect-[0.9] w-full object-cover"
                       height={720}

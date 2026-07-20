@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { CmsImage } from "@/components/cms/CmsImage";
 import { useEffect, useState } from "react";
 
 type HomeHeroSlideshowProps = {
@@ -35,7 +35,7 @@ export function HomeHeroSlideshow({ slides }: HomeHeroSlideshowProps) {
           ].join(" ")}
           key={slide.src}
         >
-          <Image
+          <CmsImage
             alt={slide.alt}
             className="arch-frame-lg-inner h-full w-full object-cover"
             fill

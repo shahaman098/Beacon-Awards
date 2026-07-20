@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "beaconmosque",
+  "compatibility_date": "2026-06-19",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": ["beaconmosque.com/*", "www.beaconmosque.com/*"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "CMS_DB",
+      "database_name": "beaconmosque-cms",
+      "database_id": "2c8ca03f-b51e-419b-8bd3-a4d42d708fb2"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "CMS_MEDIA",
+      "bucket_name": "beaconmosque-cms-media"
+    }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { SiteFooter } from "@/components/HomeSections";
 import { SiteHeader } from "@/components/SiteHeader";
 

@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
+import { CmsImage } from "@/components/cms/CmsImage";
+import Link from "@/components/AppLink";
 import { useEffect, useRef } from "react";
 
 type StandardsCarouselItem = {
@@ -68,9 +68,10 @@ export function StandardsCarousel({ items }: StandardsCarouselProps) {
             key={item.title}
           >
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f8efe0]">
-              <Image
+              <CmsImage
                 alt=""
                 className="h-12 w-12 object-contain"
+                editable={false}
                 height={64}
                 src={item.image}
                 width={64}

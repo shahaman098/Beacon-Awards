@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   images: {
+    qualities: [75, 90],
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "beaconmosque.com" },
       { protocol: "https", hostname: "www.beaconmosque.com" },

@@ -85,7 +85,22 @@ export function HomeHeroVideo({
     };
   }, [enabled, failed]);
 
-  if (!enabled || failed) return null;
+  if (!enabled || failed) {
+    if (!poster) return null;
+    // Keep hero framing on SSR / reduced-motion instead of an empty arch frame.
+    // eslint-disable-next-line @next/next/no-img-element
+    return (
+      <img
+        alt={decorative ? "" : ariaLabel || ""}
+        aria-hidden={decorative ? true : undefined}
+        className={
+          className ??
+          "absolute inset-0 h-full w-full object-cover"
+        }
+        src={poster}
+      />
+    );
+  }
 
   return (
     <video
