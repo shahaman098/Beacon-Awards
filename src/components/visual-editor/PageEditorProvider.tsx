@@ -53,11 +53,13 @@ export function usePageEditor() {
 export function PageEditorProvider({
   canEdit,
   initialPage,
+  initialFields,
   initialEditMode = false,
   children,
 }: {
   canEdit: boolean;
   initialPage: InteriorPage;
+  initialFields?: Record<string, string>;
   initialEditMode?: boolean;
   children: ReactNode;
 }) {
@@ -66,9 +68,10 @@ export function PageEditorProvider({
     Boolean(canEdit && initialEditMode),
   );
   const routeSlug = initialPage.slug;
-  const [fields, setFields] = useState<Record<string, string>>(() =>
-    collectEditablePageFields(initialPage),
-  );
+  const [fields, setFields] = useState<Record<string, string>>(() => ({
+    ...collectEditablePageFields(initialPage),
+    ...(initialFields ?? {}),
+  }));
   const fieldsRef = useRef(fields);
   fieldsRef.current = fields;
   const [dirty, setDirty] = useState(false);

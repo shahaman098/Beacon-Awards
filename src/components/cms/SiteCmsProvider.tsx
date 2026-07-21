@@ -17,6 +17,11 @@ import type {
   CmsImageOverride,
   CmsImageOverrides,
 } from "@/lib/cms-image-overrides";
+import {
+  mergeSiteChrome,
+  setSiteChromeField,
+  type SiteChrome,
+} from "@/lib/cms-site-chrome";
 
 export type ContentEditorRegistration = {
   dirty: boolean;
@@ -33,9 +38,11 @@ type SiteCmsContextValue = {
   status: string | null;
   email: string | null;
   overrides: CmsImageOverrides;
+  chrome: SiteChrome;
   setEditMode: (value: boolean) => void;
   setOverride: (key: string, patch: Partial<CmsImageOverride>) => void;
   resetOverride: (key: string) => void;
+  setChromeField: (path: string, value: string) => void;
   uploadMedia: (file: File) => Promise<string>;
   save: () => Promise<void>;
   registerContentEditor: (editor: ContentEditorRegistration | null) => void;
@@ -54,9 +61,11 @@ export function useSiteCms() {
       status: null,
       email: null,
       overrides: {},
+      chrome: mergeSiteChrome(null),
       setEditMode: () => undefined,
       setOverride: () => undefined,
       resetOverride: () => undefined,
+      setChromeField: () => undefined,
       uploadMedia: async () => "",
       save: async () => undefined,
       registerContentEditor: () => undefined,
@@ -73,12 +82,14 @@ export function SiteCmsProvider({
   canEdit,
   email,
   initialOverrides,
+  initialChrome,
   initialEditMode = false,
   children,
 }: {
   canEdit: boolean;
   email: string | null;
   initialOverrides: CmsImageOverrides;
+  initialChrome: SiteChrome;
   initialEditMode?: boolean;
   children: ReactNode;
 }) {
@@ -87,6 +98,10 @@ export function SiteCmsProvider({
   const overridesRef = useRef(overrides);
   overridesRef.current = overrides;
   const [overridesDirty, setOverridesDirty] = useState(false);
+  const [chrome, setChrome] = useState(initialChrome);
+  const chromeRef = useRef(chrome);
+  chromeRef.current = chrome;
+  const [chromeDirty, setChromeDirty] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [contentEditor, setContentEditor] =
@@ -135,6 +150,16 @@ export function SiteCmsProvider({
     setStatus("Unsaved changes");
   }, []);
 
+  const setChromeField = useCallback((path: string, value: string) => {
+    setChrome((current) => {
+      const next = setSiteChromeField(current, path, value);
+      chromeRef.current = next;
+      return next;
+    });
+    setChromeDirty(true);
+    setStatus("Unsaved changes");
+  }, []);
+
   const uploadMedia = useCallback(async (file: File) => {
     const body = new FormData();
     body.set("file", file);
@@ -176,11 +201,37 @@ export function SiteCmsProvider({
     setOverridesDirty(false);
   }, []);
 
+  const persistChrome = useCallback(async () => {
+    setStatus("Saving…");
+    const response = await fetch("/api/cms/site-chrome/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ chrome: chromeRef.current }),
+    });
+    const payload = (await response.json()) as {
+      chrome?: SiteChrome;
+      error?: string;
+    };
+    if (response.status === 401) {
+      throw new Error("Sign in required. Open /cms/login/ and try again.");
+    }
+    if (!response.ok || !payload.chrome) {
+      throw new Error(payload.error || "Save failed.");
+    }
+    chromeRef.current = payload.chrome;
+    setChrome(payload.chrome);
+    setChromeDirty(false);
+  }, []);
+
   const save = useCallback(async () => {
     setSaving(true);
     try {
       if (overridesDirty) {
         await persistOverrides();
+      }
+      if (chromeDirty) {
+        await persistChrome();
       }
       const editor = contentEditorRef.current;
       if (editor?.dirty) {
@@ -192,9 +243,10 @@ export function SiteCmsProvider({
     } finally {
       setSaving(false);
     }
-  }, [overridesDirty, persistOverrides]);
+  }, [overridesDirty, chromeDirty, persistOverrides, persistChrome]);
 
-  const dirty = overridesDirty || Boolean(contentEditor?.dirty);
+  const dirty =
+    overridesDirty || chromeDirty || Boolean(contentEditor?.dirty);
   const combinedSaving = saving || Boolean(contentEditor?.saving);
   const combinedStatus = contentEditor?.status || status;
 
@@ -207,9 +259,11 @@ export function SiteCmsProvider({
       status: combinedStatus,
       email,
       overrides,
+      chrome,
       setEditMode,
       setOverride,
       resetOverride,
+      setChromeField,
       uploadMedia,
       save,
       registerContentEditor,
@@ -222,8 +276,10 @@ export function SiteCmsProvider({
       combinedStatus,
       email,
       overrides,
+      chrome,
       setOverride,
       resetOverride,
+      setChromeField,
       uploadMedia,
       save,
       registerContentEditor,

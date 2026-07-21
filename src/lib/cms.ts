@@ -18,6 +18,11 @@ import {
   type CmsImageOverrides,
 } from "@/lib/cms-image-overrides";
 import {
+  SITE_CHROME_ID,
+  mergeSiteChrome,
+  type SiteChrome,
+} from "@/lib/cms-site-chrome";
+import {
   applyPageContentFields,
   emptyPageContent,
   mergePageContentPayload,
@@ -963,6 +968,52 @@ export async function saveImageOverrides(
     .run();
 
   return mergeImageOverrides(JSON.parse(payload));
+}
+
+export async function getSiteChrome(): Promise<SiteChrome> {
+  const db = await tryGetCmsDb();
+  if (!db) {
+    return mergeSiteChrome(null);
+  }
+
+  try {
+    const row = await db
+      .prepare(
+        `SELECT payload
+         FROM cms_homepage
+         WHERE id = ?1`,
+      )
+      .bind(SITE_CHROME_ID)
+      .first<{ payload: string }>();
+
+    if (!row?.payload) {
+      return mergeSiteChrome(null);
+    }
+
+    return mergeSiteChrome(JSON.parse(row.payload));
+  } catch {
+    return mergeSiteChrome(null);
+  }
+}
+
+export async function saveSiteChrome(chrome: SiteChrome, userId: string) {
+  const db = await getDb();
+  const now = new Date().toISOString();
+  const payload = JSON.stringify(mergeSiteChrome(chrome));
+
+  await db
+    .prepare(
+      `INSERT INTO cms_homepage (id, payload, updated_at, updated_by)
+       VALUES (?1, ?2, ?3, ?4)
+       ON CONFLICT(id) DO UPDATE SET
+         payload = excluded.payload,
+         updated_at = excluded.updated_at,
+         updated_by = excluded.updated_by`,
+    )
+    .bind(SITE_CHROME_ID, payload, now, userId)
+    .run();
+
+  return mergeSiteChrome(JSON.parse(payload));
 }
 
 export async function getPageContent(

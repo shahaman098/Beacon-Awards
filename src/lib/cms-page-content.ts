@@ -206,6 +206,7 @@ export function collectEditablePageFields(page: InteriorPage): Record<string, st
         if (section.title) fields[`${base}.title`] = section.title;
         section.cards.forEach((card, cardIndex) => {
           fields[`${base}.cards.${cardIndex}.title`] = card.title;
+          fields[`${base}.cards.${cardIndex}.href`] = card.href;
           if (card.text) fields[`${base}.cards.${cardIndex}.text`] = card.text;
           if (card.meta) fields[`${base}.cards.${cardIndex}.meta`] = card.meta;
           if (card.image) fields[`${base}.cards.${cardIndex}.image`] = card.image;
@@ -227,6 +228,13 @@ export function collectEditablePageFields(page: InteriorPage): Record<string, st
       case "media":
         if (section.title) fields[`${base}.title`] = section.title;
         if (section.text) fields[`${base}.text`] = section.text;
+        section.items.forEach((item, itemIndex) => {
+          if (item.caption) {
+            fields[`${base}.items.${itemIndex}.caption`] = item.caption;
+          } else if (item.alt) {
+            fields[`${base}.items.${itemIndex}.caption`] = item.alt;
+          }
+        });
         break;
       case "gallery":
         if (section.title) fields[`${base}.title`] = section.title;
@@ -257,6 +265,9 @@ export function collectEditablePageFields(page: InteriorPage): Record<string, st
       case "form":
         fields[`${base}.title`] = section.title;
         fields[`${base}.text`] = section.text;
+        break;
+      case "wordpress":
+        fields[`${base}.html`] = section.html;
         break;
       default:
         break;

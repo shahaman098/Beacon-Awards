@@ -4,6 +4,8 @@ import {
   featureCards,
   serviceCards,
   standards,
+  winnerShowcaseItems,
+  type WinnerShowcaseItem,
 } from "@/lib/content";
 
 export type HomepageFeatureCard = {
@@ -62,7 +64,13 @@ export type HomepageContent = {
   awardsArchive: {
     ctaLabel: string;
   };
+  awardsFeature: {
+    kicker: string;
+    viewLabel: string;
+    nominateLabel: string;
+  };
   winnersIntro: string;
+  winnerShowcaseItems: WinnerShowcaseItem[];
   standardsIntro: {
     kicker: string;
     heading: string;
@@ -96,6 +104,7 @@ export type HomepageContent = {
     body: string;
     pathways: Array<{ title: string; text: string; href: string }>;
   };
+  galleryKicker: string;
   galleryHeading: string;
   galleryItems: HomepageGalleryItem[];
   finalCta: {
@@ -224,8 +233,14 @@ export function defaultHomepageContent(): HomepageContent {
     awardsArchive: {
       ctaLabel: "Submit Your Nomination for Beacon Mosque Awards 2026",
     },
+    awardsFeature: {
+      kicker: "Awards 2026",
+      viewLabel: "View awards",
+      nominateLabel: "Submit nomination",
+    },
     winnersIntro:
       "The archive keeps public recognition visible and helps mosque teams learn from strong examples of service, governance and community impact.",
+    winnerShowcaseItems: winnerShowcaseItems.map((item) => ({ ...item })),
     standardsIntro: {
       kicker: "Standards",
       heading: "Where mosque standards meet public service and trust",
@@ -283,6 +298,7 @@ export function defaultHomepageContent(): HomepageContent {
         },
       ],
     },
+    galleryKicker: "Gallery",
     galleryHeading: "Ceremony moments and community stories",
     galleryItems: ceremonyGallery.map((item) => ({
       src: item.src,
@@ -361,6 +377,10 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
   const archiveRaw =
     raw.awardsArchive && typeof raw.awardsArchive === "object"
       ? (raw.awardsArchive as Record<string, unknown>)
+      : {};
+  const awardsFeatureRaw =
+    raw.awardsFeature && typeof raw.awardsFeature === "object"
+      ? (raw.awardsFeature as Record<string, unknown>)
       : {};
   const standardsRaw =
     raw.standardsIntro && typeof raw.standardsIntro === "object"
@@ -456,7 +476,42 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
     awardsArchive: {
       ctaLabel: asString(archiveRaw.ctaLabel, defaults.awardsArchive.ctaLabel),
     },
+    awardsFeature: {
+      kicker: asString(
+        awardsFeatureRaw.kicker,
+        defaults.awardsFeature.kicker,
+      ),
+      viewLabel: asString(
+        awardsFeatureRaw.viewLabel,
+        defaults.awardsFeature.viewLabel,
+      ),
+      nominateLabel: asString(
+        awardsFeatureRaw.nominateLabel,
+        defaults.awardsFeature.nominateLabel,
+      ),
+    },
     winnersIntro: asString(raw.winnersIntro, defaults.winnersIntro),
+    winnerShowcaseItems: (
+      Array.isArray(raw.winnerShowcaseItems)
+        ? raw.winnerShowcaseItems
+        : defaults.winnerShowcaseItems
+    ).map((item, index) => {
+      const fallback =
+        defaults.winnerShowcaseItems[index] ?? defaults.winnerShowcaseItems[0];
+      const row =
+        item && typeof item === "object"
+          ? (item as Record<string, unknown>)
+          : {};
+      return {
+        title: asString(row.title, fallback.title),
+        href: asString(row.href, fallback.href),
+        label: asString(row.label, fallback.label),
+        summary: asString(row.summary, fallback.summary),
+        image: asString(row.image, fallback.image),
+        imageAlt: asString(row.imageAlt, fallback.imageAlt),
+        eyebrow: asString(row.eyebrow, fallback.eyebrow),
+      };
+    }),
     standardsIntro: {
       kicker: asString(standardsRaw.kicker, defaults.standardsIntro.kicker),
       heading: asString(standardsRaw.heading, defaults.standardsIntro.heading),
@@ -532,6 +587,7 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
         };
       }),
     },
+    galleryKicker: asString(raw.galleryKicker, defaults.galleryKicker),
     galleryHeading: asString(raw.galleryHeading, defaults.galleryHeading),
     galleryItems: galleryRaw.map((item, index) => {
       const fallback =
@@ -599,6 +655,20 @@ export function setHomepageField(
     return next;
   }
 
+  if (parts[0] === "winnerShowcaseItems" && parts[1] && parts[2]) {
+    const index = Number.parseInt(parts[1], 10);
+    if (Number.isFinite(index) && next.winnerShowcaseItems[index]) {
+      (next.winnerShowcaseItems[index] as Record<string, string>)[parts[2]] =
+        value;
+    }
+    return next;
+  }
+
+  if (parts[0] === "galleryKicker") {
+    next.galleryKicker = value;
+    return next;
+  }
+
   if (parts[0] === "galleryHeading") {
     next.galleryHeading = value;
     return next;
@@ -611,6 +681,11 @@ export function setHomepageField(
 
   if (parts[0] === "awardsArchive" && parts[1]) {
     (next.awardsArchive as Record<string, string>)[parts[1]] = value;
+    return next;
+  }
+
+  if (parts[0] === "awardsFeature" && parts[1]) {
+    (next.awardsFeature as Record<string, string>)[parts[1]] = value;
     return next;
   }
 

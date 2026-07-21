@@ -2,6 +2,7 @@
 
 import { CmsImage } from "@/components/cms/CmsImage";
 import { CmsEditSafeLink } from "@/components/cms/CmsEditSafeLink";
+import { useSiteCms } from "@/components/cms/SiteCmsProvider";
 import Link from "@/components/AppLink";
 import {
   accreditedMosques,
@@ -9,7 +10,6 @@ import {
   awardArchiveFeatureYears,
   ceremonyGallery,
   featureCards,
-  mainNav,
   serviceCards,
   standards,
 } from "@/lib/content";
@@ -21,6 +21,7 @@ import { AutoScrollRail } from "@/components/AutoScrollRail";
 import { ButtonLink } from "@/components/ButtonLink";
 import { AwardSeal, StarRating } from "@/components/AwardMotifs";
 import { HomeHeroVideo } from "@/components/HomeHeroVideo";
+import { CmsEditableProvider } from "@/components/visual-editor/CmsEditableContext";
 import { EditableImage } from "@/components/visual-editor/EditableImage";
 import { EditableText } from "@/components/visual-editor/EditableText";
 import { WinnersShowcaseInteractive } from "@/components/WinnersShowcaseInteractive";
@@ -929,49 +930,87 @@ export function FinalCta() {
 }
 
 export function SiteFooter() {
-  const footerNav = mainNav.filter((item) => item.href !== "/");
+  const { editMode, chrome, setChromeField } = useSiteCms();
+  const email = chrome.footerEmail || "info@faithassociates.co.uk";
 
   return (
-    <footer className="overflow-hidden bg-[#05070a] px-5 py-14 text-white md:px-8">
-      <div className="mx-auto flex max-w-[1180px] flex-col gap-8 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-2">
-          <p className="text-xs text-white/55">
-            Copyright 2018 - 2026 | Beacon Mosque | All Rights Reserved
-          </p>
-          <p className="text-sm text-white/78">
-            Email:{" "}
-            <Link
-              className="font-medium text-[#d8c0a6] hover:text-white"
-              href="mailto:info@faithassociates.co.uk"
-            >
-              info@faithassociates.co.uk
-            </Link>
-          </p>
+    <CmsEditableProvider editMode={editMode} setField={setChromeField}>
+      <footer className="overflow-hidden bg-[#05070a] px-5 py-14 text-white md:px-8">
+        <div className="mx-auto flex max-w-[1180px] flex-col gap-8 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <p className="text-xs text-white/55">
+              Copyright 2018 - 2026 | Beacon Mosque | All Rights Reserved
+            </p>
+            <p className="text-sm text-white/78">
+              Email:{" "}
+              <Link
+                className="font-medium text-[#d8c0a6] hover:text-white"
+                href={`mailto:${email}`}
+              >
+                <EditableText path="footerEmail" value={email} />
+              </Link>
+            </p>
+          </div>
+          <CmsImage
+            adjustKey="brand:footer"
+            alt="Beacon Mosque"
+            className="h-auto w-36"
+            height={1120}
+            src="/assets/brand/beacon-mosque-white.png"
+            width={3820}
+          />
+          <nav aria-label="Footer">
+            <ul className="flex flex-wrap gap-4 text-xs text-white/60">
+              {chrome.footerNav.map((item, index) => (
+                <li key={`${item.label}-${item.href}-${index}`}>
+                  {editMode ? (
+                    <span className="inline-flex flex-col gap-0.5">
+                      <EditableText
+                        path={`footerNav.${index}.label`}
+                        value={item.label}
+                      />
+                      <EditableText
+                        as="span"
+                        className="text-[0.55rem] text-white/35"
+                        path={`footerNav.${index}.href`}
+                        value={item.href}
+                      />
+                      <button
+                        className="text-left text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-red-400/80 hover:text-red-300"
+                        onClick={() =>
+                          setChromeField(`footerNav.__remove__.${index}`, "")
+                        }
+                        type="button"
+                      >
+                        Remove
+                      </button>
+                    </span>
+                  ) : (
+                    <Link className="hover:text-white" href={item.href}>
+                      {item.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+              {editMode ? (
+                <li>
+                  <button
+                    className="rounded-md border border-dashed border-white/30 px-2.5 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-white/70 transition hover:border-white/55 hover:text-white"
+                    onClick={() => setChromeField("footerNav.__add__", "")}
+                    type="button"
+                  >
+                    Add link
+                  </button>
+                </li>
+              ) : null}
+            </ul>
+          </nav>
         </div>
-        <CmsImage
-          alt="Beacon Mosque"
-          className="h-auto w-36"
-          editable={false}
-          height={1120}
-          src="/assets/brand/beacon-mosque-white.png"
-          width={3820}
-        />
-        <nav aria-label="Footer">
-          <ul className="flex flex-wrap gap-4 text-xs text-white/60">
-            {footerNav.slice(0, 5).map((item) => (
-              <li key={`${item.label}-${item.href}`}>
-                <Link className="hover:text-white" href={item.href}>
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-      <p className="mt-12 flex justify-center gap-[0.35em] text-center text-[clamp(3.2rem,15vw,13rem)] font-black uppercase leading-none tracking-[-0.08em] text-[#d8c0a6]">
-        <span>Beacon</span>
-        <span>Mosque</span>
-      </p>
-    </footer>
+        <p className="mt-12 flex justify-center gap-[0.35em] text-center text-[clamp(3.2rem,15vw,13rem)] font-black uppercase leading-none tracking-[-0.08em] text-[#d8c0a6]">
+          <span>Beacon</span>
+          <span>Mosque</span>
+        </p>
+      </footer>
+    </CmsEditableProvider>
   );
 }

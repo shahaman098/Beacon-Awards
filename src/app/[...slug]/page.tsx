@@ -4,7 +4,9 @@ import { EditableInteriorPage } from "@/components/EditableInteriorPage";
 import {
   applySavedPageContent,
   getOptionalCmsUser,
+  getPageContent,
 } from "@/lib/cms";
+import { applyPageContentFields } from "@/lib/cms-page-content";
 import { getPage, getPageStaticParams } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { withWordPressBody } from "@/lib/wordpress-content";
@@ -39,18 +41,18 @@ export default async function DynamicPage({ params }: PageProps) {
     notFound();
   }
 
-  const [content, user] = await Promise.all([
-    (async () => {
-      const withCms = await applySavedPageContent(page);
-      return withWordPressBody(withCms);
-    })(),
+  const [saved, user] = await Promise.all([
+    getPageContent(page.slug),
     getOptionalCmsUser(),
   ]);
+  const withCms = applyPageContentFields(page, saved.fields);
+  const content = await withWordPressBody(withCms);
 
   return (
     <EditableInteriorPage
       canEdit={Boolean(user)}
       initialEditMode={false}
+      initialFields={saved.fields}
       key={content.slug}
       page={content}
     >

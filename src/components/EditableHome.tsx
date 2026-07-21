@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import Link from "@/components/AppLink";
 import {
   AwardsArchiveSection,
   BeaconExcellenceIntroSection,
@@ -13,6 +11,7 @@ import {
   SectionAwardsDecor,
   SectionKicker,
   ServicesSection,
+  SiteFooter,
   StandardsIntro,
 } from "@/components/HomeSections";
 import { ButtonLink } from "@/components/ButtonLink";
@@ -26,7 +25,6 @@ import {
   VisualEditorProvider,
 } from "@/components/visual-editor/VisualEditorProvider";
 import type { HomepageContent } from "@/lib/cms-homepage";
-import { mainNav } from "@/lib/content";
 
 function EditableHomeHero() {
   const { content, editMode, setField, uploadMedia } = useVisualEditor();
@@ -150,7 +148,7 @@ function EditableHomeHero() {
 function EditableAwardsFeatureSection() {
   const { content } = useVisualEditor();
   const awards = content?.featureCards[0];
-  if (!awards) return null;
+  if (!content || !awards) return null;
 
   return (
     <section className="relative isolate overflow-hidden bg-[#f3f1ed] px-5 py-20 text-black md:px-8 md:py-28">
@@ -168,7 +166,12 @@ function EditableAwardsFeatureSection() {
           />
         </div>
         <div className="max-w-md">
-          <SectionKicker>Awards 2026</SectionKicker>
+          <SectionKicker>
+            <EditableText
+              path="awardsFeature.kicker"
+              value={content.awardsFeature.kicker}
+            />
+          </SectionKicker>
           <EditableText
             as="h2"
             className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl"
@@ -184,12 +187,20 @@ function EditableAwardsFeatureSection() {
             value={awards.text}
           />
           <div className="mt-7 flex flex-wrap gap-3">
-            <EditorialLink href={awards.href}>View awards</EditorialLink>
+            <EditorialLink href={awards.href}>
+              <EditableText
+                path="awardsFeature.viewLabel"
+                value={content.awardsFeature.viewLabel}
+              />
+            </EditorialLink>
             <EditorialLink
               className="!bg-white !text-black hover:!bg-black hover:!text-white"
               href={content.hero.ctaHref}
             >
-              Submit nomination
+              <EditableText
+                path="awardsFeature.nominateLabel"
+                value={content.awardsFeature.nominateLabel}
+              />
             </EditorialLink>
           </div>
         </div>
@@ -218,6 +229,7 @@ function EditableWinnersShowcaseSection() {
             value={content.winnersIntro}
           />
         }
+        items={content.winnerShowcaseItems}
       />
     </section>
   );
@@ -232,7 +244,12 @@ function EditableCeremonyGallerySection() {
       <SectionAwardsDecor left="Gallery" right="Moments" />
       <div className="relative z-10 mx-auto max-w-[1320px] px-5 md:px-8">
         <div className="mb-10 max-w-xl">
-          <SectionKicker>Gallery</SectionKicker>
+          <SectionKicker>
+            <EditableText
+              path="galleryKicker"
+              value={content.galleryKicker}
+            />
+          </SectionKicker>
           <EditableText
             as="h2"
             className="section-word-motion mt-3 text-3xl font-semibold tracking-[-0.04em] md:text-4xl"
@@ -346,55 +363,6 @@ function EditableFinalCta() {
   );
 }
 
-function EditableSiteFooter() {
-  const { content } = useVisualEditor();
-  const footerNav = mainNav.filter((item) => item.href !== "/");
-  const email = content?.footerEmail ?? "info@faithassociates.co.uk";
-
-  return (
-    <footer className="overflow-hidden bg-[#05070a] px-5 py-14 text-white md:px-8">
-      <div className="mx-auto flex max-w-[1180px] flex-col gap-8 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-2">
-          <p className="text-xs text-white/55">
-            Copyright 2018 - 2026 | Beacon Mosque | All Rights Reserved
-          </p>
-          <p className="text-sm text-white/78">
-            Email:{" "}
-            <Link
-              className="font-medium text-[#d8c0a6] hover:text-white"
-              href={`mailto:${email}`}
-            >
-              <EditableText path="footerEmail" value={email} />
-            </Link>
-          </p>
-        </div>
-        <Image
-          alt="Beacon Mosque"
-          className="h-auto w-36"
-          height={1120}
-          src="/assets/brand/beacon-mosque-white.png"
-          width={3820}
-        />
-        <nav aria-label="Footer">
-          <ul className="flex flex-wrap gap-4 text-xs text-white/60">
-            {footerNav.slice(0, 5).map((item) => (
-              <li key={`${item.label}-${item.href}`}>
-                <Link className="hover:text-white" href={item.href}>
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-      <p className="mt-12 flex justify-center gap-[0.35em] text-center text-[clamp(3.2rem,15vw,13rem)] font-black uppercase leading-none tracking-[-0.08em] text-[#d8c0a6]">
-        <span>Beacon</span>
-        <span>Mosque</span>
-      </p>
-    </footer>
-  );
-}
-
 function EditableHomeInner() {
   const { content } = useVisualEditor();
   if (!content) return null;
@@ -422,7 +390,7 @@ function EditableHomeInner() {
           <EditableFinalCta />
         </div>
       </main>
-      <EditableSiteFooter />
+      <SiteFooter />
     </>
   );
 }

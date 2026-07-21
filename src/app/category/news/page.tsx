@@ -1,21 +1,22 @@
 import { InteriorPage } from "@/components/InteriorPage";
 import { EditableInteriorPage } from "@/components/EditableInteriorPage";
 import {
-  applySavedPageContent,
   cmsPostToCard,
   getOptionalCmsUser,
+  getPageContent,
   listPublishedCmsPosts,
 } from "@/lib/cms";
+import { applyPageContentFields } from "@/lib/cms-page-content";
 import { communityStoryCards, pages } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-async function getNewsPage() {
+async function getNewsPageBase() {
   const basePage = pages["category/news"];
   const cmsCards = (await listPublishedCmsPosts()).map(cmsPostToCard);
 
-  const page = {
+  return {
     ...basePage,
     sections: basePage.sections.map((section) =>
       section.kind === "cards" && section.title === "Latest news"
@@ -26,24 +27,27 @@ async function getNewsPage() {
         : section,
     ),
   };
-
-  return applySavedPageContent(page);
 }
 
 export async function generateMetadata() {
-  return pageMetadata(await getNewsPage());
+  const base = await getNewsPageBase();
+  const saved = await getPageContent(base.slug);
+  return pageMetadata(applyPageContentFields(base, saved.fields));
 }
 
 export default async function CategoryNewsPage() {
-  const [page, user] = await Promise.all([
-    getNewsPage(),
+  const base = await getNewsPageBase();
+  const [saved, user] = await Promise.all([
+    getPageContent(base.slug),
     getOptionalCmsUser(),
   ]);
+  const page = applyPageContentFields(base, saved.fields);
 
   return (
     <EditableInteriorPage
       canEdit={Boolean(user)}
       initialEditMode={false}
+      initialFields={saved.fields}
       key={page.slug}
       page={page}
     >

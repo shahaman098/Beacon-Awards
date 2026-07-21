@@ -13,16 +13,19 @@ export function EditableInteriorPage({
   page,
   children,
   initialEditMode = false,
+  initialFields,
 }: {
   canEdit: boolean;
   page: InteriorPageData;
   children: ReactNode;
   initialEditMode?: boolean;
+  initialFields?: Record<string, string>;
 }) {
   return (
     <PageEditorProvider
       canEdit={canEdit}
       initialEditMode={initialEditMode}
+      initialFields={initialFields}
       initialPage={page}
     >
       {children}

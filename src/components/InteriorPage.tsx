@@ -26,6 +26,9 @@ import {
 import { SiteHeader } from "@/components/SiteHeader";
 import { AwardCardAccent, AwardSeal } from "@/components/AwardMotifs";
 import { EditableText } from "@/components/visual-editor/EditableText";
+import { EditableHtml } from "@/components/visual-editor/EditableHtml";
+import { CmsEditOnly } from "@/components/visual-editor/CmsEditOnly";
+import { FormSection } from "@/components/cms/CmsFormSection";
 
 type SectionTone = "white" | "warm";
 
@@ -183,11 +186,16 @@ function LinkCard({
   const isNominationCard = card.meta === "Nominate";
   const isAwardCategoryCard = /category/i.test(card.meta ?? "");
   const imageFit = card.imageFit ?? "cover";
-  const ctaLabel = isNominationCard
+  const defaultCtaLabel = isNominationCard
     ? "Nominate"
     : isAwardCategoryCard
       ? "View"
       : "Open";
+  const ctaLabelNode = pathPrefix ? (
+    <EditableText path={`${pathPrefix}.ctaLabel`} value={defaultCtaLabel} />
+  ) : (
+    defaultCtaLabel
+  );
   const className =
     "group block overflow-hidden border-t border-black/14 pt-5 text-black transition hover:text-emerald-700";
   const content = (
@@ -225,7 +233,7 @@ function LinkCard({
           {isNominationCard || isAwardCategoryCard ? (
             <span className="absolute inset-0 z-10 flex items-center justify-center">
               <span className="inline-flex min-h-11 items-center justify-center border border-gold-300 bg-[linear-gradient(135deg,#f3d98c,#d7a948)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-black shadow-[0_16px_32px_rgba(215,169,72,0.22)] transition group-hover:bg-[linear-gradient(135deg,#f7e3a8,#c99935)]">
-                {ctaLabel}
+                {ctaLabelNode}
               </span>
             </span>
           ) : null}
@@ -269,10 +277,20 @@ function LinkCard({
             </p>
           )
         ) : null}
+        {pathPrefix ? (
+          <CmsEditOnly>
+            <EditableText
+              as="span"
+              className="relative z-10 mt-2 block text-[0.62rem] font-medium normal-case tracking-normal text-black/35"
+              path={`${pathPrefix}.href`}
+              value={card.href}
+            />
+          </CmsEditOnly>
+        ) : null}
       </div>
       {isNominationCard || isAwardCategoryCard ? null : (
         <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.14em] text-black/40 transition group-hover:text-emerald-700">
-          {ctaLabel}
+          {ctaLabelNode}
         </span>
       )}
     </>
@@ -980,15 +998,18 @@ function CardsSection({
 
 function WordPressSection({
   section,
+  sectionIndex,
 }: {
   section: Extract<PageSection, { kind: "wordpress" }>;
+  sectionIndex: number;
 }) {
   return (
     <section className={bandClass("white")}>
       <SectionAwardsDecor left="Archive" right="Content" />
-      <div
+      <EditableHtml
         className="wordpress-content relative z-10 mx-auto max-w-[1180px]"
-        dangerouslySetInnerHTML={{ __html: section.html }}
+        html={section.html}
+        path={`sections.${sectionIndex}.html`}
       />
     </section>
   );
@@ -1101,7 +1122,9 @@ export function MediaSection({
       <div className="relative z-10 mx-auto max-w-[1180px]">
         {section.title ? (
           <div className="mb-10 max-w-xl">
-            <SectionKicker>Media</SectionKicker>
+            <SectionKicker>
+              <EditableText path={`${basePath}.kicker`} value="Media" />
+            </SectionKicker>
             <EditableText
               as="h2"
               className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
@@ -1120,7 +1143,7 @@ export function MediaSection({
           </div>
         ) : null}
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {section.items.map((item) => (
+          {section.items.map((item, itemIndex) => (
             <figure
               className="overflow-hidden border border-black/10 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.08)]"
               key={`${item.type}-${item.src}`}
@@ -1128,6 +1151,7 @@ export function MediaSection({
               {item.type === "image" &&
               !shouldUseMediaLinkFallback(item.src) ? (
                 <CmsImage
+                  adjustKey={`${basePath}.items.${itemIndex}.src`}
                   alt={item.alt ?? item.caption ?? ""}
                   className="aspect-[1.35] w-full bg-navy-950 object-contain"
                   height={720}
@@ -1160,7 +1184,10 @@ export function MediaSection({
                     className="font-semibold text-emerald-800 underline"
                     href={item.src}
                   >
-                    Open video
+                    <EditableText
+                      path={`${basePath}.openVideoLabel`}
+                      value="Open video"
+                    />
                   </a>
                 </video>
               ) : null}
@@ -1180,9 +1207,13 @@ export function MediaSection({
                 <MediaLinkFallback href={item.src} />
               ) : null}
               {item.caption || item.alt ? (
-                <figcaption className="border-t border-black/10 bg-white p-5 text-sm leading-6 text-black/58">
-                  {item.caption || item.alt}
-                </figcaption>
+                <EditableText
+                  as="figcaption"
+                  className="border-t border-black/10 bg-white p-5 text-sm leading-6 text-black/58"
+                  multiline
+                  path={`${basePath}.items.${itemIndex}.caption`}
+                  value={item.caption || item.alt || ""}
+                />
               ) : null}
             </figure>
           ))}
@@ -1220,7 +1251,9 @@ function GallerySection({
       >
         {section.title ? (
           <div className="mx-auto mb-10 max-w-3xl text-center">
-            <SectionKicker>Gallery</SectionKicker>
+            <SectionKicker>
+              <EditableText path={`${basePath}.kicker`} value="Gallery" />
+            </SectionKicker>
             <EditableText
               as="h2"
               className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
@@ -1268,7 +1301,9 @@ function AudioSection({
       <div className="relative z-10 mx-auto max-w-[1180px]">
         <div className="grid gap-10 border-b border-black/12 pb-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-end">
           <div className="max-w-xl">
-            <SectionKicker>{kicker}</SectionKicker>
+            <SectionKicker>
+              <EditableText path={`${basePath}.kicker`} value={kicker} />
+            </SectionKicker>
             <EditableText
               as="h2"
               className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
@@ -1285,29 +1320,46 @@ function AudioSection({
                 value={section.text}
               />
             ) : null}
-            <p>{followUpCopy}</p>
+            <EditableText
+              as="p"
+              multiline
+              path={`${basePath}.followUp`}
+              value={followUpCopy}
+            />
           </div>
         </div>
         <div className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,0.62fr)_minmax(0,1.38fr)] lg:items-start">
           <aside className="border border-black/10 bg-black p-7 text-white shadow-[0_24px_80px_rgba(0,0,0,0.14)] md:p-8">
-            <span className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-gold-200">
-              {asideLabel}
-            </span>
-            <h3 className="mt-5 text-3xl font-semibold leading-[1.02] tracking-[-0.04em]">
-              Four audio sessions for mosque leadership teams
-            </h3>
-            <p className="mt-5 text-sm leading-7 text-white/68">
-              Use these sessions in board meetings, volunteer inductions or
-              planning workshops to anchor conversations in Beacon Mosque’s
-              longer-term direction.
-            </p>
+            <EditableText
+              as="span"
+              className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-gold-200"
+              path={`${basePath}.asideLabel`}
+              value={asideLabel}
+            />
+            <EditableText
+              as="h3"
+              className="mt-5 text-3xl font-semibold leading-[1.02] tracking-[-0.04em]"
+              multiline
+              path={`${basePath}.asideHeading`}
+              value="Four audio sessions for mosque leadership teams"
+            />
+            <EditableText
+              as="p"
+              className="mt-5 text-sm leading-7 text-white/68"
+              multiline
+              path={`${basePath}.asideBody`}
+              value="Use these sessions in board meetings, volunteer inductions or planning workshops to anchor conversations in Beacon Mosque’s longer-term direction."
+            />
             <div className="mt-8 grid gap-3 text-sm text-white/74">
               {section.items.map((item, index) => (
                 <div
                   className="flex items-center justify-between border-t border-white/12 pt-3"
                   key={item.src}
                 >
-                  <span>{item.title}</span>
+                  <EditableText
+                    path={`${basePath}.items.${index}.title`}
+                    value={item.title}
+                  />
                   <span className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-gold-200/88">
                     {String(index + 1).padStart(2, "0")}
                   </span>
@@ -1326,16 +1378,26 @@ function AudioSection({
                     <span className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gold-300/50 bg-[#f7f1df] text-[0.72rem] font-bold tracking-[0.16em] text-black">
                       {String(index + 1).padStart(2, "0")}
                     </span>
-                    <span className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-emerald-700">
-                      30 year plan
-                    </span>
+                    <EditableText
+                      as="span"
+                      className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-emerald-700"
+                      path={`${basePath}.items.${index}.badge`}
+                      value="30 year plan"
+                    />
                   </div>
-                  <h3 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-black">
-                    {item.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-7 text-black/58">
-                    {item.subtitle}
-                  </p>
+                  <EditableText
+                    as="h3"
+                    className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-black"
+                    path={`${basePath}.items.${index}.title`}
+                    value={item.title}
+                  />
+                  <EditableText
+                    as="p"
+                    className="mt-3 text-sm leading-7 text-black/58"
+                    multiline
+                    path={`${basePath}.items.${index}.subtitle`}
+                    value={item.subtitle}
+                  />
                 </div>
                 <div className="mt-8 border-t border-black/10 pt-5">
                   <audio className="w-full" controls preload="none">
@@ -1579,9 +1641,12 @@ function StandardsLandingPage({ page }: { page: InteriorPageData }) {
                   path="title"
                   value={page.title}
                 />
-                <p className="mt-3 max-w-xl text-base font-medium text-sky-100 md:mt-4 md:text-xl">
-                  10 Global Standards to make a Beacon Mosque
-                </p>
+                <EditableText
+                  as="p"
+                  className="mt-3 max-w-xl text-base font-medium text-sky-100 md:mt-4 md:text-xl"
+                  path="landing.heroSubtitle"
+                  value="10 Global Standards to make a Beacon Mosque"
+                />
                 <div className="mt-7 flex flex-wrap gap-3 md:mt-8">
                   <ButtonLink href={`#${standardsSectionId}`}>
                     Explore Standards
@@ -1627,20 +1692,33 @@ function StandardsLandingPage({ page }: { page: InteriorPageData }) {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(216,169,72,0.1),transparent_28%),radial-gradient(circle_at_88%_20%,rgba(28,126,214,0.06),transparent_26%)]" />
           <div className="relative z-10 mx-auto grid w-full max-w-[1240px] gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end lg:gap-16">
             <div>
-              <p className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-gold-400">
-                The framework
-              </p>
-              <p className="mt-4 text-[5.5rem] font-black leading-none tracking-[-0.08em] text-[#040816] md:text-[7rem]">
-                10
-              </p>
-              <p className="mt-3 text-lg font-medium text-black/55 md:text-xl">
-                Global standards. One clear pathway.
-              </p>
+              <EditableText
+                as="p"
+                className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-gold-400"
+                path="landing.frameworkKicker"
+                value="The framework"
+              />
+              <EditableText
+                as="p"
+                className="mt-4 text-[5.5rem] font-black leading-none tracking-[-0.08em] text-[#040816] md:text-[7rem]"
+                path="landing.frameworkCount"
+                value="10"
+              />
+              <EditableText
+                as="p"
+                className="mt-3 text-lg font-medium text-black/55 md:text-xl"
+                path="landing.frameworkTagline"
+                value="Global standards. One clear pathway."
+              />
             </div>
             <div className="max-w-2xl">
-              <h2 className="section-word-motion text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-[2.6rem]">
-                A practical quality system for mosque leadership teams
-              </h2>
+              <EditableText
+                as="h2"
+                className="section-word-motion text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-[2.6rem]"
+                multiline
+                path="landing.frameworkHeading"
+                value="A practical quality system for mosque leadership teams"
+              />
               <EditableText
                 as="p"
                 className="mt-5 text-base leading-8 text-black/62 md:text-[1.05rem] md:leading-9"
@@ -1650,18 +1728,26 @@ function StandardsLandingPage({ page }: { page: InteriorPageData }) {
               />
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
                 {[
-                  { label: "Governance", detail: "Leadership & trust" },
-                  { label: "Operations", detail: "Systems & delivery" },
-                  { label: "Community", detail: "Service & impact" },
-                ].map((item) => (
+                  { label: "Governance", detail: "Leadership & trust", key: "governance" },
+                  { label: "Operations", detail: "Systems & delivery", key: "operations" },
+                  { label: "Community", detail: "Service & impact", key: "community" },
+                ].map((item, pillarIndex) => (
                   <div
                     className="border-t border-black/12 pt-4"
-                    key={item.label}
+                    key={item.key}
                   >
-                    <p className="text-sm font-semibold tracking-[-0.02em] text-black">
-                      {item.label}
-                    </p>
-                    <p className="mt-1 text-sm text-black/48">{item.detail}</p>
+                    <EditableText
+                      as="p"
+                      className="text-sm font-semibold tracking-[-0.02em] text-black"
+                      path={`landing.pillars.${pillarIndex}.label`}
+                      value={item.label}
+                    />
+                    <EditableText
+                      as="p"
+                      className="mt-1 text-sm text-black/48"
+                      path={`landing.pillars.${pillarIndex}.detail`}
+                      value={item.detail}
+                    />
                   </div>
                 ))}
               </div>
@@ -1678,14 +1764,21 @@ function StandardsLandingPage({ page }: { page: InteriorPageData }) {
             <div className="mb-12 flex flex-col gap-4 border-b border-black/10 pb-10 md:mb-14 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
                 <SectionKicker>All standards</SectionKicker>
-                <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-                  Explore each standard in detail
-                </h2>
+                <EditableText
+                  as="h2"
+                  className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+                  multiline
+                  path="landing.directoryHeading"
+                  value="Explore each standard in detail"
+                />
               </div>
-              <p className="max-w-md text-sm leading-7 text-black/52 md:text-right md:text-base md:leading-8">
-                Select a standard to review expectations, evidence themes and
-                how it supports Beacon Mosque accreditation.
-              </p>
+              <EditableText
+                as="p"
+                className="max-w-md text-sm leading-7 text-black/52 md:text-right md:text-base md:leading-8"
+                multiline
+                path="landing.directoryBody"
+                value="Select a standard to review expectations, evidence themes and how it supports Beacon Mosque accreditation."
+              />
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
@@ -1744,16 +1837,23 @@ function StandardsLandingPage({ page }: { page: InteriorPageData }) {
           <div className="relative z-10 mx-auto w-full max-w-[1240px]">
             <div className="mb-12 max-w-2xl md:mb-16">
               <SectionKicker>Accreditation pathway</SectionKicker>
-              <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
-                From review to recognition in three clear stages
-              </h2>
-              <p className="mt-5 max-w-xl text-base leading-8 text-white/68 md:text-lg md:leading-9">
-                Use the standards as a working guide, then move into the
-                accreditation process with confidence and evidence.
-              </p>
+              <EditableText
+                as="h2"
+                className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl"
+                multiline
+                path="landing.pathwayHeading"
+                value="From review to recognition in three clear stages"
+              />
+              <EditableText
+                as="p"
+                className="mt-5 max-w-xl text-base leading-8 text-white/68 md:text-lg md:leading-9"
+                multiline
+                path="landing.pathwayBody"
+                value="Use the standards as a working guide, then move into the accreditation process with confidence and evidence."
+              />
             </div>
             <div className="grid gap-4 md:grid-cols-3 md:gap-5">
-              {pathwaySteps.map((item) => (
+              {pathwaySteps.map((item, stepIndex) => (
                 <div
                   className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-6 md:p-7"
                   key={item.step}
@@ -1761,12 +1861,19 @@ function StandardsLandingPage({ page }: { page: InteriorPageData }) {
                   <p className="text-[0.72rem] font-bold uppercase tracking-[0.24em] text-gold-200">
                     Step {item.step}
                   </p>
-                  <h3 className="mt-5 text-xl font-semibold tracking-[-0.03em] text-white md:text-[1.35rem]">
-                    {item.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-7 text-white/62 md:text-[0.98rem] md:leading-8">
-                    {item.text}
-                  </p>
+                  <EditableText
+                    as="h3"
+                    className="mt-5 text-xl font-semibold tracking-[-0.03em] text-white md:text-[1.35rem]"
+                    path={`landing.pathwaySteps.${stepIndex}.title`}
+                    value={item.title}
+                  />
+                  <EditableText
+                    as="p"
+                    className="mt-3 text-sm leading-7 text-white/62 md:text-[0.98rem] md:leading-8"
+                    multiline
+                    path={`landing.pathwaySteps.${stepIndex}.text`}
+                    value={item.text}
+                  />
                 </div>
               ))}
             </div>
@@ -1879,6 +1986,7 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
         <section className="relative isolate overflow-hidden bg-[#05070a] px-5 pt-24 text-white md:px-8 md:pt-28">
           <div className="absolute inset-0">
             <CmsImage
+              adjustKey="landing.training.hero"
               alt="Beacon Mosque training session"
               className="object-cover opacity-30"
               fill
@@ -1892,7 +2000,12 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
           <div className="relative z-10 mx-auto max-w-[1240px] py-18 md:py-22">
             <div className="flex min-h-[16rem] items-end justify-center text-center">
               <div className="max-w-3xl">
-                <SectionKicker>{page.eyebrow ?? "Training"}</SectionKicker>
+                <SectionKicker>
+                  <EditableText
+                    path="eyebrow"
+                    value={page.eyebrow ?? "Training"}
+                  />
+                </SectionKicker>
                 <EditableText
                   as="h1"
                   className="section-word-motion mt-5 text-4xl font-black leading-[0.98] tracking-[-0.05em] md:text-[4.1rem]"
@@ -1907,13 +2020,16 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
                   value={page.intro}
                 />
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                  {page.ctas?.map((cta) => (
+                  {page.ctas?.map((cta, ctaIndex) => (
                     <ButtonLink
                       href={cta.href}
-                      key={cta.href}
+                      key={`${cta.href}-${ctaIndex}`}
                       variant={cta.variant ?? "primary"}
                     >
-                      {cta.label}
+                      <EditableText
+                        path={`ctas.${ctaIndex}.label`}
+                        value={cta.label}
+                      />
                     </ButtonLink>
                   ))}
                 </div>
@@ -1927,25 +2043,45 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
           <div className="relative z-10 mx-auto max-w-[1180px]">
             <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
               <div>
-                <SectionKicker>Services</SectionKicker>
-                <h2 className="section-word-motion mt-4 max-w-2xl text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-                  Supporting mosque teams through practical leadership and
-                  development
-                </h2>
+                <SectionKicker>
+                  <EditableText
+                    path="landing.training.servicesKicker"
+                    value="Services"
+                  />
+                </SectionKicker>
+                <EditableText
+                  as="h2"
+                  className="section-word-motion mt-4 max-w-2xl text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+                  multiline
+                  path="landing.training.servicesHeading"
+                  value="Supporting mosque teams through practical leadership and development"
+                />
               </div>
               <div className="space-y-5 text-base leading-8 text-black/64 md:text-lg md:leading-9">
-                {introSection?.paragraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
+                {introSection?.paragraphs.map((paragraph, paragraphIndex) => {
+                  const introIndex = page.sections.findIndex(
+                    (section) => section === introSection,
+                  );
+                  return (
+                    <EditableText
+                      as="p"
+                      key={`${paragraph}-${paragraphIndex}`}
+                      multiline
+                      path={`sections.${Math.max(0, introIndex)}.paragraphs.${paragraphIndex}`}
+                      value={paragraph}
+                    />
+                  );
+                })}
               </div>
             </div>
 
             <div className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {serviceCards.map((card) => {
+              {serviceCards.map((card, cardIndex) => {
                 const content = (
                   <>
                     <div className="relative min-h-[31rem] overflow-hidden md:min-h-[33rem]">
                       <CmsImage
+                        adjustKey={`landing.training.services.${cardIndex}.image`}
                         alt={card.imageAlt}
                         className="object-cover transition duration-500 group-hover:scale-105"
                         fill
@@ -1954,12 +2090,19 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
                       />
                       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,7,10,0.06),rgba(5,7,10,0.28)_42%,rgba(5,7,10,0.88))]" />
                       <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(5,7,10,0),rgba(5,7,10,0.9)_22%,rgba(5,7,10,0.96))] px-6 pb-7 pt-16 text-white">
-                        <h3 className="max-w-[14rem] text-[1.55rem] font-semibold leading-[1.08] tracking-[-0.04em] md:max-w-[15rem]">
-                          {card.title}
-                        </h3>
-                        <p className="mt-3 max-w-[17rem] text-sm leading-7 text-white/78 md:max-w-[18rem]">
-                          {card.text}
-                        </p>
+                        <EditableText
+                          as="h3"
+                          className="max-w-[14rem] text-[1.55rem] font-semibold leading-[1.08] tracking-[-0.04em] md:max-w-[15rem]"
+                          path={`landing.training.services.${cardIndex}.title`}
+                          value={card.title}
+                        />
+                        <EditableText
+                          as="p"
+                          className="mt-3 max-w-[17rem] text-sm leading-7 text-white/78 md:max-w-[18rem]"
+                          multiline
+                          path={`landing.training.services.${cardIndex}.text`}
+                          value={card.text}
+                        />
                       </div>
                     </div>
                   </>
@@ -1995,7 +2138,7 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
           <SectionAwardsDecor left="Network" right="Academy" />
           <div className="relative z-10 mx-auto max-w-[1180px]">
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
-              {networkTiles.map((tile) => {
+              {networkTiles.map((tile, tileIndex) => {
                 const tileContent = (
                   <div className="flex h-full flex-col items-center justify-center gap-5 rounded-[1.4rem] border border-black/10 bg-white px-6 py-8 text-center shadow-[0_18px_54px_rgba(8,19,31,0.06)]">
                     <div
@@ -2007,6 +2150,7 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
                         .join(" ")}
                     >
                       <CmsImage
+                        adjustKey={`landing.training.network.${tileIndex}.image`}
                         alt={tile.imageAlt}
                         className={["object-contain", tile.imageClassName]
                           .filter(Boolean)
@@ -2016,9 +2160,12 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
                         src={tile.image}
                       />
                     </div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.14em] text-black/72">
-                      {tile.title}
-                    </p>
+                    <EditableText
+                      as="p"
+                      className="text-sm font-semibold uppercase tracking-[0.14em] text-black/72"
+                      path={`landing.training.network.${tileIndex}.title`}
+                      value={tile.title}
+                    />
                   </div>
                 );
 
@@ -2120,7 +2267,12 @@ function ResourcesLandingPage({ page }: { page: InteriorPageData }) {
           <div className="relative z-10 mx-auto max-w-[1240px]">
             <div className="grid gap-12 lg:grid-cols-[1fr_0.92fr] lg:items-end">
               <div className="max-w-3xl">
-                <SectionKicker>{page.eyebrow ?? "Resources"}</SectionKicker>
+                <SectionKicker>
+                  <EditableText
+                    path="eyebrow"
+                    value={page.eyebrow ?? "Resources"}
+                  />
+                </SectionKicker>
                 <EditableText
                   as="h1"
                   className="section-word-motion mt-5 text-4xl font-black leading-[0.98] tracking-[-0.05em] md:text-[4.2rem]"
@@ -2136,13 +2288,19 @@ function ResourcesLandingPage({ page }: { page: InteriorPageData }) {
                 />
                 <div className="mt-10 flex flex-wrap gap-3">
                   <ButtonLink href="/resources/#resource-library">
-                    Browse resource library
+                    <EditableText
+                      path="landing.resources.ctaLibrary"
+                      value="Browse resource library"
+                    />
                   </ButtonLink>
                   <ButtonLink
                     href="/resources/#audio-library"
                     variant="secondary"
                   >
-                    Listen to audio resources
+                    <EditableText
+                      path="landing.resources.ctaAudio"
+                      value="Listen to audio resources"
+                    />
                   </ButtonLink>
                 </div>
               </div>
@@ -2153,43 +2311,74 @@ function ResourcesLandingPage({ page }: { page: InteriorPageData }) {
                     <p className="text-3xl font-semibold tracking-[-0.05em] text-white">
                       {String(resourcePublications.length).padStart(2, "0")}
                     </p>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-200/86">
-                      Publications
-                    </p>
+                    <EditableText
+                      as="p"
+                      className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-200/86"
+                      path="landing.resources.statPublications"
+                      value="Publications"
+                    />
                   </div>
                   <div className="border border-white/10 bg-black/20 px-4 py-5">
                     <p className="text-3xl font-semibold tracking-[-0.05em] text-white">
                       {String(resourceGuides.length).padStart(2, "0")}
                     </p>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-200/86">
-                      Guides
-                    </p>
+                    <EditableText
+                      as="p"
+                      className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-200/86"
+                      path="landing.resources.statGuides"
+                      value="Guides"
+                    />
                   </div>
                   <div className="border border-white/10 bg-black/20 px-4 py-5">
                     <p className="text-3xl font-semibold tracking-[-0.05em] text-white">
                       {String(audioSection?.items.length ?? 0).padStart(2, "0")}
                     </p>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-200/86">
-                      Audio sessions
-                    </p>
+                    <EditableText
+                      as="p"
+                      className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-200/86"
+                      path="landing.resources.statAudio"
+                      value="Audio sessions"
+                    />
                   </div>
                 </div>
                 <div className="border-t border-white/10 pt-5">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-gold-200">
-                    Featured resources
-                  </p>
+                  <EditableText
+                    as="p"
+                    className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-gold-200"
+                    path="landing.resources.featuredLabel"
+                    value="Featured resources"
+                  />
                   <div className="mt-5 grid gap-3">
-                    {featuredResources.map((card) => {
+                    {featuredResources.map((card, featuredIndex) => {
                       const isExternal = /^https?:\/\//.test(card.href);
+                      const libraryIndex = Math.max(
+                        0,
+                        page.sections.findIndex(
+                          (section) => section === librarySection,
+                        ),
+                      );
+                      const cardIndex = Math.max(
+                        0,
+                        (librarySection?.cards ?? []).findIndex(
+                          (item) => item === card,
+                        ),
+                      );
+                      const cardPath = `sections.${libraryIndex}.cards.${cardIndex}`;
                       const row = (
                         <div className="flex items-start justify-between gap-4 border-t border-white/10 pt-3">
                           <div>
-                            <p className="text-sm font-semibold text-white">
-                              {card.title}
-                            </p>
-                            <p className="mt-1 text-xs leading-6 text-white/60">
-                              {card.meta ?? "Resource"}
-                            </p>
+                            <EditableText
+                              as="p"
+                              className="text-sm font-semibold text-white"
+                              path={`${cardPath}.title`}
+                              value={card.title}
+                            />
+                            <EditableText
+                              as="p"
+                              className="mt-1 text-xs leading-6 text-white/60"
+                              path={`${cardPath}.meta`}
+                              value={card.meta ?? "Resource"}
+                            />
                           </div>
                           <span className="text-lg leading-none text-gold-200">
                             →
@@ -2200,14 +2389,17 @@ function ResourcesLandingPage({ page }: { page: InteriorPageData }) {
                       return isExternal ? (
                         <a
                           href={card.href}
-                          key={card.title}
+                          key={`${card.title}-${featuredIndex}`}
                           rel="noreferrer"
                           target="_blank"
                         >
                           {row}
                         </a>
                       ) : (
-                        <Link href={card.href} key={card.title}>
+                        <Link
+                          href={card.href}
+                          key={`${card.title}-${featuredIndex}`}
+                        >
                           {row}
                         </Link>
                       );
@@ -2223,7 +2415,7 @@ function ResourcesLandingPage({ page }: { page: InteriorPageData }) {
           <SectionAwardsDecor left="Overview" right="Access" />
           <div className="relative z-10 mx-auto max-w-[1180px]">
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {overviewCards.map((card) => (
+              {overviewCards.map((card, overviewIndex) => (
                 <Link
                   className="group flex h-full flex-col rounded-[1.6rem] border border-black/10 bg-white p-7 shadow-[0_18px_54px_rgba(8,19,31,0.06)] transition duration-300 hover:-translate-y-1 hover:border-black/18 hover:shadow-[0_26px_72px_rgba(8,19,31,0.09)]"
                   href={card.href}
@@ -2232,21 +2424,34 @@ function ResourcesLandingPage({ page }: { page: InteriorPageData }) {
                   <div className="flex items-start justify-between gap-5">
                     <div>
                       <span className="inline-flex rounded-full bg-[#f7f1df] px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-gold-500">
-                        {card.label}
+                        <EditableText
+                          path={`landing.resources.overview.${overviewIndex}.label`}
+                          value={card.label}
+                        />
                       </span>
-                      <h2 className="mt-5 text-[1.75rem] font-semibold leading-[1.05] tracking-[-0.04em] text-black">
-                        {card.title}
-                      </h2>
+                      <EditableText
+                        as="h2"
+                        className="mt-5 text-[1.75rem] font-semibold leading-[1.05] tracking-[-0.04em] text-black"
+                        path={`landing.resources.overview.${overviewIndex}.title`}
+                        value={card.title}
+                      />
                     </div>
                     <span className="text-3xl font-semibold tracking-[-0.05em] text-black/82">
                       {card.value}
                     </span>
                   </div>
-                  <p className="mt-6 text-base leading-8 text-black/62">
-                    {card.text}
-                  </p>
+                  <EditableText
+                    as="p"
+                    className="mt-6 text-base leading-8 text-black/62"
+                    multiline
+                    path={`landing.resources.overview.${overviewIndex}.text`}
+                    value={card.text}
+                  />
                   <span className="mt-auto pt-8 text-xs font-semibold uppercase tracking-[0.14em] text-black/42 transition group-hover:text-black">
-                    Open section
+                    <EditableText
+                      path={`landing.resources.overview.${overviewIndex}.cta`}
+                      value="Open section"
+                    />
                   </span>
                 </Link>
               ))}
@@ -2286,31 +2491,43 @@ function ResourcesLandingPage({ page }: { page: InteriorPageData }) {
   );
 }
 
-function StandardsSection() {
+function StandardsSection({ sectionIndex = 0 }: { sectionIndex?: number }) {
+  const basePath = `sections.${sectionIndex}`;
   return (
     <section className={bandClass("warm")}>
       <SectionAwardsDecor left="Standards" right="Trust" />
       <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 md:grid-cols-[0.9fr_1.1fr] md:items-start">
         <div>
-          <SectionKicker>Standards</SectionKicker>
-          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-            Beacon Mosque standards
-          </h2>
-          <p className="mt-6 max-w-xl text-sm leading-7 text-black/58">
-            Explore the quality framework used across the Beacon Mosque
-            accreditation pathway.
-          </p>
+          <SectionKicker>
+            <EditableText path={`${basePath}.kicker`} value="Standards" />
+          </SectionKicker>
+          <EditableText
+            as="h2"
+            className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+            path={`${basePath}.heading`}
+            value="Beacon Mosque standards"
+          />
+          <EditableText
+            as="p"
+            className="mt-6 max-w-xl text-sm leading-7 text-black/58"
+            multiline
+            path={`${basePath}.body`}
+            value="Explore the quality framework used across the Beacon Mosque accreditation pathway."
+          />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {standards.map((standard) => (
+          {standards.map((standard, standardIndex) => (
             <Link
               className="border-t border-black/18 py-5 transition hover:text-emerald-700"
               href={standard.href}
               key={standard.title}
             >
-              <span className="text-base font-semibold tracking-[-0.02em]">
-                {standard.title}
-              </span>
+              <EditableText
+                as="span"
+                className="text-base font-semibold tracking-[-0.02em]"
+                path={`${basePath}.items.${standardIndex}.title`}
+                value={standard.title}
+              />
             </Link>
           ))}
         </div>
@@ -2319,22 +2536,32 @@ function StandardsSection() {
   );
 }
 
-function AccreditedSection() {
+function AccreditedSection({ sectionIndex = 0 }: { sectionIndex?: number }) {
+  const basePath = `sections.${sectionIndex}`;
   return (
     <section className={bandClass("warm")}>
       <SectionAwardsDecor left="Accredited" right="Beacon" />
       <div className="relative z-10 mx-auto max-w-[1180px]">
         <div className="mb-10 max-w-xl">
-          <SectionKicker>Accreditation</SectionKicker>
-          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
-            Accredited Beacon Mosques
-          </h2>
-          <p className="mt-5 text-sm leading-7 text-black/58">
-            Mosques recognised through the Beacon Mosque accreditation pathway.
-          </p>
+          <SectionKicker>
+            <EditableText path={`${basePath}.kicker`} value="Accreditation" />
+          </SectionKicker>
+          <EditableText
+            as="h2"
+            className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+            path={`${basePath}.heading`}
+            value="Accredited Beacon Mosques"
+          />
+          <EditableText
+            as="p"
+            className="mt-5 text-sm leading-7 text-black/58"
+            multiline
+            path={`${basePath}.body`}
+            value="Mosques recognised through the Beacon Mosque accreditation pathway."
+          />
         </div>
         <div className="grid gap-6 md:grid-cols-3">
-          {accreditedMosques.map((mosque) => (
+          {accreditedMosques.map((mosque, mosqueIndex) => (
             <Link
               className="group overflow-hidden border-t border-black/14 pt-5 transition hover:text-emerald-700"
               href={mosque.href}
@@ -2342,6 +2569,7 @@ function AccreditedSection() {
             >
               <div className="relative aspect-[1.42] bg-white">
                 <CmsImage
+                  adjustKey={`${basePath}.items.${mosqueIndex}.image`}
                   alt={mosque.imageAlt}
                   className="object-cover"
                   fill
@@ -2350,12 +2578,19 @@ function AccreditedSection() {
                 />
               </div>
               <div className="pt-5">
-                <h3 className="text-xl font-semibold tracking-[-0.02em] text-current">
-                  {mosque.title}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-black/58">
-                  {mosque.text}
-                </p>
+                <EditableText
+                  as="h3"
+                  className="text-xl font-semibold tracking-[-0.02em] text-current"
+                  path={`${basePath}.items.${mosqueIndex}.title`}
+                  value={mosque.title}
+                />
+                <EditableText
+                  as="p"
+                  className="mt-3 text-sm leading-7 text-black/58"
+                  multiline
+                  path={`${basePath}.items.${mosqueIndex}.text`}
+                  value={mosque.text}
+                />
               </div>
             </Link>
           ))}
@@ -2420,253 +2655,6 @@ function CriteriaSection({
   );
 }
 
-type FormField = {
-  label: string;
-  name: string;
-  type?: string;
-  options?: string[];
-  defaultValue?: string;
-  autoComplete?: string;
-};
-
-const formConfigs: Record<
-  PageForm,
-  {
-    actionLabel: string;
-    fields: FormField[];
-    messageLabel: string;
-  }
-> = {
-  nomination: {
-    actionLabel: "Submit nomination",
-    fields: [
-      {
-        label: "Mosque name",
-        name: "mosque_name",
-        autoComplete: "organization",
-      },
-      { label: "Nominee name", name: "nominee_name", autoComplete: "name" },
-      {
-        label: "Award category",
-        name: "award_category",
-        options: [
-          "Best Run Mosque",
-          "Best Youth Service",
-          "Best Madrassah Service",
-          "Best Women's Service",
-          "Most Impactful Imam",
-          "Best Convert Support Service",
-          "Most Impactful Alimah",
-          "Best Outreach Services",
-          "Best Future Design",
-          "Best Mosque Volunteer",
-        ],
-      },
-      { label: "Your name", name: "your_name", autoComplete: "name" },
-      {
-        label: "Email address",
-        name: "email",
-        type: "email",
-        autoComplete: "email",
-      },
-    ],
-    messageLabel: "Nomination details",
-  },
-  rating: {
-    actionLabel: "Submit rating request",
-    fields: [
-      {
-        label: "Mosque name",
-        name: "mosque_name",
-        autoComplete: "organization",
-      },
-      { label: "City", name: "city", autoComplete: "address-level2" },
-      {
-        label: "Primary contact",
-        name: "primary_contact",
-        autoComplete: "name",
-      },
-      {
-        label: "Email address",
-        name: "email",
-        type: "email",
-        autoComplete: "email",
-      },
-      {
-        label: "Current star rating",
-        name: "current_rating",
-        options: ["Not yet accredited", "3 Star", "4 Star", "5 Star"],
-      },
-    ],
-    messageLabel: "Current services",
-  },
-  contact: {
-    actionLabel: "Send message",
-    fields: [
-      { label: "Name", name: "name", autoComplete: "name" },
-      {
-        label: "Email address",
-        name: "email",
-        type: "email",
-        autoComplete: "email",
-      },
-      { label: "Subject", name: "subject" },
-    ],
-    messageLabel: "Message",
-  },
-};
-
-function Field({ field }: { field: FormField }) {
-  const inputId = `${field.name}-${field.label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-
-  return (
-    <label className="block" htmlFor={inputId}>
-      <span className="text-sm font-semibold text-black/68">
-        {field.label}
-        <span className="ml-1 text-emerald-700" aria-hidden="true">
-          *
-        </span>
-      </span>
-      {field.options ? (
-        <select
-          aria-required="true"
-          className="mt-2 h-12 w-full border border-black/18 bg-white px-4 text-black outline-none transition focus:border-black focus:ring-2 focus:ring-gold-300/35"
-          defaultValue={field.defaultValue ?? ""}
-          id={inputId}
-          name={field.name}
-          required
-        >
-          <option value="">Select an option</option>
-          {field.options.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <input
-          aria-required="true"
-          autoComplete={field.autoComplete}
-          className="mt-2 h-12 w-full border border-black/18 bg-white px-4 text-black outline-none transition focus:border-black focus:ring-2 focus:ring-gold-300/35"
-          defaultValue={field.defaultValue}
-          id={inputId}
-          name={field.name}
-          required
-          type={field.type ?? "text"}
-        />
-      )}
-    </label>
-  );
-}
-
-function FormSection({
-  form,
-  title,
-  text,
-  defaultCategory,
-  embedSrc,
-  embedHeight,
-  sectionIndex,
-  sourcePath,
-}: {
-  form: PageForm;
-  title: string;
-  text: string;
-  defaultCategory?: string;
-  embedSrc?: string;
-  embedHeight?: number;
-  sectionIndex: number;
-  sourcePath: string;
-}) {
-  const basePath = `sections.${sectionIndex}`;
-  const config = formConfigs[form];
-  const fields = config.fields.map((field) =>
-    field.name === "award_category" && defaultCategory
-      ? { ...field, defaultValue: defaultCategory }
-      : field,
-  );
-
-  return (
-    <section className={bandClass("warm")}>
-      <SectionAwardsDecor left="Contact" right="Enquiry" />
-      <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[0.75fr_1fr]">
-        <div>
-          <SectionKicker>Form</SectionKicker>
-          <EditableText
-            as="h2"
-            className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
-            path={`${basePath}.title`}
-            value={title}
-          />
-          <EditableText
-            as="p"
-            className="mt-5 text-sm leading-7 text-black/58"
-            multiline
-            path={`${basePath}.text`}
-            value={text}
-          />
-        </div>
-        {embedSrc ? (
-          <div className="border border-black/10 bg-white p-3 shadow-[0_24px_80px_rgba(0,0,0,0.08)]">
-            <iframe
-              className="w-full border-0"
-              height={embedHeight ?? 700}
-              src={embedSrc}
-              title={title}
-            />
-          </div>
-        ) : (
-        <form
-          action="/api/forms/"
-          className="border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)]"
-          method="post"
-        >
-          <input name="form_type" type="hidden" value={form} />
-          <input name="source_path" type="hidden" value={sourcePath} />
-          <label className="hidden" htmlFor={`${form}-website`}>
-            Website
-            <input
-              autoComplete="off"
-              id={`${form}-website`}
-              name="website"
-              tabIndex={-1}
-              type="text"
-            />
-          </label>
-          <div className="grid gap-5 md:grid-cols-2">
-            {fields.map((field) => (
-              <Field field={field} key={field.name} />
-            ))}
-          </div>
-          <label className="mt-5 block" htmlFor={`${form}-message`}>
-            <span className="text-sm font-semibold text-black/68">
-              {config.messageLabel}
-            </span>
-            <textarea
-              aria-required="true"
-              className="mt-2 min-h-36 w-full border border-black/18 bg-white px-4 py-3 text-black outline-none transition focus:border-black focus:ring-2 focus:ring-gold-300/35"
-              id={`${form}-message`}
-              name="message"
-              required
-            />
-          </label>
-          <button
-            className="mt-6 inline-flex min-h-12 items-center justify-center border border-black bg-black px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-white hover:text-black"
-            type="submit"
-          >
-            {config.actionLabel}
-          </button>
-          <p className="mt-4 text-xs leading-6 text-black/45">
-            Fields marked with an asterisk are required. Your submission is
-            routed through the Beacon Mosque intake workflow.
-          </p>
-        </form>
-        )}
-      </div>
-    </section>
-  );
-}
-
 function RenderSection({
   currentPath,
   index,
@@ -2714,7 +2702,7 @@ function RenderSection({
         />
       );
     case "wordpress":
-      return <WordPressSection section={section} />;
+      return <WordPressSection section={section} sectionIndex={index} />;
     case "media":
       return <MediaSection section={section} sectionIndex={index} />;
     case "gallery":
@@ -2734,9 +2722,9 @@ function RenderSection({
         />
       );
     case "standards":
-      return <StandardsSection />;
+      return <StandardsSection sectionIndex={index} />;
     case "accredited":
-      return <AccreditedSection />;
+      return <AccreditedSection sectionIndex={index} />;
     case "criteria":
       return <CriteriaSection section={section} sectionIndex={index} />;
     case "form":
@@ -2855,6 +2843,19 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
       ? `sections.${introSectionIndex}.paragraphs`
       : null;
 
+  const categoryBlurbs = [
+    `${winnerName} is presented here as the lead archive record for the ${category} category within the Beacon Mosque Awards.`,
+    "This category detail page uses the same editorial structure across the archive so each award category opens with a consistent internal page.",
+    "The category pages connect award recognition, mosque leadership and measurable service in one repeatable presentation system.",
+    "Related cards remain below so visitors can continue through profiles, archive routes and other category records.",
+  ];
+  const recognitionDetails = [
+    ["Profile type", "Category winner"],
+    ["Mosque name", winnerName],
+    ["Award category", category],
+    ["Archive year", archiveYear],
+  ] as const;
+
   return (
     <>
       <SiteHeader />
@@ -2862,12 +2863,18 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
         <section className="relative isolate overflow-hidden bg-[#f6f5ef] px-5 pb-24 pt-36 text-black md:px-8 md:pb-28 md:pt-40">
           <SectionAwardsDecor left="Category" right="Winner" />
           <div className="relative z-10 mx-auto max-w-[1180px]">
-            <span className="text-xs font-bold uppercase tracking-[0.24em] text-gold-500">
-              Category winner
-            </span>
-            <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[0.98] tracking-[-0.04em] md:text-6xl">
-              {winnerName}
-            </h1>
+            <EditableText
+              as="span"
+              className="text-xs font-bold uppercase tracking-[0.24em] text-gold-500"
+              path="landing.awardCategory.eyebrow"
+              value="Category winner"
+            />
+            <EditableText
+              as="h1"
+              className="mt-5 max-w-4xl text-4xl font-black leading-[0.98] tracking-[-0.04em] md:text-6xl"
+              path="landing.awardCategory.winnerName"
+              value={winnerName}
+            />
             <div className="mt-10 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
               <div>
                 <div
@@ -2880,6 +2887,7 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
                 >
                   {heroImageSrc ? (
                     <CmsImage
+                      adjustKey="landing.awardCategory.hero"
                       alt={heroImageAlt}
                       className={
                         usePosterHeroLayout
@@ -2900,24 +2908,36 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
                   ) : null}
                 </div>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  {page.ctas?.map((cta) => (
+                  {page.ctas?.map((cta, ctaIndex) => (
                     <ButtonLink
                       href={cta.href}
-                      key={cta.href}
+                      key={`${cta.href}-${ctaIndex}`}
                       variant={cta.variant ?? "primary"}
                     >
-                      {cta.label}
+                      <EditableText
+                        path={`ctas.${ctaIndex}.label`}
+                        value={cta.label}
+                      />
                     </ButtonLink>
                   ))}
                 </div>
               </div>
               <div className="space-y-8">
                 <div className="space-y-6 pt-3">
-                  {scoreRows.map((row) => (
+                  {scoreRows.map((row, scoreIndex) => (
                     <div key={row.label}>
                       <div className="mb-3 flex items-center justify-between gap-4 text-sm font-semibold text-black">
-                        <span>{row.label}</span>
-                        <span>{row.value}%</span>
+                        <EditableText
+                          path={`landing.awardCategory.scores.${scoreIndex}.label`}
+                          value={row.label}
+                        />
+                        <span>
+                          <EditableText
+                            path={`landing.awardCategory.scores.${scoreIndex}.value`}
+                            value={String(row.value)}
+                          />
+                          %
+                        </span>
                       </div>
                       <div className="h-1.5 bg-black/8">
                         <div
@@ -2929,32 +2949,27 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
                   ))}
                 </div>
                 <div className="grid gap-6 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:grid-cols-2">
-                  <p className="text-sm leading-7 text-black/58">
-                    {winnerName} is presented here as the lead archive record
-                    for the {category} category within the Beacon Mosque Awards.
-                  </p>
-                  <p className="text-sm leading-7 text-black/58">
-                    This category detail page uses the same editorial structure
-                    across the archive so each award category opens with a
-                    consistent internal page.
-                  </p>
-                  <p className="text-sm leading-7 text-black/58">
-                    The category pages connect award recognition, mosque
-                    leadership and measurable service in one repeatable
-                    presentation system.
-                  </p>
-                  <p className="text-sm leading-7 text-black/58">
-                    Related cards remain below so visitors can continue through
-                    profiles, archive routes and other category records.
-                  </p>
+                  {categoryBlurbs.map((blurb, blurbIndex) => (
+                    <EditableText
+                      as="p"
+                      className="text-sm leading-7 text-black/58"
+                      key={`category-blurb-${blurbIndex}`}
+                      multiline
+                      path={`landing.awardCategory.blurbs.${blurbIndex}`}
+                      value={blurb}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
             <div className="mt-20 grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
               <div>
-                <h2 className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl">
-                  Biography
-                </h2>
+                <EditableText
+                  as="h2"
+                  className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl"
+                  path="landing.awardCategory.biographyHeading"
+                  value="Biography"
+                />
                 <div className="mt-6 space-y-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
                   {biographyParagraphs.map((paragraph, paragraphIndex) =>
                     biographyPathBase ? (
@@ -2975,31 +2990,39 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
                       />
                     ),
                   )}
-                  <p>
-                    This internal category page keeps the archive presentation
-                    consistent while still linking visitors into the full awards
-                    history for {archiveYear}.
-                  </p>
+                  <EditableText
+                    as="p"
+                    multiline
+                    path="landing.awardCategory.biographyClosing"
+                    value={`This internal category page keeps the archive presentation consistent while still linking visitors into the full awards history for ${archiveYear}.`}
+                  />
                 </div>
               </div>
               <div className="border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:p-8">
-                <h2 className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl">
-                  Recognition details
-                </h2>
+                <EditableText
+                  as="h2"
+                  className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl"
+                  path="landing.awardCategory.recognitionHeading"
+                  value="Recognition details"
+                />
                 <div className="mt-8 space-y-5">
-                  {[
-                    ["Profile type", "Category winner"],
-                    ["Mosque name", winnerName],
-                    ["Award category", category],
-                    ["Archive year", archiveYear],
-                  ].map(([label, value]) => (
-                    <div className="border-b border-black/10 pb-4" key={label}>
-                      <p className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-black/38">
-                        {label}
-                      </p>
-                      <p className="mt-2 text-lg font-semibold tracking-[-0.02em] text-black">
-                        {value}
-                      </p>
+                  {recognitionDetails.map(([label, value], detailIndex) => (
+                    <div
+                      className="border-b border-black/10 pb-4"
+                      key={`${label}-${detailIndex}`}
+                    >
+                      <EditableText
+                        as="p"
+                        className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-black/38"
+                        path={`landing.awardCategory.details.${detailIndex}.label`}
+                        value={label}
+                      />
+                      <EditableText
+                        as="p"
+                        className="mt-2 text-lg font-semibold tracking-[-0.02em] text-black"
+                        path={`landing.awardCategory.details.${detailIndex}.value`}
+                        value={value}
+                      />
                     </div>
                   ))}
                 </div>
@@ -3039,6 +3062,18 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
       section.kind === "cards",
   );
   const usePosterHeroLayout = isAwardWinnerPosterImage(page.image);
+  const profileBlurbs = [
+    `${winnerName} is recognised within the Beacon Mosque Awards archive for sustained community impact, trusted leadership and visible service across mosque life.`,
+    "This winner profile follows a consistent editorial format across the archive, highlighting the same standards of contribution, leadership and service for every card detail page.",
+    "The Beacon Mosque Awards recognise institutions whose work strengthens worshippers, families and neighbourhoods through practical excellence and reliable stewardship.",
+    "Each page in this winner series keeps the presentation intentionally minimal so the archive reads as a coherent national record of recognition.",
+  ];
+  const recognitionDetails = [
+    ["Profile type", "Winner"],
+    ["Mosque name", winnerName],
+    ["Award category", category],
+    ["Archive year", archiveYear],
+  ] as const;
 
   return (
     <>
@@ -3047,12 +3082,18 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
         <section className="relative isolate overflow-hidden bg-[#f6f5ef] px-5 pb-24 pt-36 text-black md:px-8 md:pb-28 md:pt-40">
           <SectionAwardsDecor left="Winner" right="Profile" />
           <div className="relative z-10 mx-auto max-w-[1180px]">
-            <span className="text-xs font-bold uppercase tracking-[0.24em] text-gold-500">
-              Winner
-            </span>
-            <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[0.98] tracking-[-0.04em] md:text-6xl">
-              {winnerName}
-            </h1>
+            <EditableText
+              as="span"
+              className="text-xs font-bold uppercase tracking-[0.24em] text-gold-500"
+              path="landing.awardProfile.eyebrow"
+              value="Winner"
+            />
+            <EditableText
+              as="h1"
+              className="mt-5 max-w-4xl text-4xl font-black leading-[0.98] tracking-[-0.04em] md:text-6xl"
+              path="landing.awardProfile.winnerName"
+              value={winnerName}
+            />
             <div className="mt-10 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
               <div>
                 <div
@@ -3065,6 +3106,7 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
                 >
                   {page.image ? (
                     <CmsImage
+                      adjustKey="landing.awardProfile.hero"
                       alt={page.imageAlt ?? winnerName}
                       className={
                         usePosterHeroLayout ? "object-contain" : "object-cover"
@@ -3083,24 +3125,36 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
                   ) : null}
                 </div>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  {page.ctas?.map((cta) => (
+                  {page.ctas?.map((cta, ctaIndex) => (
                     <ButtonLink
                       href={cta.href}
-                      key={cta.href}
+                      key={`${cta.href}-${ctaIndex}`}
                       variant={cta.variant ?? "primary"}
                     >
-                      {cta.label}
+                      <EditableText
+                        path={`ctas.${ctaIndex}.label`}
+                        value={cta.label}
+                      />
                     </ButtonLink>
                   ))}
                 </div>
               </div>
               <div className="space-y-8">
                 <div className="space-y-6 pt-3">
-                  {scoreRows.map((row) => (
+                  {scoreRows.map((row, scoreIndex) => (
                     <div key={row.label}>
                       <div className="mb-3 flex items-center justify-between gap-4 text-sm font-semibold text-black">
-                        <span>{row.label}</span>
-                        <span>{row.value}%</span>
+                        <EditableText
+                          path={`landing.awardProfile.scores.${scoreIndex}.label`}
+                          value={row.label}
+                        />
+                        <span>
+                          <EditableText
+                            path={`landing.awardProfile.scores.${scoreIndex}.value`}
+                            value={String(row.value)}
+                          />
+                          %
+                        </span>
                       </div>
                       <div className="h-1.5 bg-black/8">
                         <div
@@ -3112,35 +3166,27 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
                   ))}
                 </div>
                 <div className="grid gap-6 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:grid-cols-2">
-                  <p className="text-sm leading-7 text-black/58">
-                    {winnerName} is recognised within the Beacon Mosque Awards
-                    archive for sustained community impact, trusted leadership
-                    and visible service across mosque life.
-                  </p>
-                  <p className="text-sm leading-7 text-black/58">
-                    This winner profile follows a consistent editorial format
-                    across the archive, highlighting the same standards of
-                    contribution, leadership and service for every card detail
-                    page.
-                  </p>
-                  <p className="text-sm leading-7 text-black/58">
-                    The Beacon Mosque Awards recognise institutions whose work
-                    strengthens worshippers, families and neighbourhoods through
-                    practical excellence and reliable stewardship.
-                  </p>
-                  <p className="text-sm leading-7 text-black/58">
-                    Each page in this winner series keeps the presentation
-                    intentionally minimal so the archive reads as a coherent
-                    national record of recognition.
-                  </p>
+                  {profileBlurbs.map((blurb, blurbIndex) => (
+                    <EditableText
+                      as="p"
+                      className="text-sm leading-7 text-black/58"
+                      key={`profile-blurb-${blurbIndex}`}
+                      multiline
+                      path={`landing.awardProfile.blurbs.${blurbIndex}`}
+                      value={blurb}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
             <div className="mt-20 grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
               <div>
-                <h2 className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl">
-                  Biography
-                </h2>
+                <EditableText
+                  as="h2"
+                  className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl"
+                  path="landing.awardProfile.biographyHeading"
+                  value="Biography"
+                />
                 <EditableText
                   as="p"
                   className="mt-6 text-base leading-8 text-black/62 md:text-lg md:leading-9"
@@ -3148,31 +3194,39 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
                   path="intro"
                   value={page.intro}
                 />
-                <p className="mt-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
-                  This archive profile presents the recognised winner in a
-                  repeatable, editorial page structure that can be reused across
-                  every linked winner card without altering the overall
-                  experience.
-                </p>
+                <EditableText
+                  as="p"
+                  className="mt-5 text-base leading-8 text-black/62 md:text-lg md:leading-9"
+                  multiline
+                  path="landing.awardProfile.biographyClosing"
+                  value="This archive profile presents the recognised winner in a repeatable, editorial page structure that can be reused across every linked winner card without altering the overall experience."
+                />
               </div>
               <div className="border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:p-8">
-                <h2 className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl">
-                  Recognition details
-                </h2>
+                <EditableText
+                  as="h2"
+                  className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl"
+                  path="landing.awardProfile.recognitionHeading"
+                  value="Recognition details"
+                />
                 <div className="mt-8 space-y-5">
-                  {[
-                    ["Profile type", "Winner"],
-                    ["Mosque name", winnerName],
-                    ["Award category", category],
-                    ["Archive year", archiveYear],
-                  ].map(([label, value]) => (
-                    <div className="border-b border-black/10 pb-4" key={label}>
-                      <p className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-black/38">
-                        {label}
-                      </p>
-                      <p className="mt-2 text-lg font-semibold tracking-[-0.02em] text-black">
-                        {value}
-                      </p>
+                  {recognitionDetails.map(([label, value], detailIndex) => (
+                    <div
+                      className="border-b border-black/10 pb-4"
+                      key={`${label}-${detailIndex}`}
+                    >
+                      <EditableText
+                        as="p"
+                        className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-black/38"
+                        path={`landing.awardProfile.details.${detailIndex}.label`}
+                        value={label}
+                      />
+                      <EditableText
+                        as="p"
+                        className="mt-2 text-lg font-semibold tracking-[-0.02em] text-black"
+                        path={`landing.awardProfile.details.${detailIndex}.value`}
+                        value={value}
+                      />
                     </div>
                   ))}
                 </div>
