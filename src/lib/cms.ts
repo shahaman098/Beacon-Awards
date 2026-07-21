@@ -23,12 +23,19 @@ import {
   type SiteChrome,
 } from "@/lib/cms-site-chrome";
 import {
-  applyPageContentFields,
   emptyPageContent,
   mergePageContentPayload,
   pageContentId,
   type PageContentPayload,
 } from "@/lib/cms-page-content";
+import {
+  documentToInteriorPage,
+  interiorPageToDocument,
+  mergePageDocument,
+  migrateFieldsToDocument,
+  parsePageDocument,
+  type PageDocument,
+} from "@/lib/cms-page-document";
 import type { InteriorPage } from "@/lib/pages";
 
 export type CmsEntryKind = "page" | "post";
@@ -1078,8 +1085,99 @@ export async function savePageContent(
 export async function applySavedPageContent(
   page: InteriorPage,
 ): Promise<InteriorPage> {
-  const saved = await getPageContent(page.slug);
-  return applyPageContentFields(page, saved.fields);
+  return resolveInteriorPage(page);
+}
+
+async function readStoredPageDocument(
+  routeSlug: string,
+): Promise<PageDocument | null> {
+  const db = await tryGetCmsDb();
+  if (!db) return null;
+
+  try {
+    const row = await db
+      .prepare(
+        `SELECT document
+         FROM cms_page_documents
+         WHERE route_slug = ?1`,
+      )
+      .bind(routeSlug)
+      .first<{ document: string }>();
+
+    if (!row?.document) return null;
+    return parsePageDocument(JSON.parse(row.document));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Merge order: code default → legacy page:{slug} fields → DB document overlay.
+ */
+export async function getPageDocument(
+  routeSlug: string,
+  basePage: InteriorPage,
+): Promise<PageDocument> {
+  const legacy = await getPageContent(routeSlug);
+  const fromFields = migrateFieldsToDocument(basePage, legacy.fields);
+  const stored = await readStoredPageDocument(routeSlug);
+  return mergePageDocument(fromFields, stored);
+}
+
+export async function resolveInteriorPage(
+  page: InteriorPage,
+): Promise<InteriorPage> {
+  const document = await getPageDocument(page.slug, page);
+  return documentToInteriorPage(document, page.slug, {
+    heroVideo: page.heroVideo,
+    heroVideoPoster: page.heroVideoPoster,
+  });
+}
+
+export async function savePageDocument(
+  routeSlug: string,
+  document: PageDocument,
+  userId: string,
+  note = "",
+) {
+  const db = await getDb();
+  const now = new Date().toISOString();
+  const parsed =
+    parsePageDocument(document) ??
+    interiorPageToDocument({
+      slug: routeSlug,
+      title: document.title,
+      eyebrow: document.eyebrow,
+      intro: document.intro,
+      image: document.image,
+      imageAlt: document.imageAlt,
+      ctas: document.ctas,
+      sections: document.sections,
+    });
+  const payload = JSON.stringify(parsed);
+  const revisionId = crypto.randomUUID();
+
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO cms_page_documents (route_slug, schema_version, document, updated_at, updated_by)
+         VALUES (?1, ?2, ?3, ?4, ?5)
+         ON CONFLICT(route_slug) DO UPDATE SET
+           schema_version = excluded.schema_version,
+           document = excluded.document,
+           updated_at = excluded.updated_at,
+           updated_by = excluded.updated_by`,
+      )
+      .bind(routeSlug, parsed.schemaVersion, payload, now, userId),
+    db
+      .prepare(
+        `INSERT INTO cms_page_revisions (id, route_slug, document, created_at, created_by, note)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
+      )
+      .bind(revisionId, routeSlug, payload, now, userId, note),
+  ]);
+
+  return parsed;
 }
 
 export async function getOptionalCmsUser() {

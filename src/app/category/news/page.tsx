@@ -3,10 +3,11 @@ import { EditableInteriorPage } from "@/components/EditableInteriorPage";
 import {
   cmsPostToCard,
   getOptionalCmsUser,
-  getPageContent,
   listPublishedCmsPosts,
+  resolveInteriorPage,
 } from "@/lib/cms";
-import { applyPageContentFields } from "@/lib/cms-page-content";
+import { collectEditablePageFields } from "@/lib/cms-page-content";
+import { withStableSectionIds } from "@/lib/cms-page-document";
 import { communityStoryCards, pages } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 
@@ -31,23 +32,25 @@ async function getNewsPageBase() {
 
 export async function generateMetadata() {
   const base = await getNewsPageBase();
-  const saved = await getPageContent(base.slug);
-  return pageMetadata(applyPageContentFields(base, saved.fields));
+  const page = await resolveInteriorPage(base);
+  return pageMetadata(page);
 }
 
 export default async function CategoryNewsPage() {
   const base = await getNewsPageBase();
-  const [saved, user] = await Promise.all([
-    getPageContent(base.slug),
+  const [page, user] = await Promise.all([
+    resolveInteriorPage(base),
     getOptionalCmsUser(),
   ]);
-  const page = applyPageContentFields(base, saved.fields);
+  const initialDocument = withStableSectionIds(page);
+  const initialFields = collectEditablePageFields(page);
 
   return (
     <EditableInteriorPage
       canEdit={Boolean(user)}
+      initialDocument={initialDocument}
       initialEditMode={false}
-      initialFields={saved.fields}
+      initialFields={initialFields}
       key={page.slug}
       page={page}
     >

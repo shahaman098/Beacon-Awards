@@ -1,12 +1,9 @@
 import { notFound } from "next/navigation";
 import { InteriorPage } from "@/components/InteriorPage";
 import { EditableInteriorPage } from "@/components/EditableInteriorPage";
-import {
-  applySavedPageContent,
-  getOptionalCmsUser,
-  getPageContent,
-} from "@/lib/cms";
-import { applyPageContentFields } from "@/lib/cms-page-content";
+import { getOptionalCmsUser, resolveInteriorPage } from "@/lib/cms";
+import { collectEditablePageFields } from "@/lib/cms-page-content";
+import { withStableSectionIds } from "@/lib/cms-page-document";
 import { getPage, getPageStaticParams } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { withWordPressBody } from "@/lib/wordpress-content";
@@ -29,7 +26,7 @@ export async function generateMetadata({ params }: PageProps) {
     return {};
   }
 
-  const editable = await applySavedPageContent(page);
+  const editable = await resolveInteriorPage(page);
   return pageMetadata(editable);
 }
 
@@ -41,18 +38,20 @@ export default async function DynamicPage({ params }: PageProps) {
     notFound();
   }
 
-  const [saved, user] = await Promise.all([
-    getPageContent(page.slug),
+  const [resolved, user] = await Promise.all([
+    resolveInteriorPage(page),
     getOptionalCmsUser(),
   ]);
-  const withCms = applyPageContentFields(page, saved.fields);
-  const content = await withWordPressBody(withCms);
+  const content = await withWordPressBody(resolved);
+  const initialDocument = withStableSectionIds(content);
+  const initialFields = collectEditablePageFields(content);
 
   return (
     <EditableInteriorPage
       canEdit={Boolean(user)}
+      initialDocument={initialDocument}
       initialEditMode={false}
-      initialFields={saved.fields}
+      initialFields={initialFields}
       key={content.slug}
       page={content}
     >

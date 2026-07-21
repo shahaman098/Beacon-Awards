@@ -15,7 +15,22 @@ import {
   type ContentEditorRegistration,
 } from "@/components/cms/SiteCmsProvider";
 import { CmsEditableProvider } from "@/components/visual-editor/CmsEditableContext";
-import { collectEditablePageFields } from "@/lib/cms-page-content";
+import {
+  collectEditablePageFields,
+  setPageField,
+} from "@/lib/cms-page-content";
+import {
+  addSectionToDocument,
+  documentToInteriorPage,
+  interiorPageToDocument,
+  isAddableSectionKind,
+  isPageStructureLocked,
+  removeSectionFromDocument,
+  reorderSectionsInDocument,
+  type AddableSectionKind,
+  type IdentifiedPageSection,
+  type PageDocument,
+} from "@/lib/cms-page-document";
 import type { InteriorPage } from "@/lib/pages";
 
 type PageEditorContextValue = {
@@ -25,12 +40,22 @@ type PageEditorContextValue = {
   saving: boolean;
   status: string | null;
   routeSlug: string;
+  page: InteriorPage;
+  document: PageDocument;
+  structureEditable: boolean;
   setEditMode: (value: boolean) => void;
   setField: (path: string, value: string) => void;
+  addSection: (kind: AddableSectionKind, afterIndex?: number) => void;
+  removeSection: (index: number) => void;
+  moveSection: (from: number, to: number) => void;
   save: () => Promise<void>;
 };
 
 const PageEditorContext = createContext<PageEditorContextValue | null>(null);
+
+export function usePageEditorOptional() {
+  return useContext(PageEditorContext);
+}
 
 export function usePageEditor() {
   const value = useContext(PageEditorContext);
@@ -42,23 +67,67 @@ export function usePageEditor() {
       saving: false,
       status: null,
       routeSlug: "",
+      page: {
+        slug: "",
+        title: "",
+        intro: "",
+        sections: [],
+      } satisfies InteriorPage,
+      document: {
+        schemaVersion: 1,
+        title: "",
+        intro: "",
+        sections: [],
+      } satisfies PageDocument,
+      structureEditable: false,
       setEditMode: () => undefined,
       setField: () => undefined,
+      addSection: () => undefined,
+      removeSection: () => undefined,
+      moveSection: () => undefined,
       save: async () => undefined,
     };
   }
   return value;
 }
 
+function pageFromState(
+  base: InteriorPage,
+  document: PageDocument,
+): InteriorPage {
+  return documentToInteriorPage(document, base.slug, {
+    heroVideo: base.heroVideo,
+    heroVideoPoster: base.heroVideoPoster,
+  });
+}
+
+function preserveSectionIds(
+  previous: IdentifiedPageSection[],
+  nextPage: InteriorPage,
+): IdentifiedPageSection[] {
+  if (previous.length === nextPage.sections.length) {
+    return nextPage.sections.map((section, index) => ({
+      ...section,
+      id: previous[index]?.id ?? `sec-${index}-${section.kind}`,
+    }));
+  }
+  return nextPage.sections.map((section, index) => ({
+    ...section,
+    id: previous[index]?.id ?? `sec-${index}-${section.kind}`,
+  }));
+}
+
 export function PageEditorProvider({
   canEdit,
   initialPage,
+  initialDocument,
   initialFields,
   initialEditMode = false,
   children,
 }: {
   canEdit: boolean;
   initialPage: InteriorPage;
+  initialDocument?: PageDocument;
   initialFields?: Record<string, string>;
   initialEditMode?: boolean;
   children: ReactNode;
@@ -68,12 +137,27 @@ export function PageEditorProvider({
     Boolean(canEdit && initialEditMode),
   );
   const routeSlug = initialPage.slug;
+  const canStructureEdit = canEdit && !isPageStructureLocked(initialPage);
+
+  const [document, setDocument] = useState<PageDocument>(
+    () => initialDocument ?? interiorPageToDocument(initialPage),
+  );
+  const documentRef = useRef(document);
+  documentRef.current = document;
+
+  const [page, setPage] = useState<InteriorPage>(() =>
+    pageFromState(initialPage, document),
+  );
+  const pageRef = useRef(page);
+  pageRef.current = page;
+
   const [fields, setFields] = useState<Record<string, string>>(() => ({
-    ...collectEditablePageFields(initialPage),
+    ...collectEditablePageFields(page),
     ...(initialFields ?? {}),
   }));
   const fieldsRef = useRef(fields);
   fieldsRef.current = fields;
+
   const [dirty, setDirty] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -81,15 +165,94 @@ export function PageEditorProvider({
   const editMode = site ? site.editMode : Boolean(canEdit && localEditMode);
   const setEditMode = site ? site.setEditMode : setLocalEditMode;
 
-  const setField = useCallback((path: string, value: string) => {
-    setFields((current) => {
-      const next = { ...current, [path]: value };
-      fieldsRef.current = next;
-      return next;
-    });
-    setDirty(true);
-    setStatus("Unsaved changes");
-  }, []);
+  const syncFromDocument = useCallback(
+    (nextDocument: PageDocument, markDirty: boolean) => {
+      const nextPage = pageFromState(initialPage, nextDocument);
+      documentRef.current = nextDocument;
+      pageRef.current = nextPage;
+      setDocument(nextDocument);
+      setPage(nextPage);
+      const nextFields = collectEditablePageFields(nextPage);
+      fieldsRef.current = nextFields;
+      setFields(nextFields);
+      if (markDirty) {
+        setDirty(true);
+        setStatus("Unsaved changes");
+      }
+    },
+    [initialPage],
+  );
+
+  const setField = useCallback(
+    (path: string, value: string) => {
+      const nextPage = setPageField(pageRef.current, path, value);
+      const nextDocument: PageDocument = {
+        ...documentRef.current,
+        title: nextPage.title,
+        ...(nextPage.eyebrow ? { eyebrow: nextPage.eyebrow } : {}),
+        intro: nextPage.intro,
+        ...(nextPage.image ? { image: nextPage.image } : {}),
+        ...(nextPage.imageAlt ? { imageAlt: nextPage.imageAlt } : {}),
+        ...(nextPage.ctas?.length ? { ctas: nextPage.ctas } : {}),
+        sections: preserveSectionIds(
+          documentRef.current.sections,
+          nextPage,
+        ),
+      };
+      documentRef.current = nextDocument;
+      pageRef.current = nextPage;
+      setDocument(nextDocument);
+      setPage(nextPage);
+      setFields((current) => {
+        const next = { ...current, [path]: value };
+        // Rebuild gallery list fields when list path updates.
+        if (path.includes(".__list__") || path.startsWith("sections.")) {
+          const rebuilt = {
+            ...collectEditablePageFields(nextPage),
+            [path]: value,
+          };
+          fieldsRef.current = rebuilt;
+          return rebuilt;
+        }
+        fieldsRef.current = next;
+        return next;
+      });
+      setDirty(true);
+      setStatus("Unsaved changes");
+    },
+    [],
+  );
+
+  const addSection = useCallback(
+    (kind: AddableSectionKind, afterIndex?: number) => {
+      if (!canStructureEdit || !isAddableSectionKind(kind)) return;
+      const next = addSectionToDocument(
+        documentRef.current,
+        kind,
+        afterIndex,
+      );
+      syncFromDocument(next, true);
+    },
+    [canStructureEdit, syncFromDocument],
+  );
+
+  const removeSection = useCallback(
+    (index: number) => {
+      if (!canStructureEdit) return;
+      const next = removeSectionFromDocument(documentRef.current, index);
+      syncFromDocument(next, true);
+    },
+    [canStructureEdit, syncFromDocument],
+  );
+
+  const moveSection = useCallback(
+    (from: number, to: number) => {
+      if (!canStructureEdit) return;
+      const next = reorderSectionsInDocument(documentRef.current, from, to);
+      syncFromDocument(next, true);
+    },
+    [canStructureEdit, syncFromDocument],
+  );
 
   const persistContent = useCallback(async () => {
     setStatus("Saving…");
@@ -99,24 +262,23 @@ export function PageEditorProvider({
       credentials: "include",
       body: JSON.stringify({
         routeSlug,
-        fields: fieldsRef.current,
+        document: documentRef.current,
       }),
     });
     const payload = (await response.json()) as {
-      content?: { fields?: Record<string, string> };
+      document?: PageDocument;
       error?: string;
     };
     if (response.status === 401) {
       throw new Error("Sign in required. Open /cms/login/ and try again.");
     }
-    if (!response.ok || !payload.content) {
+    if (!response.ok || !payload.document) {
       throw new Error(payload.error || "Save failed.");
     }
-    fieldsRef.current = payload.content.fields ?? fieldsRef.current;
-    setFields(fieldsRef.current);
+    syncFromDocument(payload.document, false);
     setDirty(false);
     setStatus("Saved");
-  }, [routeSlug]);
+  }, [routeSlug, syncFromDocument]);
 
   const save = useCallback(async () => {
     setSaving(true);
@@ -155,8 +317,14 @@ export function PageEditorProvider({
       saving,
       status,
       routeSlug,
+      page,
+      document,
+      structureEditable: canStructureEdit && canEdit && editMode,
       setEditMode,
       setField,
+      addSection,
+      removeSection,
+      moveSection,
       save,
     }),
     [
@@ -166,8 +334,14 @@ export function PageEditorProvider({
       saving,
       status,
       routeSlug,
+      page,
+      document,
+      canStructureEdit,
       setEditMode,
       setField,
+      addSection,
+      removeSection,
+      moveSection,
       save,
     ],
   );
@@ -183,4 +357,10 @@ export function PageEditorProvider({
       </CmsEditableProvider>
     </PageEditorContext.Provider>
   );
+}
+
+/** Prefer live editor page when mounted under PageEditorProvider. */
+export function useLiveInteriorPage(fallback: InteriorPage): InteriorPage {
+  const editor = usePageEditorOptional();
+  return editor?.page ?? fallback;
 }

@@ -1,6 +1,12 @@
+"use client";
+
 import { CmsImage } from "@/components/cms/CmsImage";
 import { CmsEditSafeLink } from "@/components/cms/CmsEditSafeLink";
 import { EditableGalleryGrid } from "@/components/cms/EditableGalleryGrid";
+import {
+  SectionAddPicker,
+  SectionStructureChrome,
+} from "@/components/cms/InteriorSectionChrome";
 import Link from "@/components/AppLink";
 import {
   accreditedMosques,
@@ -12,7 +18,6 @@ import {
 } from "@/lib/content";
 import type {
   InteriorPage as InteriorPageData,
-  PageForm,
   PageSection,
 } from "@/lib/pages";
 import { ButtonLink } from "@/components/ButtonLink";
@@ -29,6 +34,11 @@ import { EditableText } from "@/components/visual-editor/EditableText";
 import { EditableHtml } from "@/components/visual-editor/EditableHtml";
 import { CmsEditOnly } from "@/components/visual-editor/CmsEditOnly";
 import { FormSection } from "@/components/cms/CmsFormSection";
+import {
+  useLiveInteriorPage,
+  usePageEditorOptional,
+} from "@/components/visual-editor/PageEditorProvider";
+import { isPageStructureLocked } from "@/lib/cms-page-document";
 
 type SectionTone = "white" | "warm";
 
@@ -606,43 +616,44 @@ function ResourceLibraryCard({
         ? "Open guide"
         : "Read guide";
   const metaLabel =
-    card.meta ?? (kind === "publication" ? "Publication" : "Guide");
+    card.meta ?? (kind === "publication" ? "Awards booklet" : "Practical guide");
+
   const content = (
-    <article
-      className={[
-        "group flex h-full flex-col rounded-[1.6rem] border border-black/10 p-6 shadow-[0_18px_48px_rgba(8,19,31,0.05)] transition duration-300 hover:-translate-y-1 hover:border-black/24 hover:shadow-[0_24px_64px_rgba(8,19,31,0.1)]",
-        kind === "publication" ? "bg-[#f7f4ee]" : "bg-white",
-      ].join(" ")}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <span className="inline-flex h-10 min-w-[3rem] items-center justify-center rounded-md border border-gold-300/40 bg-white px-3 text-[0.72rem] font-bold tracking-[0.16em] text-black shadow-[inset_0_-1px_0_rgba(0,0,0,0.03)]">
+    <article className="group flex h-full flex-col rounded-[1.4rem] border border-black/10 bg-white px-7 py-8 transition duration-300 hover:-translate-y-0.5 hover:border-black/18 hover:bg-[#faf8f4] hover:shadow-[0_18px_48px_rgba(8,19,31,0.06)] md:px-8 md:py-9">
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-[0.72rem] font-semibold tracking-[0.16em] text-black/28">
           {String(index + 1).padStart(2, "0")}
         </span>
-        <span className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-emerald-700">
+        <span className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-gold-500">
           {metaLabel}
         </span>
       </div>
-      <h3 className="mt-5 text-[1.55rem] font-semibold leading-[1.12] tracking-[-0.03em] text-black">
+      <h3 className="mt-8 max-w-[16ch] text-[1.35rem] font-semibold leading-[1.18] tracking-[-0.035em] text-black md:text-[1.45rem]">
         {card.title}
       </h3>
-      <p className="mt-4 text-sm leading-7 text-black/60">{card.text}</p>
-      <span className="mt-auto pt-8">
-        <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-black bg-black px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-white transition group-hover:bg-white group-hover:text-black">
-          {actionLabel}
+      <p className="mt-4 flex-1 text-[0.95rem] leading-7 text-black/55">{card.text}</p>
+      <div className="mt-10 flex items-center gap-2 border-t border-black/8 pt-5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-black/45 transition group-hover:text-black">
+        <span>{actionLabel}</span>
+        <span aria-hidden="true" className="transition group-hover:translate-x-1">
+          →
         </span>
-      </span>
+      </div>
     </article>
   );
 
   if (isExternal) {
     return (
-      <a href={card.href} rel="noreferrer" target="_blank">
+      <a className="block h-full" href={card.href} rel="noreferrer" target="_blank">
         {content}
       </a>
     );
   }
 
-  return <Link href={card.href}>{content}</Link>;
+  return (
+    <Link className="block h-full" href={card.href}>
+      {content}
+    </Link>
+  );
 }
 
 function CardsSection({
@@ -676,9 +687,11 @@ function CardsSection({
       sectionTitle === "Nominate Across Our 10 Award Categories for 2026")
       ? "award-categories"
       : undefined;
-  const sectionClass = isHeadOfficeSection
-    ? "relative isolate overflow-hidden bg-[#f3f1ed] px-5 pb-20 pt-10 text-black md:px-8 md:pb-24 md:pt-14"
-    : bandClass(tone);
+  const sectionClass = isResourcesLibrarySection
+    ? "relative isolate overflow-hidden bg-white px-5 pb-24 pt-16 text-black md:px-8 md:pb-28 md:pt-20"
+    : isHeadOfficeSection
+      ? "relative isolate overflow-hidden bg-[#f3f1ed] px-5 pb-20 pt-10 text-black md:px-8 md:pb-24 md:pt-14"
+      : bandClass(tone);
   const awardsHeaderVariant =
     sectionTitle === "Awards archive"
       ? "stories"
@@ -729,12 +742,16 @@ function CardsSection({
 
   return (
     <section className={sectionClass} id={sectionId}>
-      <SectionAwardsDecor left={sectionTitle || "Cards"} right="Explore" />
+      {isResourcesLibrarySection ? null : (
+        <SectionAwardsDecor left={sectionTitle || "Cards"} right="Explore" />
+      )}
       <div
         className={
           isWinnersArchiveSection
             ? "relative z-10 w-full"
-            : "relative z-10 mx-auto max-w-[1180px]"
+            : isResourcesLibrarySection
+              ? "relative z-10 mx-auto max-w-[1280px]"
+              : "relative z-10 mx-auto max-w-[1180px]"
         }
       >
         {section.title ? (
@@ -743,6 +760,22 @@ function CardsSection({
               title={section.title}
               variant={awardsHeaderVariant}
             />
+          ) : isResourcesLibrarySection ? (
+            <div className="mb-12 flex flex-col gap-6 border-b border-black/10 pb-10 md:mb-14 md:flex-row md:items-end md:justify-between md:pb-12">
+              <div className="max-w-2xl">
+                <SectionKicker>Resource library</SectionKicker>
+                <EditableText
+                  as="h2"
+                  className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+                  path={`${basePath}.title`}
+                  value={section.title ?? ""}
+                />
+              </div>
+              <p className="max-w-md text-sm leading-7 text-black/55 md:text-right">
+                {resourcePublications.length} awards publications ·{" "}
+                {resourceGuides.length} practical guides
+              </p>
+            </div>
           ) : isAwardCategoriesSection ? (
             <div className="mb-10 max-w-3xl">
               <SectionKicker>Explore</SectionKicker>
@@ -855,71 +888,15 @@ function CardsSection({
                 })}
               </div>
             ) : isResourcesLibrarySection ? (
-              <div className="space-y-6">
-                <section className="border border-black/10 bg-black p-6 text-white shadow-[0_24px_80px_rgba(0,0,0,0.14)] md:p-7">
-                  <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
-                    <div>
-                      <span className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-gold-200">
-                        Resource library
-                      </span>
-                      <h3 className="mt-4 text-2xl font-semibold leading-[1.04] tracking-[-0.04em] md:text-[2rem]">
-                        Guides, awards booklets and long-form resources in one
-                        place
-                      </h3>
-                      <p className="mt-4 text-sm leading-7 text-white/68">
-                        Browse historic awards publications alongside practical
-                        leadership guides for mosque governance, open days,
-                        inclusion and long-term planning.
-                      </p>
-                    </div>
-                    <div className="grid gap-3 text-sm text-white/74 sm:grid-cols-3 lg:text-right">
-                      <div className="border-t border-white/12 pt-3 sm:border-l sm:border-t-0 sm:pl-4">
-                        <span className="block">Awards publications</span>
-                        <span className="mt-2 block text-[0.78rem] font-semibold uppercase tracking-[0.2em] text-gold-200/88">
-                          {String(resourcePublications.length).padStart(2, "0")}
-                        </span>
-                      </div>
-                      <div className="border-t border-white/12 pt-3 sm:border-l sm:border-t-0 sm:pl-4">
-                        <span className="block">Practical guides</span>
-                        <span className="mt-2 block text-[0.78rem] font-semibold uppercase tracking-[0.2em] text-gold-200/88">
-                          {String(resourceGuides.length).padStart(2, "0")}
-                        </span>
-                      </div>
-                      <div className="border-t border-white/12 pt-3 sm:border-l sm:border-t-0 sm:pl-4">
-                        <span className="block">Total library items</span>
-                        <span className="mt-2 block text-[0.78rem] font-semibold uppercase tracking-[0.2em] text-gold-200/88">
-                          {String(section.cards.length).padStart(2, "0")}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-                <section className="border border-black/10 bg-white p-5 shadow-[0_18px_48px_rgba(8,19,31,0.04)] md:p-6">
-                  <div className="mb-5 flex flex-col gap-3 border-b border-black/10 pb-5 md:flex-row md:items-end md:justify-between">
-                    <div>
-                      <span className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-emerald-700">
-                        Complete library
-                      </span>
-                      <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-black">
-                        Booklets and guides
-                      </h3>
-                    </div>
-                    <p className="max-w-xl text-sm leading-7 text-black/58">
-                      A single resource grid combining awards publications and
-                      practical leadership guides for browsing in one place.
-                    </p>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    {resourceLibraryItems.map(({ card, kind }, index) => (
-                      <ResourceLibraryCard
-                        card={card}
-                        index={index}
-                        key={`${card.title}-${card.href}`}
-                        kind={kind}
-                      />
-                    ))}
-                  </div>
-                </section>
+              <div className="grid gap-5 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
+                  {resourceLibraryItems.map(({ card, kind }, index) => (
+                    <ResourceLibraryCard
+                      card={card}
+                      index={index}
+                      key={`${card.title}-${card.href}`}
+                      kind={kind}
+                    />
+                  ))}
               </div>
             ) : isAwardCategoriesSection ? (
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -1233,7 +1210,9 @@ function GallerySection({
   sectionIndex?: number;
 }) {
   const basePath = `sections.${sectionIndex}`;
-  const isWinnersGalleryPage = currentPath === "/winners/";
+  const isWinnersGalleryPage =
+    currentPath === "/winners/" ||
+    /winner/i.test(section.title ?? "");
   const galleryArchiveYear = section.title?.match(/\b(20\d{2})\b/u)?.[1];
   const galleryDescription = isWinnersGalleryPage
     ? `Official winner posters from the Beacon Mosque Awards ${galleryArchiveYear ?? "archive"} archive.`
@@ -1287,22 +1266,115 @@ function AudioSection({
 }) {
   const basePath = `sections.${sectionIndex}`;
   const isResourcesPage = currentPath === "/resources/";
-  const decorLeft = isResourcesPage ? "Resources" : "Training";
-  const decorRight = isResourcesPage ? "Audio" : "Resources";
-  const kicker = isResourcesPage ? "Audio resources" : "Training audio";
-  const followUpCopy = isResourcesPage
-    ? "Use these audio sessions as part of the wider Beacon Mosque resource library covering long-term planning, spirituality, safety and sustainable mosque development."
-    : "Listen through the 30 year plan themes as a structured training sequence covering vision, spirituality, safety and long-term sustainability.";
-  const asideLabel = isResourcesPage ? "Audio library" : "Training sequence";
+  const isTrainingPage = currentPath === "/training/";
+
+  if (isResourcesPage) {
+    return (
+      <section className="relative isolate overflow-hidden bg-white px-5 py-20 text-black md:px-8 md:py-28">
+        <SectionAwardsDecor left="Resources" right="Library" />
+        <div className="relative z-10 mx-auto max-w-[1080px]">
+          <div className="mx-auto max-w-2xl text-center">
+            <SectionKicker>
+              <EditableText
+                path={`${basePath}.kicker`}
+                value="Audio library"
+              />
+            </SectionKicker>
+            <EditableText
+              as="h2"
+              className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
+              path={`${basePath}.title`}
+              value={section.title}
+            />
+            {section.text ? (
+              <EditableText
+                as="p"
+                className="mt-5 text-sm leading-7 text-black/58 md:text-base md:leading-8"
+                multiline
+                path={`${basePath}.text`}
+                value={section.text}
+              />
+            ) : null}
+          </div>
+
+          <div className="mt-12 overflow-hidden border border-black/10 bg-[#f7f5f1]">
+            {section.items.map((item, index) => (
+              <article
+                className="grid gap-5 border-b border-black/10 px-5 py-6 last:border-b-0 md:grid-cols-[7rem_minmax(0,1fr)_minmax(0,1.1fr)] md:items-center md:gap-8 md:px-8 md:py-7"
+                key={item.src}
+              >
+                <div className="flex items-center gap-3 md:block">
+                  <span className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-emerald-700">
+                    Track
+                  </span>
+                  <span className="block text-3xl font-semibold tracking-[-0.04em] text-black md:mt-2">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <div>
+                  <EditableText
+                    as="h3"
+                    className="text-xl font-semibold tracking-[-0.03em] text-black md:text-2xl"
+                    path={`${basePath}.items.${index}.title`}
+                    value={item.title}
+                  />
+                  <EditableText
+                    as="p"
+                    className="mt-2 text-sm leading-7 text-black/55"
+                    multiline
+                    path={`${basePath}.items.${index}.subtitle`}
+                    value={item.subtitle}
+                  />
+                </div>
+                <div>
+                  <audio className="w-full" controls preload="none">
+                    <source src={item.src} type="audio/mp4" />
+                    <a
+                      className="font-semibold text-emerald-800 underline"
+                      href={item.src}
+                    >
+                      Open audio resource
+                    </a>
+                  </audio>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-black/10 pt-8">
+            <EditableText
+              as="p"
+              className="max-w-xl text-sm leading-7 text-black/55"
+              multiline
+              path={`${basePath}.followUp`}
+              value="Browse these recordings as standalone reference material, then continue into booklets and guides below for written planning support."
+            />
+            <Link
+              className="inline-flex min-h-10 items-center justify-center border border-black bg-black px-5 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-white hover:text-black"
+              href="/training/"
+            >
+              Prefer a training pathway?
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative isolate overflow-hidden bg-[#f3f1ed] px-5 py-20 text-black md:px-8 md:py-28">
-      <SectionAwardsDecor left={decorLeft} right={decorRight} />
+      <SectionAwardsDecor
+        left={isTrainingPage ? "Training" : "Listen"}
+        right={isTrainingPage ? "Sessions" : "Audio"}
+      />
       <div className="relative z-10 mx-auto max-w-[1180px]">
         <div className="grid gap-10 border-b border-black/12 pb-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-end">
           <div className="max-w-xl">
             <SectionKicker>
-              <EditableText path={`${basePath}.kicker`} value={kicker} />
+              <EditableText
+                path={`${basePath}.kicker`}
+                value="Training pathway"
+              />
             </SectionKicker>
             <EditableText
               as="h2"
@@ -1324,91 +1396,99 @@ function AudioSection({
               as="p"
               multiline
               path={`${basePath}.followUp`}
-              value={followUpCopy}
+              value="Work through the four sessions in order during trustee meetings, volunteer inductions or Mosque MBA study groups."
             />
           </div>
         </div>
-        <div className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,0.62fr)_minmax(0,1.38fr)] lg:items-start">
+        <div className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:items-start">
           <aside className="border border-black/10 bg-black p-7 text-white shadow-[0_24px_80px_rgba(0,0,0,0.14)] md:p-8">
             <EditableText
               as="span"
               className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-gold-200"
               path={`${basePath}.asideLabel`}
-              value={asideLabel}
+              value="Guided sequence"
             />
             <EditableText
               as="h3"
               className="mt-5 text-3xl font-semibold leading-[1.02] tracking-[-0.04em]"
               multiline
               path={`${basePath}.asideHeading`}
-              value="Four audio sessions for mosque leadership teams"
+              value="A four-step training route for mosque leadership teams"
             />
             <EditableText
               as="p"
               className="mt-5 text-sm leading-7 text-white/68"
               multiline
               path={`${basePath}.asideBody`}
-              value="Use these sessions in board meetings, volunteer inductions or planning workshops to anchor conversations in Beacon Mosque’s longer-term direction."
+              value="Start with vision, then move through spirituality, safety and sustainability so each conversation builds on the last."
             />
-            <div className="mt-8 grid gap-3 text-sm text-white/74">
+            <ol className="mt-8 space-y-0 text-sm text-white/74">
               {section.items.map((item, index) => (
-                <div
-                  className="flex items-center justify-between border-t border-white/12 pt-3"
+                <li
+                  className="flex items-center justify-between border-t border-white/12 py-3"
                   key={item.src}
                 >
-                  <EditableText
-                    path={`${basePath}.items.${index}.title`}
-                    value={item.title}
-                  />
-                  <span className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-gold-200/88">
-                    {String(index + 1).padStart(2, "0")}
+                  <span className="flex items-center gap-3">
+                    <span className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-gold-200/88">
+                      Session {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <EditableText
+                      path={`${basePath}.items.${index}.title`}
+                      value={item.title}
+                    />
                   </span>
-                </div>
+                </li>
               ))}
-            </div>
+            </ol>
+            <Link
+              className="mt-8 inline-flex text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-gold-200 transition hover:text-white"
+              href="/resources/"
+            >
+              Browse the full audio library →
+            </Link>
           </aside>
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="space-y-4">
             {section.items.map((item, index) => (
               <article
-                className="flex h-full flex-col justify-between border border-black/10 bg-white p-6 shadow-[0_18px_48px_rgba(8,19,31,0.06)]"
+                className="grid gap-5 border border-black/10 bg-white p-5 shadow-[0_18px_48px_rgba(8,19,31,0.06)] md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-6 md:p-6"
                 key={item.src}
               >
-                <div>
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gold-300/50 bg-[#f7f1df] text-[0.72rem] font-bold tracking-[0.16em] text-black">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center border border-gold-300/50 bg-[#f7f1df] text-lg font-semibold tracking-[-0.04em] text-black">
+                  {String(index + 1).padStart(2, "0")}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-3">
                     <EditableText
                       as="span"
                       className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-emerald-700"
                       path={`${basePath}.items.${index}.badge`}
-                      value="30 year plan"
+                      value={`Session ${index + 1}`}
+                    />
+                    <EditableText
+                      as="h3"
+                      className="text-xl font-semibold tracking-[-0.03em] text-black md:text-2xl"
+                      path={`${basePath}.items.${index}.title`}
+                      value={item.title}
                     />
                   </div>
                   <EditableText
-                    as="h3"
-                    className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-black"
-                    path={`${basePath}.items.${index}.title`}
-                    value={item.title}
-                  />
-                  <EditableText
                     as="p"
-                    className="mt-3 text-sm leading-7 text-black/58"
+                    className="mt-2 text-sm leading-7 text-black/58"
                     multiline
                     path={`${basePath}.items.${index}.subtitle`}
                     value={item.subtitle}
                   />
-                </div>
-                <div className="mt-8 border-t border-black/10 pt-5">
-                  <audio className="w-full" controls preload="none">
-                    <source src={item.src} type="audio/mp4" />
-                    <a
-                      className="font-semibold text-emerald-800 underline"
-                      href={item.src}
-                    >
-                      Open audio resource
-                    </a>
-                  </audio>
+                  <div className="mt-4">
+                    <audio className="w-full" controls preload="none">
+                      <source src={item.src} type="audio/mp4" />
+                      <a
+                        className="font-semibold text-emerald-800 underline"
+                        href={item.src}
+                      >
+                        Open training audio
+                      </a>
+                    </audio>
+                  </div>
                 </div>
               </article>
             ))}
@@ -1909,6 +1989,8 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
       href: "https://mosque.mba/",
       image: page.image ?? "/assets/home/mosque-mba-programme.png",
       imageAlt: page.imageAlt ?? "Mosque MBA programme visual",
+      imageClassName: "object-contain p-3 md:p-4",
+      mediaClassName: "bg-[#07111f]",
       external: true,
     },
     {
@@ -1917,16 +1999,20 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
         audioSection?.text ??
         "Structured audio sessions on long-term vision, spirituality, safety and sustainability for leadership teams.",
       href: "#training-resources",
-      image: "/assets/cards/training-card.png",
+      image: "/assets/cards/training-card.jpg",
       imageAlt: "Beacon Mosque training and leadership support",
+      imageClassName: "object-contain p-6 md:p-8",
+      mediaClassName: "bg-[#efebe4]",
       external: false,
     },
     {
       title: "Governance and service guides",
       text: "Practical materials for trustees, managers, imams, staff and volunteers improving delivery and long-term planning.",
       href: "/resources/",
-      image: "/assets/interior/standards-wide.jpg",
+      image: "/assets/cards/standards-card.jpg",
       imageAlt: "Beacon Mosque standards graphic",
+      imageClassName: "object-contain p-5 md:p-6",
+      mediaClassName: "bg-[#efebe4]",
       external: false,
     },
   ];
@@ -1969,7 +2055,7 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
     {
       title: "Faith Associates Academy",
       href: "/contact-us/",
-      image: "/assets/cards/training-card.png",
+      image: "/assets/cards/training-card.jpg",
       imageAlt: "Beacon Mosque training and leadership support",
       external: false,
     },
@@ -2079,37 +2165,44 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
               {serviceCards.map((card, cardIndex) => {
                 const content = (
                   <>
-                    <div className="relative min-h-[31rem] overflow-hidden md:min-h-[33rem]">
+                    <div
+                      className={[
+                        "relative aspect-[5/4] overflow-hidden",
+                        card.mediaClassName,
+                      ].join(" ")}
+                    >
                       <CmsImage
                         adjustKey={`landing.training.services.${cardIndex}.image`}
                         alt={card.imageAlt}
-                        className="object-cover transition duration-500 group-hover:scale-105"
+                        className={[
+                          "transition duration-500 group-hover:scale-[1.03]",
+                          card.imageClassName,
+                        ].join(" ")}
                         fill
                         sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 100vw"
                         src={card.image}
                       />
-                      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,7,10,0.06),rgba(5,7,10,0.28)_42%,rgba(5,7,10,0.88))]" />
-                      <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(5,7,10,0),rgba(5,7,10,0.9)_22%,rgba(5,7,10,0.96))] px-6 pb-7 pt-16 text-white">
-                        <EditableText
-                          as="h3"
-                          className="max-w-[14rem] text-[1.55rem] font-semibold leading-[1.08] tracking-[-0.04em] md:max-w-[15rem]"
-                          path={`landing.training.services.${cardIndex}.title`}
-                          value={card.title}
-                        />
-                        <EditableText
-                          as="p"
-                          className="mt-3 max-w-[17rem] text-sm leading-7 text-white/78 md:max-w-[18rem]"
-                          multiline
-                          path={`landing.training.services.${cardIndex}.text`}
-                          value={card.text}
-                        />
-                      </div>
+                    </div>
+                    <div className="bg-[#05070a] px-6 py-7 text-white md:px-7 md:py-8">
+                      <EditableText
+                        as="h3"
+                        className="max-w-[16rem] text-[1.45rem] font-semibold leading-[1.1] tracking-[-0.04em] md:text-[1.55rem]"
+                        path={`landing.training.services.${cardIndex}.title`}
+                        value={card.title}
+                      />
+                      <EditableText
+                        as="p"
+                        className="mt-3 max-w-[20rem] text-sm leading-7 text-white/78"
+                        multiline
+                        path={`landing.training.services.${cardIndex}.text`}
+                        value={card.text}
+                      />
                     </div>
                   </>
                 );
 
                 const className =
-                  "group overflow-hidden rounded-[1.6rem] border border-black/10 bg-black shadow-[0_22px_70px_rgba(0,0,0,0.16)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(0,0,0,0.22)]";
+                  "group flex h-full flex-col overflow-hidden rounded-[1.6rem] border border-black/10 bg-[#05070a] shadow-[0_22px_70px_rgba(0,0,0,0.16)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(0,0,0,0.22)]";
 
                 return card.external ? (
                   <a
@@ -3252,7 +3345,12 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
   );
 }
 
-export function InteriorPage({ page }: { page: InteriorPageData }) {
+export function InteriorPage({ page: pageProp }: { page: InteriorPageData }) {
+  const page = useLiveInteriorPage(pageProp);
+  const editor = usePageEditorOptional();
+  const showStructureChrome =
+    Boolean(editor?.structureEditable) && !isPageStructureLocked(page);
+
   if (page.slug === "standards") {
     return <StandardsLandingPage page={page} />;
   }
@@ -3287,12 +3385,6 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
           section.kind === "cards" && section.title === "Awards archive",
       )
     : undefined;
-  const pageSections = heroAwardsArchiveSection
-    ? page.sections.filter(
-        (section) =>
-          !(section.kind === "cards" && section.title === "Awards archive"),
-      )
-    : page.sections;
 
   return (
     <>
@@ -3565,14 +3657,37 @@ export function InteriorPage({ page }: { page: InteriorPageData }) {
           ) : null}
         </section>
         <div className="deferred-content">
-          {pageSections.map((section, index) => (
-            <RenderSection
-              currentPath={`/${page.slug}/`}
-              index={index}
-              key={`${section.kind}-${index}`}
-              section={section}
-            />
-          ))}
+          {showStructureChrome ? <SectionAddPicker afterIndex={-1} /> : null}
+          {page.sections.map((section, index) => {
+            if (
+              heroAwardsArchiveSection &&
+              section.kind === "cards" &&
+              section.title === "Awards archive"
+            ) {
+              return null;
+            }
+            const sectionKey =
+              editor?.document.sections[index]?.id ??
+              `${section.kind}-${index}`;
+            return (
+              <div key={sectionKey}>
+                <SectionStructureChrome
+                  index={index}
+                  kind={section.kind}
+                  total={page.sections.length}
+                >
+                  <RenderSection
+                    currentPath={`/${page.slug}/`}
+                    index={index}
+                    section={section}
+                  />
+                </SectionStructureChrome>
+                {showStructureChrome ? (
+                  <SectionAddPicker afterIndex={index} />
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       </main>
       <SiteFooter />

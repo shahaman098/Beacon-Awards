@@ -1,6 +1,7 @@
 "use client";
 
 import { PageEditorProvider } from "@/components/visual-editor/PageEditorProvider";
+import type { PageDocument } from "@/lib/cms-page-document";
 import type { InteriorPage as InteriorPageData } from "@/lib/pages";
 import type { ReactNode } from "react";
 
@@ -14,16 +15,19 @@ export function EditableInteriorPage({
   children,
   initialEditMode = false,
   initialFields,
+  initialDocument,
 }: {
   canEdit: boolean;
   page: InteriorPageData;
   children: ReactNode;
   initialEditMode?: boolean;
   initialFields?: Record<string, string>;
+  initialDocument?: PageDocument;
 }) {
   return (
     <PageEditorProvider
       canEdit={canEdit}
+      initialDocument={initialDocument}
       initialEditMode={initialEditMode}
       initialFields={initialFields}
       initialPage={page}
