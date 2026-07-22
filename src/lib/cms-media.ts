@@ -184,6 +184,109 @@ export async function storeCmsMediaFile({
   return { media };
 }
 
+export async function listCmsMedia({
+  limit = 40,
+  offset = 0,
+}: {
+  limit?: number;
+  offset?: number;
+} = {}) {
+  const env = await getEnv();
+  if (!env?.CMS_DB) {
+    return { items: [] as CmsMediaRecord[], total: 0 };
+  }
+
+  const safeLimit = Math.min(Math.max(limit, 1), 100);
+  const safeOffset = Math.max(offset, 0);
+
+  try {
+    const countRow = await env.CMS_DB.prepare(
+      `SELECT COUNT(*) AS count FROM cms_media`,
+    ).first<{ count: number }>();
+    const rows = await env.CMS_DB.prepare(
+      `SELECT id, object_key, url, content_type, byte_size, created_by, created_at
+       FROM cms_media
+       ORDER BY created_at DESC
+       LIMIT ?1 OFFSET ?2`,
+    )
+      .bind(safeLimit, safeOffset)
+      .all<{
+        id: string;
+        object_key: string;
+        url: string;
+        content_type: string;
+        byte_size: number;
+        created_by: string | null;
+        created_at: string;
+      }>();
+
+    const items = (rows.results ?? []).map(
+      (row): CmsMediaRecord => ({
+        id: row.id,
+        objectKey: row.object_key,
+        url: row.url,
+        contentType: row.content_type,
+        byteSize: row.byte_size,
+        createdBy: row.created_by,
+        createdAt: row.created_at,
+      }),
+    );
+
+    return { items, total: Number(countRow?.count ?? items.length) };
+  } catch {
+    return { items: [], total: 0 };
+  }
+}
+
+export async function deleteCmsMedia(id: string) {
+  const env = await getEnv();
+  if (!env?.CMS_DB) {
+    return { error: "CMS database is not available." };
+  }
+
+  try {
+    const row = await env.CMS_DB.prepare(
+      `SELECT id, object_key, url FROM cms_media WHERE id = ?1`,
+    )
+      .bind(id)
+      .first<{ id: string; object_key: string; url: string }>();
+
+    if (!row) {
+      return { error: "Media not found." };
+    }
+
+    if (env.CMS_MEDIA) {
+      try {
+        await env.CMS_MEDIA.delete(row.object_key);
+      } catch (error) {
+        console.warn("CMS media R2 delete skipped", error);
+      }
+    } else if (row.url.startsWith("/cms-uploads/")) {
+      try {
+        const { unlink } = await import("node:fs/promises");
+        const path = await import("node:path");
+        const absolutePath = path.join(
+          process.cwd(),
+          "public",
+          ...row.url.split("/").filter(Boolean),
+        );
+        await unlink(absolutePath);
+      } catch (error) {
+        console.warn("CMS media local delete skipped", error);
+      }
+    }
+
+    await env.CMS_DB.prepare(`DELETE FROM cms_media WHERE id = ?1`)
+      .bind(id)
+      .run();
+
+    return { ok: true as const };
+  } catch (error) {
+    console.error("CMS media delete failed", error);
+    return { error: "Could not delete media." };
+  }
+}
+
 export async function readCmsMediaObject(objectKey: string) {
   if (!objectKey || objectKey.includes("..") || objectKey.startsWith("/")) {
     return null;

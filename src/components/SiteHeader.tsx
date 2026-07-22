@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CmsImage } from "@/components/cms/CmsImage";
 import { useSiteCms } from "@/components/cms/SiteCmsProvider";
+import { SocialIconLinks } from "@/components/SocialIcons";
 import { CmsEditableProvider } from "@/components/visual-editor/CmsEditableContext";
 import { EditableText } from "@/components/visual-editor/EditableText";
 import { type SiteChromeNavItem } from "@/lib/cms-site-chrome";
@@ -208,6 +209,7 @@ function MobileNavLink({
 export function SiteHeader() {
   const { editMode, chrome, setChromeField } = useSiteCms();
   const navItems = chrome.mainNav;
+  const socialLinks = chrome.socialLinks ?? [];
   const currentPath = usePathname();
   const [currentHash, setCurrentHash] = useState("");
   const [isSticky, setIsSticky] = useState(false);
@@ -320,7 +322,11 @@ export function SiteHeader() {
               </ul>
             </nav>
           </div>
-          <div className="hidden items-center lg:flex">
+          <div className="hidden items-center gap-4 lg:flex">
+            <SocialIconLinks
+              lightSurface={isLightSurface}
+              links={socialLinks}
+            />
             {editMode ? (
               <div className="inline-flex h-14 flex-col items-center justify-center bg-[linear-gradient(135deg,#f1d58a,#d7a948)] px-6 text-sm font-semibold uppercase tracking-[0.18em] text-black">
                 <EditableText path="ctaLabel" value={chrome.ctaLabel} />
@@ -340,64 +346,77 @@ export function SiteHeader() {
               </Link>
             )}
           </div>
-          <details className="group lg:hidden">
-            <summary
-              aria-label="Toggle menu"
-              className={[
-                "flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full border text-2xl",
-                isLightSurface
-                  ? "border-black/14 text-black/82"
-                  : "border-white/18 text-white/88",
-              ].join(" ")}
-            >
-              <span aria-hidden="true" className="group-open:hidden">
-                =
-              </span>
-              <span aria-hidden="true" className="hidden group-open:inline">
-                x
-              </span>
-            </summary>
-            <nav
-              aria-label="Mobile navigation"
-              className={[
-                "absolute inset-x-0 top-[calc(100%+12px)] px-5 shadow-2xl backdrop-blur",
-                isLightSurface
-                  ? "border border-black/10 bg-[#f3f2f0]/98"
-                  : "border border-white/10 bg-black/96",
-              ].join(" ")}
-            >
-              <ul>
-                {navItems.map((item, index) => (
-                  <MobileNavLink
-                    currentHash={currentHash}
-                    currentPath={currentPath}
-                    editMode={editMode}
-                    index={index}
-                    item={item}
-                    key={`${item.label}-${item.href}-${index}`}
+          <div className="flex items-center gap-3 lg:hidden">
+            <SocialIconLinks
+              className="hidden sm:flex"
+              lightSurface={isLightSurface}
+              links={socialLinks}
+            />
+            <details className="group">
+              <summary
+                aria-label="Toggle menu"
+                className={[
+                  "flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full border text-2xl",
+                  isLightSurface
+                    ? "border-black/14 text-black/82"
+                    : "border-white/18 text-white/88",
+                ].join(" ")}
+              >
+                <span aria-hidden="true" className="group-open:hidden">
+                  =
+                </span>
+                <span aria-hidden="true" className="hidden group-open:inline">
+                  x
+                </span>
+              </summary>
+              <nav
+                aria-label="Mobile navigation"
+                className={[
+                  "absolute inset-x-0 top-[calc(100%+12px)] px-5 shadow-2xl backdrop-blur",
+                  isLightSurface
+                    ? "border border-black/10 bg-[#f3f2f0]/98"
+                    : "border border-white/10 bg-black/96",
+                ].join(" ")}
+              >
+                <ul>
+                  {navItems.map((item, index) => (
+                    <MobileNavLink
+                      currentHash={currentHash}
+                      currentPath={currentPath}
+                      editMode={editMode}
+                      index={index}
+                      item={item}
+                      key={`${item.label}-${item.href}-${index}`}
+                      lightSurface={isLightSurface}
+                      onRemove={
+                        editMode
+                          ? () =>
+                              setChromeField(`mainNav.__remove__.${index}`, "")
+                          : undefined
+                      }
+                    />
+                  ))}
+                  {editMode ? (
+                    <li className="py-3">
+                      <button
+                        className="rounded-md border border-dashed border-current/40 px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.14em] opacity-70 transition hover:opacity-100"
+                        onClick={() => setChromeField("mainNav.__add__", "")}
+                        type="button"
+                      >
+                        Add link
+                      </button>
+                    </li>
+                  ) : null}
+                </ul>
+                <div className="border-t border-current/10 py-4 sm:hidden">
+                  <SocialIconLinks
                     lightSurface={isLightSurface}
-                    onRemove={
-                      editMode
-                        ? () =>
-                            setChromeField(`mainNav.__remove__.${index}`, "")
-                        : undefined
-                    }
+                    links={socialLinks}
                   />
-                ))}
-                {editMode ? (
-                  <li className="py-3">
-                    <button
-                      className="rounded-md border border-dashed border-current/40 px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.14em] opacity-70 transition hover:opacity-100"
-                      onClick={() => setChromeField("mainNav.__add__", "")}
-                      type="button"
-                    >
-                      Add link
-                    </button>
-                  </li>
-                ) : null}
-              </ul>
-            </nav>
-          </details>
+                </div>
+              </nav>
+            </details>
+          </div>
         </div>
       </header>
     </CmsEditableProvider>

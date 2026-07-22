@@ -195,44 +195,57 @@ export function EditableImage({
           ? "absolute inset-0 z-20 overflow-hidden"
           : "relative z-20 max-w-full overflow-hidden"
       }
-      ref={frameRef}
     >
       <div
-        className={fill ? "absolute inset-0 touch-none" : "relative touch-none"}
-        onPointerDown={(event) => {
-          if (!adjusting) return;
-          event.preventDefault();
-          const origin = parseObjectPosition(positionRef.current);
-          dragRef.current = {
-            startX: event.clientX,
-            startY: event.clientY,
-            originX: origin.x,
-            originY: origin.y,
-          };
-          event.currentTarget.setPointerCapture(event.pointerId);
-        }}
-        onPointerMove={(event) => {
-          if (!adjusting || !dragRef.current || !frameRef.current) return;
-          const rect = frameRef.current.getBoundingClientRect();
-          if (rect.width < 1 || rect.height < 1) return;
-          const dx =
-            ((event.clientX - dragRef.current.startX) / rect.width) * 100;
-          const dy =
-            ((event.clientY - dragRef.current.startY) / rect.height) * 100;
-          const next = formatObjectPosition(
-            dragRef.current.originX - dx,
-            dragRef.current.originY - dy,
-          );
-          positionRef.current = next;
-          setPosition(next);
-        }}
-        onPointerUp={() => {
-          if (!adjusting || !dragRef.current) return;
-          dragRef.current = null;
-          setField(positionPath, positionRef.current);
-        }}
+        className={
+          fill
+            ? "absolute inset-0 overflow-hidden"
+            : "relative max-w-full overflow-hidden"
+        }
+        ref={frameRef}
       >
-        {image}
+        <div
+          className={
+            fill ? "absolute inset-0 touch-none" : "relative touch-none"
+          }
+          onPointerDown={(event) => {
+            if (!adjusting) return;
+            event.preventDefault();
+            const origin = parseObjectPosition(positionRef.current);
+            dragRef.current = {
+              startX: event.clientX,
+              startY: event.clientY,
+              originX: origin.x,
+              originY: origin.y,
+            };
+            event.currentTarget.setPointerCapture(event.pointerId);
+          }}
+          onPointerMove={(event) => {
+            if (!adjusting || !dragRef.current || !frameRef.current) return;
+            const rect = frameRef.current.getBoundingClientRect();
+            if (rect.width < 1 || rect.height < 1) return;
+            const dx =
+              ((event.clientX - dragRef.current.startX) / rect.width) * 100;
+            const dy =
+              ((event.clientY - dragRef.current.startY) / rect.height) * 100;
+            const next = formatObjectPosition(
+              dragRef.current.originX - dx,
+              dragRef.current.originY - dy,
+            );
+            positionRef.current = next;
+            setPosition(next);
+          }}
+          onPointerUp={() => {
+            if (!adjusting || !dragRef.current) return;
+            dragRef.current = null;
+            setField(positionPath, positionRef.current);
+          }}
+        >
+          {image}
+        </div>
+        {adjusting ? (
+          <div className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-emerald-400/80" />
+        ) : null}
       </div>
 
       <div
@@ -241,7 +254,6 @@ export function EditableImage({
           event.stopPropagation();
         }}
         onPointerDown={(event) => {
-          event.preventDefault();
           event.stopPropagation();
         }}
       >
