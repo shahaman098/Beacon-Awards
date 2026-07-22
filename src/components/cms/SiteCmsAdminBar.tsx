@@ -4,8 +4,18 @@ import Link from "@/components/AppLink";
 import { useSiteCms } from "@/components/cms/SiteCmsProvider";
 
 export function SiteCmsAdminBar() {
-  const { canEdit, editMode, dirty, saving, status, email, setEditMode, save } =
-    useSiteCms();
+  const {
+    canEdit,
+    editMode,
+    dirty,
+    saving,
+    status,
+    email,
+    setEditMode,
+    save,
+    publish,
+    previewHref,
+  } = useSiteCms();
 
   if (!canEdit || !email) return null;
 
@@ -28,6 +38,15 @@ export function SiteCmsAdminBar() {
           >
             Dashboard
           </Link>
+          {previewHref ? (
+            <Link
+              className="rounded-md border border-white/15 px-3 py-1.5 font-semibold uppercase tracking-[0.14em] text-white/80 transition hover:border-white/35 hover:text-white"
+              href={previewHref}
+              target="_blank"
+            >
+              View preview
+            </Link>
+          ) : null}
           <button
             className={[
               "rounded-md px-3 py-1.5 font-semibold uppercase tracking-[0.14em] transition",
@@ -41,24 +60,37 @@ export function SiteCmsAdminBar() {
             {editMode ? "Preview site" : "Edit live page"}
           </button>
           {editMode ? (
-            <button
-              className="rounded-md bg-emerald-600 px-3 py-1.5 font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!dirty || saving}
-              onClick={() => {
-                void save();
-              }}
-              type="button"
-            >
-              {saving ? "Saving…" : "Save changes"}
-            </button>
+            <>
+              <button
+                className="rounded-md border border-white/20 px-3 py-1.5 font-semibold uppercase tracking-[0.14em] text-white/85 transition hover:border-white/40 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!dirty || saving}
+                onClick={() => {
+                  void save();
+                }}
+                type="button"
+              >
+                {saving ? "Saving…" : "Save draft"}
+              </button>
+              <button
+                className="rounded-md bg-emerald-600 px-3 py-1.5 font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={saving}
+                onClick={() => {
+                  void publish();
+                }}
+                type="button"
+              >
+                {saving ? "Publishing…" : "Publish"}
+              </button>
+            </>
           ) : null}
           {status ? <span className="text-white/60">{status}</span> : null}
         </div>
       </div>
       {editMode ? (
         <div className="border-t border-white/10 bg-[#2271b1] px-4 py-2 text-[0.7rem] font-medium tracking-[0.04em] text-white md:px-8">
-          Click <strong className="font-semibold">Edit live page</strong> to
-          outline editable text and image controls. Save when you are happy.
+          Save draft keeps changes private. Publish copies the draft to the
+          public page. Use View preview with <code>?preview=1</code> while signed
+          in.
         </div>
       ) : null}
     </div>

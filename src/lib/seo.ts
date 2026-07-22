@@ -16,19 +16,23 @@ export function routePath(slug: string) {
 
 export function pageMetadata(page: InteriorPage): Metadata {
   const path = routePath(page.slug);
-  const image = page.image
-    ? absoluteUrl(page.image)
-    : absoluteUrl("/assets/hero/awards-2025-poster.jpeg");
+  const title = page.metaTitle?.trim() || page.title;
+  const description = page.metaDescription?.trim() || page.intro;
+  const imageSource =
+    page.ogImage?.trim() ||
+    page.image ||
+    "/assets/hero/awards-2025-poster.jpeg";
+  const image = absoluteUrl(imageSource);
 
   return {
-    title: page.title,
-    description: page.intro,
+    title,
+    description,
     alternates: {
       canonical: path,
     },
     openGraph: {
-      title: `${page.title} - ${siteName}`,
-      description: page.intro,
+      title: `${title} - ${siteName}`,
+      description,
       images: [{ url: image }],
       siteName,
       type: "website",
@@ -36,8 +40,8 @@ export function pageMetadata(page: InteriorPage): Metadata {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${page.title} - ${siteName}`,
-      description: page.intro,
+      title: `${title} - ${siteName}`,
+      description,
       images: [image],
     },
   };

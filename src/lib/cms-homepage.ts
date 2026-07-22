@@ -16,6 +16,7 @@ export type HomepageFeatureCard = {
   imageAlt: string;
   objectPosition: string;
   imageScale: string;
+  objectFit?: "cover" | "contain";
   dark?: boolean;
 };
 
@@ -25,6 +26,7 @@ export type HomepageGalleryItem = {
   caption: string;
   objectPosition: string;
   imageScale: string;
+  objectFit?: "cover" | "contain";
 };
 
 export type HomepageExcellenceCard = {
@@ -53,6 +55,7 @@ export type HomepageContent = {
     posterUrl: string;
     posterObjectPosition: string;
     posterScale: string;
+    posterObjectFit?: "cover" | "contain";
   };
   featureCards: HomepageFeatureCard[];
   excellenceIntro: {
@@ -62,6 +65,8 @@ export type HomepageContent = {
     cards: HomepageExcellenceCard[];
   };
   awardsArchive: {
+    kicker: string;
+    heading: string;
     ctaLabel: string;
   };
   awardsFeature: {
@@ -95,6 +100,7 @@ export type HomepageContent = {
     imageAlt: string;
     objectPosition: string;
     imageScale: string;
+    objectFit?: "cover" | "contain";
     stats: Array<{ value: string; label: string }>;
     pills: string[];
   };
@@ -116,6 +122,7 @@ export type HomepageContent = {
     imageAlt: string;
     objectPosition: string;
     imageScale: string;
+    objectFit?: "cover" | "contain";
   };
   footerEmail: string;
 };
@@ -146,6 +153,22 @@ export function imageScalePath(imagePath: string) {
     return imagePath.replace(/\.src$/, ".imageScale");
   }
   return `${imagePath}Scale`;
+}
+
+/** Parallel field for object-fit; excellence cards reuse existing `.fit`. */
+export function imageFitPath(imagePath: string) {
+  if (imagePath === "hero.posterUrl") return "hero.posterObjectFit";
+  if (imagePath.startsWith("excellenceIntro.cards.")) {
+    return imagePath.replace(/\.image$/, ".fit");
+  }
+  if (imagePath === "mosqueMba.image") return "mosqueMba.objectFit";
+  if (imagePath.endsWith(".image")) {
+    return imagePath.replace(/\.image$/, ".objectFit");
+  }
+  if (imagePath.endsWith(".src")) {
+    return imagePath.replace(/\.src$/, ".objectFit");
+  }
+  return `${imagePath}ObjectFit`;
 }
 
 export function parseObjectPosition(value: string | undefined) {
@@ -231,6 +254,8 @@ export function defaultHomepageContent(): HomepageContent {
       ],
     },
     awardsArchive: {
+      kicker: "Archive",
+      heading: "Awards archive",
       ctaLabel: "Submit Your Nomination for Beacon Mosque Awards 2026",
     },
     awardsFeature: {
@@ -328,6 +353,14 @@ function asString(value: unknown, fallback: string) {
 
 function asBool(value: unknown, fallback?: boolean) {
   return typeof value === "boolean" ? value : fallback;
+}
+
+function asOptionalObjectFit(
+  value: unknown,
+  fallback?: "cover" | "contain",
+): "cover" | "contain" | undefined {
+  if (value === "contain" || value === "cover") return value;
+  return fallback;
 }
 
 function mergeExcellenceCards(
@@ -443,6 +476,10 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
         defaults.hero.posterObjectPosition,
       ),
       posterScale: asString(heroRaw.posterScale, defaults.hero.posterScale),
+      posterObjectFit: asOptionalObjectFit(
+        heroRaw.posterObjectFit,
+        defaults.hero.posterObjectFit,
+      ),
     },
     featureCards: featureCardsRaw.map((card, index) => {
       const fallback = defaults.featureCards[index] ?? defaults.featureCards[0];
@@ -461,6 +498,7 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
           fallback.objectPosition,
         ),
         imageScale: asString(item.imageScale, fallback.imageScale),
+        objectFit: asOptionalObjectFit(item.objectFit, fallback.objectFit),
         dark: asBool(item.dark, fallback.dark),
       };
     }),
@@ -474,6 +512,8 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
       ),
     },
     awardsArchive: {
+      kicker: asString(archiveRaw.kicker, defaults.awardsArchive.kicker),
+      heading: asString(archiveRaw.heading, defaults.awardsArchive.heading),
       ctaLabel: asString(archiveRaw.ctaLabel, defaults.awardsArchive.ctaLabel),
     },
     awardsFeature: {
@@ -553,6 +593,10 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
         defaults.mosqueMba.objectPosition,
       ),
       imageScale: asString(mbaRaw.imageScale, defaults.mosqueMba.imageScale),
+      objectFit: asOptionalObjectFit(
+        mbaRaw.objectFit,
+        defaults.mosqueMba.objectFit,
+      ),
       stats: mbaStatsRaw.map((stat, index) => {
         const fallback = defaults.mosqueMba.stats[index] ?? defaults.mosqueMba.stats[0];
         const item =
@@ -605,6 +649,10 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
           fallback.objectPosition,
         ),
         imageScale: asString(galleryItem.imageScale, fallback.imageScale),
+        objectFit: asOptionalObjectFit(
+          galleryItem.objectFit,
+          fallback.objectFit,
+        ),
       };
     }),
     finalCta: {
@@ -619,6 +667,10 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
         defaults.finalCta.objectPosition,
       ),
       imageScale: asString(finalRaw.imageScale, defaults.finalCta.imageScale),
+      objectFit: asOptionalObjectFit(
+        finalRaw.objectFit,
+        defaults.finalCta.objectFit,
+      ),
     },
     footerEmail: asString(raw.footerEmail, defaults.footerEmail),
   };

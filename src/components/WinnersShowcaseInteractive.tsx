@@ -65,17 +65,12 @@ export function WinnersShowcaseInteractive({
 
   return (
     <div className="relative z-10 mx-auto grid max-w-[1200px] gap-14 md:grid-cols-[0.98fr_1.02fr] md:items-center lg:gap-18">
-      <div className="relative">
-        <div
-          className={[
-            "relative overflow-hidden bg-black shadow-[0_24px_80px_rgba(0,0,0,0.08)]",
-            editMode ? "z-30" : "",
-          ].join(" ")}
-        >
+      <div className="relative overflow-hidden bg-black shadow-[0_24px_80px_rgba(0,0,0,0.08)]">
+        <div className={editMode ? "relative z-30" : "relative"}>
           <CmsImage
             adjustKey={`winners-showcase:${activeItem.image}`}
             alt={activeItem.imageAlt}
-            className="aspect-[4/5] w-full bg-black object-contain object-top"
+            className="block h-auto w-full bg-black object-contain"
             height={920}
             onSrcChange={(url) => {
               setField(`winnerShowcaseItems.${safeIndex}.image`, url);
@@ -84,12 +79,7 @@ export function WinnersShowcaseInteractive({
             width={720}
           />
         </div>
-        <div
-          className={[
-            "absolute -bottom-12 left-6 max-w-[360px] bg-black px-8 py-9 text-white shadow-2xl md:left-14 md:max-w-[390px] md:px-9 md:py-10 lg:left-18 lg:max-w-[420px]",
-            editMode ? "pointer-events-none z-10" : "z-20",
-          ].join(" ")}
-        >
+        <div className="w-full px-8 py-9 text-white md:px-9 md:py-10">
           <EditableText
             as="span"
             className="block text-[0.72rem] font-bold uppercase tracking-[0.28em] text-gold-200"
@@ -104,7 +94,7 @@ export function WinnersShowcaseInteractive({
             value={activeItem.summary}
           />
           {editMode ? (
-            <div className="pointer-events-auto mt-6 space-y-2">
+            <div className="mt-6 space-y-2">
               <EditableText
                 as="span"
                 className="inline-flex text-[0.78rem] font-semibold uppercase tracking-[0.2em] text-gold-200"

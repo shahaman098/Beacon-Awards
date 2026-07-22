@@ -8,6 +8,19 @@ export type SiteChromeNavItem = {
   href: string;
 };
 
+export type SiteChromeSocialNetwork =
+  | "facebook"
+  | "twitter"
+  | "linkedin"
+  | "instagram"
+  | "youtube";
+
+export type SiteChromeSocialLink = {
+  network: SiteChromeSocialNetwork;
+  label: string;
+  href: string;
+};
+
 export type SiteChromeFormField = {
   label: string;
   name: string;
@@ -39,6 +52,7 @@ export type SiteChromeFormSubmittedCopy = {
 export type SiteChrome = {
   mainNav: SiteChromeNavItem[];
   footerNav: SiteChromeNavItem[];
+  socialLinks: SiteChromeSocialLink[];
   ctaLabel: string;
   ctaHref: string;
   footerEmail: string;
@@ -53,6 +67,23 @@ export function defaultSiteChrome(): SiteChrome {
       .filter((item) => item.href !== "/")
       .slice(0, 5)
       .map((item) => ({ label: item.label, href: item.href })),
+    socialLinks: [
+      {
+        network: "facebook",
+        label: "Facebook",
+        href: "https://www.facebook.com/BeaconMosque/",
+      },
+      {
+        network: "twitter",
+        label: "X (Twitter)",
+        href: "https://twitter.com/BeaconMosque",
+      },
+      {
+        network: "linkedin",
+        label: "LinkedIn",
+        href: "https://www.linkedin.com/company/faith-associates/",
+      },
+    ],
     ctaLabel: "Let's talk",
     ctaHref: "/contact-us/",
     footerEmail: "info@faithassociates.co.uk",
@@ -177,6 +208,45 @@ function mergeNavItems(
   });
 }
 
+const SOCIAL_NETWORKS: SiteChromeSocialNetwork[] = [
+  "facebook",
+  "twitter",
+  "linkedin",
+  "instagram",
+  "youtube",
+];
+
+function asSocialNetwork(
+  value: unknown,
+  fallback: SiteChromeSocialNetwork,
+): SiteChromeSocialNetwork {
+  return typeof value === "string" &&
+    SOCIAL_NETWORKS.includes(value as SiteChromeSocialNetwork)
+    ? (value as SiteChromeSocialNetwork)
+    : fallback;
+}
+
+function mergeSocialLinks(
+  raw: unknown,
+  defaults: SiteChromeSocialLink[],
+): SiteChromeSocialLink[] {
+  if (!Array.isArray(raw) || raw.length === 0) return defaults;
+  return raw.map((item, index) => {
+    const fallback = defaults[index] ?? {
+      network: "facebook" as const,
+      label: "Social",
+      href: "#",
+    };
+    const row =
+      item && typeof item === "object" ? (item as Record<string, unknown>) : {};
+    return {
+      network: asSocialNetwork(row.network, fallback.network),
+      label: asString(row.label, fallback.label),
+      href: asString(row.href, fallback.href),
+    };
+  });
+}
+
 function mergeFormFields(
   raw: unknown,
   defaults: SiteChromeFormField[],
@@ -257,6 +327,7 @@ export function mergeSiteChrome(partial: unknown): SiteChrome {
   return {
     mainNav: mergeNavItems(raw.mainNav, defaults.mainNav),
     footerNav: mergeNavItems(raw.footerNav, defaults.footerNav),
+    socialLinks: mergeSocialLinks(raw.socialLinks, defaults.socialLinks),
     ctaLabel: asString(raw.ctaLabel, defaults.ctaLabel),
     ctaHref: asString(raw.ctaHref, defaults.ctaHref),
     footerEmail: asString(raw.footerEmail, defaults.footerEmail),
@@ -287,6 +358,36 @@ export function setSiteChromeField(
   }
   if (parts[0] === "footerEmail") {
     next.footerEmail = value;
+    return next;
+  }
+
+  if (parts[0] === "socialLinks" && parts[1] === "__add__") {
+    next.socialLinks.push({
+      network: "facebook",
+      label: "Social",
+      href: "https://",
+    });
+    return next;
+  }
+
+  if (parts[0] === "socialLinks" && parts[1] === "__remove__" && parts[2]) {
+    const index = Number.parseInt(parts[2], 10);
+    if (Number.isFinite(index) && next.socialLinks[index]) {
+      next.socialLinks.splice(index, 1);
+    }
+    return next;
+  }
+
+  if (parts[0] === "socialLinks" && parts[1] && parts[2]) {
+    const index = Number.parseInt(parts[1], 10);
+    const item = next.socialLinks[index];
+    if (Number.isFinite(index) && item) {
+      if (parts[2] === "label" || parts[2] === "href") {
+        item[parts[2]] = value;
+      } else if (parts[2] === "network") {
+        item.network = asSocialNetwork(value, item.network);
+      }
+    }
     return next;
   }
 

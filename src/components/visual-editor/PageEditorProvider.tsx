@@ -49,6 +49,7 @@ type PageEditorContextValue = {
   removeSection: (index: number) => void;
   moveSection: (from: number, to: number) => void;
   save: () => Promise<void>;
+  publish: () => Promise<void>;
 };
 
 const PageEditorContext = createContext<PageEditorContextValue | null>(null);
@@ -86,6 +87,7 @@ export function usePageEditor() {
       removeSection: () => undefined,
       moveSection: () => undefined,
       save: async () => undefined,
+      publish: async () => undefined,
     };
   }
   return value;
@@ -255,7 +257,7 @@ export function PageEditorProvider({
   );
 
   const persistContent = useCallback(async () => {
-    setStatus("Saving…");
+    setStatus("Saving draft…");
     const response = await fetch("/api/cms/pages/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -263,6 +265,7 @@ export function PageEditorProvider({
       body: JSON.stringify({
         routeSlug,
         document: documentRef.current,
+        action: "save",
       }),
     });
     const payload = (await response.json()) as {
@@ -277,7 +280,34 @@ export function PageEditorProvider({
     }
     syncFromDocument(payload.document, false);
     setDirty(false);
-    setStatus("Saved");
+    setStatus("Draft saved");
+  }, [routeSlug, syncFromDocument]);
+
+  const publishContent = useCallback(async () => {
+    setStatus("Publishing…");
+    const response = await fetch("/api/cms/pages/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        routeSlug,
+        document: documentRef.current,
+        action: "publish",
+      }),
+    });
+    const payload = (await response.json()) as {
+      document?: PageDocument;
+      error?: string;
+    };
+    if (response.status === 401) {
+      throw new Error("Sign in required. Open /cms/login/ and try again.");
+    }
+    if (!response.ok || !payload.document) {
+      throw new Error(payload.error || "Publish failed.");
+    }
+    syncFromDocument(payload.document, false);
+    setDirty(false);
+    setStatus("Published");
   }, [routeSlug, syncFromDocument]);
 
   const save = useCallback(async () => {
@@ -292,14 +322,37 @@ export function PageEditorProvider({
     }
   }, [persistContent]);
 
+  const publish = useCallback(async () => {
+    setSaving(true);
+    try {
+      await publishContent();
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Publish failed.");
+      throw error;
+    } finally {
+      setSaving(false);
+    }
+  }, [publishContent]);
+
+  const setSiteEditMode = site?.setEditMode;
+  useEffect(() => {
+    if (canEdit && initialEditMode && setSiteEditMode) {
+      setSiteEditMode(true);
+    }
+  }, [canEdit, initialEditMode, setSiteEditMode]);
+
+  const previewHref = routeSlug ? `/${routeSlug}/?preview=1` : null;
+
   const registration = useMemo<ContentEditorRegistration>(
     () => ({
       dirty,
       saving,
       status,
       save,
+      publish,
+      previewHref,
     }),
-    [dirty, saving, status, save],
+    [dirty, saving, status, save, publish, previewHref],
   );
 
   const registerContentEditor = site?.registerContentEditor;
@@ -326,6 +379,7 @@ export function PageEditorProvider({
       removeSection,
       moveSection,
       save,
+      publish,
     }),
     [
       canEdit,
@@ -343,6 +397,7 @@ export function PageEditorProvider({
       removeSection,
       moveSection,
       save,
+      publish,
     ],
   );
 

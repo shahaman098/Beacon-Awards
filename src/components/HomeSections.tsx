@@ -25,6 +25,7 @@ import { CmsEditableProvider } from "@/components/visual-editor/CmsEditableConte
 import { EditableImage } from "@/components/visual-editor/EditableImage";
 import { EditableText } from "@/components/visual-editor/EditableText";
 import { WinnersShowcaseInteractive } from "@/components/WinnersShowcaseInteractive";
+import { SocialNetworkIcon } from "@/components/SocialIcons";
 
 export function EditorialLink({
   children,
@@ -219,6 +220,7 @@ export function BeaconExcellenceIntroSection({
                   ].join(" ")}
                   fill
                   imageScale={card.imageScale}
+                  objectFit={card.fit}
                   objectPosition={card.objectPosition}
                   path={`excellenceIntro.cards.${index}.image`}
                   src={card.image}
@@ -432,13 +434,32 @@ export function AwardsArchiveSection({
     <section className="relative isolate overflow-hidden bg-white px-5 pb-24 pt-8 text-black md:px-8 md:pb-32 md:pt-12">
       <SectionAwardsDecor left="Archive" right="Honours" />
       <div className="relative z-10 mx-auto max-w-[1680px]">
+        <div className="mx-auto mb-10 max-w-2xl text-center md:mb-14">
+          <SectionKicker>
+            <EditableText
+              path="awardsArchive.kicker"
+              value={content.kicker}
+            />
+          </SectionKicker>
+          <h2 className="section-word-motion mt-3 text-3xl font-semibold tracking-[-0.04em] md:text-4xl lg:text-5xl">
+            <EditableText
+              path="awardsArchive.heading"
+              value={content.heading}
+            />
+          </h2>
+        </div>
         <AutoScrollRail
-          className="no-scrollbar overflow-x-auto overflow-y-hidden"
-          contentClassName="flex snap-x snap-mandatory items-end gap-7 pr-5 md:gap-8 md:pr-8 lg:gap-10 lg:pr-10"
+          className="no-scrollbar overflow-x-auto overflow-y-visible"
+          contentClassName="flex snap-x snap-mandatory items-start gap-7 pb-4 pr-5 md:gap-8 md:pr-8 lg:gap-10 lg:pr-10"
         >
-          {archiveYears.map((archive) => (
+          {archiveYears.map((archive, index) => (
             <CmsEditSafeLink
-              className="group block w-[17rem] min-w-[17rem] shrink-0 snap-start md:w-[20rem] md:min-w-[20rem] lg:w-[22rem] lg:min-w-[22rem]"
+              className={[
+                "group block w-[17rem] min-w-[17rem] shrink-0 snap-start transition-transform duration-500 md:w-[20rem] md:min-w-[20rem] lg:w-[22rem] lg:min-w-[22rem]",
+                index % 2 === 1
+                  ? "mt-12 md:mt-16 lg:mt-20"
+                  : "mt-0",
+              ].join(" ")}
               href={archive.href}
               key={archive.year}
             >
@@ -636,6 +657,7 @@ export function NetworkSection({
               className="h-auto w-full"
               height={315}
               imageScale={expo.imageScale}
+              objectFit={expo.objectFit}
               objectPosition={expo.objectPosition}
               path="featureCards.1.image"
               src={expo.image}
@@ -735,6 +757,7 @@ export function MosqueMbaSection({
                 className="h-auto w-full rounded-[22px]"
                 height={864}
                 imageScale={content.imageScale}
+                objectFit={content.objectFit}
                 objectPosition={content.objectPosition}
                 path="mosqueMba.image"
                 src={content.image}
@@ -932,6 +955,7 @@ export function FinalCta() {
 export function SiteFooter() {
   const { editMode, chrome, setChromeField } = useSiteCms();
   const email = chrome.footerEmail || "info@faithassociates.co.uk";
+  const socialLinks = chrome.socialLinks ?? [];
 
   return (
     <CmsEditableProvider editMode={editMode} setField={setChromeField}>
@@ -1006,6 +1030,76 @@ export function SiteFooter() {
             </ul>
           </nav>
         </div>
+
+        {socialLinks.length > 0 || editMode ? (
+          <div className="mx-auto mt-10 flex max-w-[1180px] flex-col items-center gap-3">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-white/45">
+              Follow us
+            </p>
+            <ul className="flex flex-wrap items-center justify-center gap-3">
+              {socialLinks.map((item, index) => (
+                <li key={`${item.network}-${item.href}-${index}`}>
+                  {editMode ? (
+                    <span className="inline-flex flex-col items-center gap-1">
+                      <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-[#d8c0a6]">
+                        <SocialNetworkIcon network={item.network} />
+                      </span>
+                      <EditableText
+                        as="span"
+                        className="text-[0.55rem] text-white/55"
+                        path={`socialLinks.${index}.label`}
+                        value={item.label}
+                      />
+                      <EditableText
+                        as="span"
+                        className="max-w-[9rem] truncate text-[0.5rem] text-white/35"
+                        path={`socialLinks.${index}.href`}
+                        value={item.href}
+                      />
+                      <EditableText
+                        as="span"
+                        className="text-[0.5rem] uppercase tracking-[0.12em] text-white/35"
+                        path={`socialLinks.${index}.network`}
+                        value={item.network}
+                      />
+                      <button
+                        className="text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-red-400/80 hover:text-red-300"
+                        onClick={() =>
+                          setChromeField(`socialLinks.__remove__.${index}`, "")
+                        }
+                        type="button"
+                      >
+                        Remove
+                      </button>
+                    </span>
+                  ) : (
+                    <a
+                      aria-label={item.label}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/18 text-[#d8c0a6] transition hover:border-[#d8c0a6]/70 hover:bg-white/5 hover:text-white"
+                      href={item.href}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <SocialNetworkIcon network={item.network} />
+                    </a>
+                  )}
+                </li>
+              ))}
+              {editMode ? (
+                <li>
+                  <button
+                    className="inline-flex h-11 items-center justify-center rounded-full border border-dashed border-white/30 px-4 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-white/70 transition hover:border-white/55 hover:text-white"
+                    onClick={() => setChromeField("socialLinks.__add__", "")}
+                    type="button"
+                  >
+                    Add social
+                  </button>
+                </li>
+              ) : null}
+            </ul>
+          </div>
+        ) : null}
+
         <p className="mt-12 flex justify-center gap-[0.35em] text-center text-[clamp(3.2rem,15vw,13rem)] font-black uppercase leading-none tracking-[-0.08em] text-[#d8c0a6]">
           <span>Beacon</span>
           <span>Mosque</span>

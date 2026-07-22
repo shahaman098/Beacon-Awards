@@ -82,7 +82,7 @@ export function EditableGalleryGrid({
         {images.map((image, index) => (
           <figure
             className={[
-              "group overflow-hidden border border-black/10 shadow-[0_24px_80px_rgba(0,0,0,0.08)]",
+              "group flex h-full flex-col overflow-hidden border border-black/10 shadow-[0_24px_80px_rgba(0,0,0,0.08)]",
               isWinnersGalleryPage ? "bg-[#111]" : "relative bg-black",
             ].join(" ")}
             key={`${sectionIndex}-${index}-${image.src}`}
@@ -90,7 +90,7 @@ export function EditableGalleryGrid({
             <div
               className={[
                 "relative overflow-hidden",
-                isWinnersGalleryPage ? "aspect-[4/5] bg-[#0b0b0b]" : "aspect-square",
+                isWinnersGalleryPage ? "aspect-square bg-[#0b0b0b]" : "aspect-square",
               ].join(" ")}
             >
               <CmsImage
@@ -99,7 +99,7 @@ export function EditableGalleryGrid({
                 className={[
                   "transition duration-500",
                   isWinnersGalleryPage
-                    ? "object-cover object-top group-hover:scale-[1.03]"
+                    ? "object-contain object-center group-hover:scale-[1.03]"
                     : "object-cover group-hover:scale-105",
                 ].join(" ")}
                 fill
@@ -120,7 +120,7 @@ export function EditableGalleryGrid({
               ) : null}
             </div>
             {isWinnersGalleryPage ? (
-              <figcaption className="border-t border-black/10 bg-white px-4 py-4">
+              <figcaption className="mt-auto min-h-[4.5rem] border-t border-black/10 bg-white px-4 py-4">
                 <EditableText
                   as="strong"
                   className="block text-[0.95rem] font-semibold leading-snug tracking-[-0.02em] text-black"

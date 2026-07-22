@@ -92,6 +92,10 @@ export type InteriorPage = {
   imageAlt?: string;
   heroVideo?: string;
   heroVideoPoster?: string;
+  /** Optional CMS SEO overrides */
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImage?: string;
   ctas?: Array<{
     label: string;
     href: string;
@@ -2407,22 +2411,45 @@ const historicAwardArchiveDetails: Record<
 const planAudioResources = [
   {
     title: "What is the vision?",
-    subtitle: "Beacon Mosque 2020-2050 / 30 Year Plan audio resource.",
+    subtitle: "Session on long-term direction for mosque leadership teams.",
     src: "https://beaconmosque.com/wp-content/uploads/2019/02/AUDIO-2020-08-24-02-24-03.m4a",
   },
   {
     title: "Spirituality",
-    subtitle: "Beacon Mosque 2020-2050 / 30 Year Plan audio resource.",
+    subtitle: "Session on spiritual purpose within mosque planning and service.",
     src: "https://beaconmosque.com/wp-content/uploads/2019/02/AUDIO-2020-08-24-02-24-14.m4a",
   },
   {
     title: "Safety",
-    subtitle: "Beacon Mosque 2020-2050 / 30 Year Plan audio resource.",
+    subtitle: "Session on safeguarding, wellbeing and practical safety culture.",
     src: "https://beaconmosque.com/wp-content/uploads/2019/02/AUDIO-2020-08-24-02-24-14-2.m4a",
   },
   {
     title: "Sustainability",
-    subtitle: "Beacon Mosque 2020-2050 / 30 Year Plan audio resource.",
+    subtitle: "Session on lasting systems, resources and community resilience.",
+    src: "https://beaconmosque.com/wp-content/uploads/2019/02/AUDIO-2020-08-24-02-24-15.m4a",
+  },
+];
+
+const resourceAudioLibrary = [
+  {
+    title: "What is the vision?",
+    subtitle: "Reference recording from the Beacon Mosque 2020-2050 plan.",
+    src: "https://beaconmosque.com/wp-content/uploads/2019/02/AUDIO-2020-08-24-02-24-03.m4a",
+  },
+  {
+    title: "Spirituality",
+    subtitle: "Reference recording on faith, purpose and community life.",
+    src: "https://beaconmosque.com/wp-content/uploads/2019/02/AUDIO-2020-08-24-02-24-14.m4a",
+  },
+  {
+    title: "Safety",
+    subtitle: "Reference recording on safety and protective practice.",
+    src: "https://beaconmosque.com/wp-content/uploads/2019/02/AUDIO-2020-08-24-02-24-14-2.m4a",
+  },
+  {
+    title: "Sustainability",
+    subtitle: "Reference recording on sustainable mosque development.",
     src: "https://beaconmosque.com/wp-content/uploads/2019/02/AUDIO-2020-08-24-02-24-15.m4a",
   },
 ];
@@ -3569,7 +3596,7 @@ const winnerCards2024: CardLink[] = [
     text: "Best Women's Service winner for 2024.",
     href: "/nelson-community-mosque-shortlisted-mosque-best-youth-service-2024/",
     meta: "Best Women's Service",
-    image: "/wp-content/uploads/2024/04/Best-Womens-Service-scaled-1-669x272.jpg",
+    image: "/assets/awards/2024/winners/best-womens-service-nelson-community-mosque.png",
     imageAlt: "Best Women's Service 2024 winner Nelson Community Mosque",
     imageFit: "contain",
   },
@@ -4622,9 +4649,9 @@ const pageMap: Record<string, InteriorPage> = {
     sections: [
       {
         kind: "audio",
-        title: "Beacon Mosque 2020-2050 / 30 Year Plan",
-        text: "Audio resources covering the long-term Beacon Mosque vision, spirituality, safety and sustainability.",
-        items: planAudioResources,
+        title: "30 Year Plan audio library",
+        text: "Listen to individual recordings from the Beacon Mosque 2020-2050 plan whenever you need quick reference on vision, spirituality, safety or sustainability.",
+        items: resourceAudioLibrary,
       },
       { kind: "cards", title: "Booklets and guides", cards: allResourceCards },
     ],
@@ -4656,8 +4683,8 @@ const pageMap: Record<string, InteriorPage> = {
       },
       {
         kind: "audio",
-        title: "Beacon Mosque 2020-2050 / 30 Year Plan",
-        text: "Audio sessions covering long-term vision, spirituality, safety and sustainability for mosque leadership teams.",
+        title: "30 Year Plan training sessions",
+        text: "A structured listening pathway for mosque leadership teams covering vision, spirituality, safety and sustainability in sequence.",
         items: planAudioResources,
       },
       {
@@ -7356,14 +7383,15 @@ export async function getPage(slugSegments: string[]) {
     return pages[slug];
   }
 
-  const publicWordPressSlugs = await getWordPressPublicSlugs();
-  if (publicWordPressSlugs.includes(slug)) {
-    return getWordPressFallbackPage(slug);
-  }
-
+  // Published CMS entries own the slug ahead of WordPress fallbacks.
   const cmsEntry = await getPublishedCmsEntryByRouteSlug(slug);
   if (cmsEntry) {
     return cmsEntryToInteriorPage(cmsEntry);
+  }
+
+  const publicWordPressSlugs = await getWordPressPublicSlugs();
+  if (publicWordPressSlugs.includes(slug)) {
+    return getWordPressFallbackPage(slug);
   }
 
   return null;

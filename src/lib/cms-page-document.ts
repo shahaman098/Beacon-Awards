@@ -28,8 +28,53 @@ export type PageDocument = {
   image?: string;
   imageAlt?: string;
   ctas?: InteriorPage["ctas"];
+  /** Optional SEO overrides (Phase E). */
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImage?: string;
   sections: IdentifiedPageSection[];
 };
+
+/**
+ * True when the document has at least one non-WordPress section.
+ * Used to stop remote WP HTML from clobbering CMS-owned page content.
+ */
+export function documentHasCmsOwnedSections(
+  document: Pick<PageDocument, "sections"> | Pick<InteriorPage, "sections">,
+): boolean {
+  return document.sections.some((section) => section.kind !== "wordpress");
+}
+
+/** Seed document for a newly created CMS page/post entry. */
+export function createDefaultPageDocument(input: {
+  title: string;
+  intro: string;
+  content?: string;
+}): PageDocument {
+  const paragraphs = (input.content ?? "")
+    .replace(/\r\n/g, "\n")
+    .trim()
+    .split(/\n\s*\n/g)
+    .map((paragraph) => paragraph.replace(/\n+/g, " ").trim())
+    .filter(Boolean);
+
+  return {
+    schemaVersion: PAGE_DOCUMENT_SCHEMA_VERSION,
+    title: input.title.trim() || "Untitled page",
+    intro: input.intro.trim() || "Add a short introduction.",
+    sections: [
+      {
+        id: createSectionId(),
+        kind: "text",
+        title: "Main content",
+        paragraphs:
+          paragraphs.length > 0
+            ? paragraphs
+            : ["Add your content here."],
+      },
+    ],
+  };
+}
 
 export const ADDABLE_SECTION_KINDS: readonly AddableSectionKind[] = [
   "text",
@@ -189,6 +234,9 @@ export function documentToInteriorPage(
     intro: document.intro,
     image: document.image,
     imageAlt: document.imageAlt,
+    metaTitle: document.metaTitle,
+    metaDescription: document.metaDescription,
+    ogImage: document.ogImage,
     ctas: document.ctas,
     heroVideo: extras?.heroVideo,
     heroVideoPoster: extras?.heroVideoPoster,
@@ -208,6 +256,9 @@ export function withStableSectionIds(page: InteriorPage): PageDocument {
     intro: page.intro,
     ...(page.image ? { image: page.image } : {}),
     ...(page.imageAlt ? { imageAlt: page.imageAlt } : {}),
+    ...(page.metaTitle ? { metaTitle: page.metaTitle } : {}),
+    ...(page.metaDescription ? { metaDescription: page.metaDescription } : {}),
+    ...(page.ogImage ? { ogImage: page.ogImage } : {}),
     ...(page.ctas?.length ? { ctas: page.ctas } : {}),
     sections: page.sections.map((section, index) => {
       const raw = section as PageSection & { id?: string };
@@ -473,6 +524,13 @@ export function parsePageDocument(partial: unknown): PageDocument | null {
     ...(typeof partial.imageAlt === "string"
       ? { imageAlt: partial.imageAlt }
       : {}),
+    ...(typeof partial.metaTitle === "string"
+      ? { metaTitle: partial.metaTitle }
+      : {}),
+    ...(typeof partial.metaDescription === "string"
+      ? { metaDescription: partial.metaDescription }
+      : {}),
+    ...(typeof partial.ogImage === "string" ? { ogImage: partial.ogImage } : {}),
     ...(parseCtas(partial.ctas) ? { ctas: parseCtas(partial.ctas) } : {}),
     sections,
   };
@@ -490,6 +548,9 @@ export function mergePageDocument(
     intro: overlay.intro || base.intro,
     image: overlay.image ?? base.image,
     imageAlt: overlay.imageAlt ?? base.imageAlt,
+    metaTitle: overlay.metaTitle ?? base.metaTitle,
+    metaDescription: overlay.metaDescription ?? base.metaDescription,
+    ogImage: overlay.ogImage ?? base.ogImage,
     ctas: overlay.ctas ?? base.ctas,
     sections: overlay.sections.length > 0 ? overlay.sections : base.sections,
   };

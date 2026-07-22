@@ -45,6 +45,7 @@ function EditableHomeHero() {
           className="object-cover"
           fill
           imageScale={hero.posterScale}
+          objectFit={hero.posterObjectFit}
           objectPosition={hero.posterObjectPosition}
           path="hero.posterUrl"
           src={hero.posterUrl}
@@ -160,6 +161,7 @@ function EditableAwardsFeatureSection() {
             className="object-contain"
             fill
             imageScale={awards.imageScale}
+            objectFit={awards.objectFit ?? "contain"}
             objectPosition={awards.objectPosition}
             path="featureCards.0.image"
             src={awards.image}
@@ -288,6 +290,7 @@ function EditableCeremonyGallerySection() {
                         className="object-cover"
                         fill
                         imageScale={item.imageScale}
+                        objectFit={item.objectFit}
                         objectPosition={item.objectPosition}
                         path={`galleryItems.${index}.src`}
                         src={item.src}
@@ -324,6 +327,7 @@ function EditableFinalCta() {
           className="object-cover"
           fill
           imageScale={finalCta.imageScale}
+          objectFit={finalCta.objectFit}
           objectPosition={finalCta.objectPosition}
           path="finalCta.image"
           src={finalCta.image}

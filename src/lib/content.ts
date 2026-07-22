@@ -1526,7 +1526,8 @@ export const awardWinnerRecords2024: AwardWinnerRecord[] = [
   {
     category: "Best Women's Service",
     href: "/nelson-community-mosque-shortlisted-mosque-best-youth-service-2024/",
-    image: "/wp-content/uploads/2024/04/Best-Womens-Service-scaled-1-669x272.jpg",
+    image:
+      "/assets/awards/2024/winners/best-womens-service-nelson-community-mosque.png",
     imageAlt:
       "Best Women's Service 2024 winner Nelson Community Mosque receiving the Beacon Mosque Awards trophy",
     label: "Best women's service",

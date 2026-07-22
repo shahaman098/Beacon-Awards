@@ -3,6 +3,9 @@ import {
   getCurrentCmsUser,
   getPageDocument,
   hasCmsUsers,
+  listPageRevisions,
+  publishPageDocument,
+  restorePageRevision,
   savePageContent,
   savePageDocument,
 } from "@/lib/cms";
@@ -38,7 +41,21 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Page not found." }, { status: 404 });
     }
 
-    const document = await getPageDocument(routeSlug, base);
+    const preview = searchParams.get("preview") === "1";
+    const user = preview ? await getCurrentCmsUser() : null;
+    const document = await getPageDocument(routeSlug, base, {
+      preview: Boolean(preview && user),
+    });
+
+    if (searchParams.get("revisions") === "1") {
+      const authUser = await getCurrentCmsUser();
+      if (!authUser) {
+        return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+      }
+      const revisions = await listPageRevisions(routeSlug);
+      return NextResponse.json({ ok: true, document, routeSlug, revisions });
+    }
+
     return NextResponse.json({ ok: true, document, routeSlug });
   } catch (error) {
     console.error("CMS page document read failed", error);
@@ -73,6 +90,8 @@ export async function POST(request: Request) {
       to?: unknown;
       sectionIds?: unknown;
       note?: unknown;
+      action?: unknown;
+      revisionId?: unknown;
     };
 
     const routeSlug =
@@ -84,15 +103,55 @@ export async function POST(request: Request) {
       );
     }
 
+    const action = typeof body.action === "string" ? body.action : "save";
+    const note = typeof body.note === "string" ? body.note : "";
+
+    if (action === "restore") {
+      const revisionId =
+        typeof body.revisionId === "string" ? body.revisionId.trim() : "";
+      if (!revisionId) {
+        return NextResponse.json(
+          { error: "revisionId is required." },
+          { status: 400 },
+        );
+      }
+      const restored = await restorePageRevision(routeSlug, revisionId, user.id);
+      return NextResponse.json({ ok: true, document: restored, action: "restore" });
+    }
+
+    if (action === "publish") {
+      const parsed =
+        body.document != null ? parsePageDocument(body.document) : null;
+      if (body.document != null && !parsed) {
+        return NextResponse.json(
+          { error: "Invalid page document." },
+          { status: 400 },
+        );
+      }
+      if (parsed) {
+        await savePageDocument(routeSlug, parsed, user.id, note || "pre-publish");
+      }
+      const published = await publishPageDocument(
+        routeSlug,
+        user.id,
+        parsed,
+        note || "publish",
+      );
+      return NextResponse.json({
+        ok: true,
+        document: published,
+        action: "publish",
+      });
+    }
+
     const base = await loadBasePage(routeSlug);
     if (!base) {
       return NextResponse.json({ error: "Page not found." }, { status: 404 });
     }
 
-    const current = await getPageDocument(routeSlug, base);
-    const note = typeof body.note === "string" ? body.note : "";
+    const current = await getPageDocument(routeSlug, base, { preview: true });
 
-    // Full document save
+    // Full document save → draft
     if (body.document != null) {
       const parsed = parsePageDocument(body.document);
       if (!parsed) {
@@ -102,10 +161,10 @@ export async function POST(request: Request) {
         );
       }
       const saved = await savePageDocument(routeSlug, parsed, user.id, note);
-      return NextResponse.json({ ok: true, document: saved });
+      return NextResponse.json({ ok: true, document: saved, action: "draft" });
     }
 
-    // Structural ops
+    // Structural ops → draft
     if (typeof body.op === "string") {
       let next = current;
       switch (body.op) {
@@ -163,7 +222,7 @@ export async function POST(request: Request) {
         user.id,
         note || `op:${body.op}`,
       );
-      return NextResponse.json({ ok: true, document: saved });
+      return NextResponse.json({ ok: true, document: saved, action: "draft" });
     }
 
     // Legacy field-map save (Phase 1 compatibility)
@@ -175,7 +234,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("CMS page content save failed", error);
     return NextResponse.json(
-      { error: "Could not save page content." },
+      {
+        error:
+          error instanceof Error ? error.message : "Could not save page content.",
+      },
       { status: 500 },
     );
   }

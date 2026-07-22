@@ -28,6 +28,8 @@ export type ContentEditorRegistration = {
   saving: boolean;
   status: string | null;
   save: () => Promise<void>;
+  publish?: () => Promise<void>;
+  previewHref?: string | null;
 };
 
 type SiteCmsContextValue = {
@@ -45,6 +47,8 @@ type SiteCmsContextValue = {
   setChromeField: (path: string, value: string) => void;
   uploadMedia: (file: File) => Promise<string>;
   save: () => Promise<void>;
+  publish: () => Promise<void>;
+  previewHref: string | null;
   registerContentEditor: (editor: ContentEditorRegistration | null) => void;
 };
 
@@ -68,6 +72,8 @@ export function useSiteCms() {
       setChromeField: () => undefined,
       uploadMedia: async () => "",
       save: async () => undefined,
+      publish: async () => undefined,
+      previewHref: null,
       registerContentEditor: () => undefined,
     } satisfies SiteCmsContextValue;
   }
@@ -122,6 +128,7 @@ export function SiteCmsProvider({
         const prev = current[key] ?? {
           objectPosition: DEFAULT_OBJECT_POSITION,
           imageScale: DEFAULT_IMAGE_SCALE,
+          objectFit: "cover" as const,
         };
         const next = {
           ...current,
@@ -237,9 +244,32 @@ export function SiteCmsProvider({
       if (editor?.dirty) {
         await editor.save();
       }
-      setStatus("Saved");
+      setStatus("Draft saved");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Save failed.");
+    } finally {
+      setSaving(false);
+    }
+  }, [overridesDirty, chromeDirty, persistOverrides, persistChrome]);
+
+  const publish = useCallback(async () => {
+    setSaving(true);
+    try {
+      if (overridesDirty) {
+        await persistOverrides();
+      }
+      if (chromeDirty) {
+        await persistChrome();
+      }
+      const editor = contentEditorRef.current;
+      if (editor?.publish) {
+        await editor.publish();
+      } else if (editor?.dirty) {
+        await editor.save();
+      }
+      setStatus("Published");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Publish failed.");
     } finally {
       setSaving(false);
     }
@@ -249,6 +279,7 @@ export function SiteCmsProvider({
     overridesDirty || chromeDirty || Boolean(contentEditor?.dirty);
   const combinedSaving = saving || Boolean(contentEditor?.saving);
   const combinedStatus = contentEditor?.status || status;
+  const previewHref = contentEditor?.previewHref ?? null;
 
   const value = useMemo(
     () => ({
@@ -266,6 +297,8 @@ export function SiteCmsProvider({
       setChromeField,
       uploadMedia,
       save,
+      publish,
+      previewHref,
       registerContentEditor,
     }),
     [
@@ -282,6 +315,8 @@ export function SiteCmsProvider({
       setChromeField,
       uploadMedia,
       save,
+      publish,
+      previewHref,
       registerContentEditor,
     ],
   );

@@ -1,4 +1,3 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { CardLink } from "@/lib/content";
@@ -6,6 +5,7 @@ import {
   CMS_ADMIN_EMAIL,
   CMS_ADMIN_PASSWORD,
 } from "@/lib/cms-credentials";
+import { getDb, tryGetCmsDb } from "@/lib/cms-db";
 import {
   HOMEPAGE_CONTENT_ID,
   mergeHomepageContent,
@@ -29,6 +29,7 @@ import {
   type PageContentPayload,
 } from "@/lib/cms-page-content";
 import {
+  createDefaultPageDocument,
   documentToInteriorPage,
   interiorPageToDocument,
   mergePageDocument,
@@ -262,22 +263,6 @@ async function verifyPassword(password: string, storedHash: string) {
     256,
   );
   return constantTimeEqual(hashHex, bytesToHex(new Uint8Array(bits)));
-}
-
-async function getDb() {
-  const context = await getCloudflareContext({ async: true });
-  if (!context.env.CMS_DB) {
-    throw new Error("CMS_DB binding is not configured.");
-  }
-  return context.env.CMS_DB;
-}
-
-export async function tryGetCmsDb() {
-  try {
-    return await getDb();
-  } catch {
-    return null;
-  }
 }
 
 function mapUser(row: CmsUserRow): CmsUser {
@@ -817,6 +802,49 @@ export async function saveCmsEntry(
     )
     .run();
 
+  // Seed a structured PageDocument so live editing works immediately.
+  const seed = createDefaultPageDocument({
+    title: input.title,
+    intro: input.intro,
+    content: input.content,
+  });
+  const seedPayload = JSON.stringify(seed);
+  try {
+    await db
+      .prepare(
+        `INSERT INTO cms_page_documents (
+           route_slug, schema_version, document, draft_document, published_document, updated_at, updated_by
+         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+         ON CONFLICT(route_slug) DO NOTHING`,
+      )
+      .bind(
+        routeSlug,
+        seed.schemaVersion,
+        // document column mirrors published for backward compatibility.
+        input.status === "published" ? seedPayload : seedPayload,
+        seedPayload,
+        input.status === "published" ? seedPayload : null,
+        now,
+        authorId,
+      )
+      .run();
+  } catch {
+    // Older D1 schemas without draft columns: fall back to document-only insert.
+    try {
+      await db
+        .prepare(
+          `INSERT INTO cms_page_documents (
+             route_slug, schema_version, document, updated_at, updated_by
+           ) VALUES (?1, ?2, ?3, ?4, ?5)
+           ON CONFLICT(route_slug) DO NOTHING`,
+        )
+        .bind(routeSlug, seed.schemaVersion, seedPayload, now, authorId)
+        .run();
+    } catch (error) {
+      console.warn("CMS page document seed skipped", error);
+    }
+  }
+
   return getCmsEntryById(id);
 }
 
@@ -1088,8 +1116,29 @@ export async function applySavedPageContent(
   return resolveInteriorPage(page);
 }
 
+type StoredPageDocumentRow = {
+  document: string | null;
+  draft_document?: string | null;
+  published_document?: string | null;
+};
+
+function parseDocumentColumn(raw: string | null | undefined) {
+  if (!raw) return null;
+  try {
+    return parsePageDocument(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Read stored page document.
+ * - preview: prefer draft_document → document → published_document
+ * - public: prefer published_document → document (legacy mirror)
+ */
 async function readStoredPageDocument(
   routeSlug: string,
+  options?: { preview?: boolean },
 ): Promise<PageDocument | null> {
   const db = await tryGetCmsDb();
   if (!db) return null;
@@ -1097,18 +1146,48 @@ async function readStoredPageDocument(
   try {
     const row = await db
       .prepare(
-        `SELECT document
+        `SELECT document, draft_document, published_document
          FROM cms_page_documents
          WHERE route_slug = ?1`,
       )
       .bind(routeSlug)
-      .first<{ document: string }>();
+      .first<StoredPageDocumentRow>();
 
-    if (!row?.document) return null;
-    return parsePageDocument(JSON.parse(row.document));
+    if (!row) return null;
+
+    if (options?.preview) {
+      return (
+        parseDocumentColumn(row.draft_document) ??
+        parseDocumentColumn(row.document) ??
+        parseDocumentColumn(row.published_document)
+      );
+    }
+
+    return (
+      parseDocumentColumn(row.published_document) ??
+      parseDocumentColumn(row.document)
+    );
   } catch {
-    return null;
+    // Pre-migration schema: document column only.
+    try {
+      const row = await db
+        .prepare(
+          `SELECT document
+           FROM cms_page_documents
+           WHERE route_slug = ?1`,
+        )
+        .bind(routeSlug)
+        .first<{ document: string }>();
+      return parseDocumentColumn(row?.document);
+    } catch {
+      return null;
+    }
   }
+}
+
+export async function hasStoredPageDocument(routeSlug: string) {
+  const stored = await readStoredPageDocument(routeSlug);
+  return Boolean(stored);
 }
 
 /**
@@ -1117,32 +1196,33 @@ async function readStoredPageDocument(
 export async function getPageDocument(
   routeSlug: string,
   basePage: InteriorPage,
+  options?: { preview?: boolean },
 ): Promise<PageDocument> {
   const legacy = await getPageContent(routeSlug);
   const fromFields = migrateFieldsToDocument(basePage, legacy.fields);
-  const stored = await readStoredPageDocument(routeSlug);
+  const stored = await readStoredPageDocument(routeSlug, options);
   return mergePageDocument(fromFields, stored);
 }
 
 export async function resolveInteriorPage(
   page: InteriorPage,
 ): Promise<InteriorPage> {
-  const document = await getPageDocument(page.slug, page);
+  return resolveInteriorPageForRequest(page, { preview: false });
+}
+
+export async function resolveInteriorPageForRequest(
+  page: InteriorPage,
+  options?: { preview?: boolean },
+): Promise<InteriorPage> {
+  const document = await getPageDocument(page.slug, page, options);
   return documentToInteriorPage(document, page.slug, {
     heroVideo: page.heroVideo,
     heroVideoPoster: page.heroVideoPoster,
   });
 }
 
-export async function savePageDocument(
-  routeSlug: string,
-  document: PageDocument,
-  userId: string,
-  note = "",
-) {
-  const db = await getDb();
-  const now = new Date().toISOString();
-  const parsed =
+function serializePageDocument(document: PageDocument, routeSlug: string) {
+  return (
     parsePageDocument(document) ??
     interiorPageToDocument({
       slug: routeSlug,
@@ -1153,12 +1233,49 @@ export async function savePageDocument(
       imageAlt: document.imageAlt,
       ctas: document.ctas,
       sections: document.sections,
-    });
-  const payload = JSON.stringify(parsed);
-  const revisionId = crypto.randomUUID();
+    })
+  );
+}
 
-  await db.batch([
-    db
+/** Save live-editor changes to the draft slot (does not publish). */
+export async function savePageDocument(
+  routeSlug: string,
+  document: PageDocument,
+  userId: string,
+  note = "",
+) {
+  void note;
+  const db = await getDb();
+  const now = new Date().toISOString();
+  const parsed = serializePageDocument(document, routeSlug);
+  const payload = JSON.stringify(parsed);
+
+  try {
+    await db
+      .prepare(
+        `INSERT INTO cms_page_documents (
+           route_slug, schema_version, document, draft_document, published_document, updated_at, updated_by
+         ) VALUES (?1, ?2, ?3, ?4, COALESCE(?5, ?4), ?6, ?7)
+         ON CONFLICT(route_slug) DO UPDATE SET
+           schema_version = excluded.schema_version,
+           draft_document = excluded.draft_document,
+           updated_at = excluded.updated_at,
+           updated_by = excluded.updated_by`,
+      )
+      .bind(
+        routeSlug,
+        parsed.schemaVersion,
+        // Keep legacy document untouched on draft save when published exists;
+        // new rows seed document from draft until first publish.
+        payload,
+        payload,
+        null,
+        now,
+        userId,
+      )
+      .run();
+  } catch {
+    await db
       .prepare(
         `INSERT INTO cms_page_documents (route_slug, schema_version, document, updated_at, updated_by)
          VALUES (?1, ?2, ?3, ?4, ?5)
@@ -1168,16 +1285,159 @@ export async function savePageDocument(
            updated_at = excluded.updated_at,
            updated_by = excluded.updated_by`,
       )
-      .bind(routeSlug, parsed.schemaVersion, payload, now, userId),
-    db
-      .prepare(
-        `INSERT INTO cms_page_revisions (id, route_slug, document, created_at, created_by, note)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
-      )
-      .bind(revisionId, routeSlug, payload, now, userId, note),
-  ]);
+      .bind(routeSlug, parsed.schemaVersion, payload, now, userId)
+      .run();
+  }
 
   return parsed;
+}
+
+/**
+ * Copy draft → published (+ legacy document mirror) and append a revision.
+ */
+export async function publishPageDocument(
+  routeSlug: string,
+  userId: string,
+  document?: PageDocument | null,
+  note = "publish",
+) {
+  const db = await getDb();
+  const now = new Date().toISOString();
+
+  let parsed: PageDocument | null =
+    document != null ? serializePageDocument(document, routeSlug) : null;
+
+  if (!parsed) {
+    parsed = await readStoredPageDocument(routeSlug, { preview: true });
+  }
+  if (!parsed) {
+    throw new Error("Nothing to publish for this route.");
+  }
+
+  const payload = JSON.stringify(parsed);
+  const revisionId = crypto.randomUUID();
+
+  try {
+    await db.batch([
+      db
+        .prepare(
+          `INSERT INTO cms_page_documents (
+             route_slug, schema_version, document, draft_document, published_document, updated_at, updated_by
+           ) VALUES (?1, ?2, ?3, ?3, ?3, ?4, ?5)
+           ON CONFLICT(route_slug) DO UPDATE SET
+             schema_version = excluded.schema_version,
+             document = excluded.document,
+             draft_document = COALESCE(cms_page_documents.draft_document, excluded.draft_document),
+             published_document = excluded.published_document,
+             updated_at = excluded.updated_at,
+             updated_by = excluded.updated_by`,
+        )
+        .bind(routeSlug, parsed.schemaVersion, payload, now, userId),
+      db
+        .prepare(
+          `INSERT INTO cms_page_revisions (id, route_slug, document, created_at, created_by, note)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
+        )
+        .bind(revisionId, routeSlug, payload, now, userId, note),
+    ]);
+  } catch {
+    await db.batch([
+      db
+        .prepare(
+          `INSERT INTO cms_page_documents (route_slug, schema_version, document, updated_at, updated_by)
+           VALUES (?1, ?2, ?3, ?4, ?5)
+           ON CONFLICT(route_slug) DO UPDATE SET
+             schema_version = excluded.schema_version,
+             document = excluded.document,
+             updated_at = excluded.updated_at,
+             updated_by = excluded.updated_by`,
+        )
+        .bind(routeSlug, parsed.schemaVersion, payload, now, userId),
+      db
+        .prepare(
+          `INSERT INTO cms_page_revisions (id, route_slug, document, created_at, created_by, note)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
+        )
+        .bind(revisionId, routeSlug, payload, now, userId, note),
+    ]);
+  }
+
+  return parsed;
+}
+
+export type CmsPageRevision = {
+  id: string;
+  routeSlug: string;
+  document: PageDocument;
+  createdAt: string;
+  createdBy: string | null;
+  note: string;
+};
+
+export async function listPageRevisions(routeSlug: string, limit = 30) {
+  const db = await tryGetCmsDb();
+  if (!db) return [];
+
+  try {
+    const rows = await db
+      .prepare(
+        `SELECT id, route_slug, document, created_at, created_by, note
+         FROM cms_page_revisions
+         WHERE route_slug = ?1
+         ORDER BY created_at DESC
+         LIMIT ?2`,
+      )
+      .bind(routeSlug, limit)
+      .all<{
+        id: string;
+        route_slug: string;
+        document: string;
+        created_at: string;
+        created_by: string | null;
+        note: string;
+      }>();
+
+    return (rows.results ?? [])
+      .map((row) => {
+        const document = parseDocumentColumn(row.document);
+        if (!document) return null;
+        return {
+          id: row.id,
+          routeSlug: row.route_slug,
+          document,
+          createdAt: row.created_at,
+          createdBy: row.created_by,
+          note: row.note,
+        } satisfies CmsPageRevision;
+      })
+      .filter((item): item is CmsPageRevision => Boolean(item));
+  } catch {
+    return [];
+  }
+}
+
+export async function restorePageRevision(
+  routeSlug: string,
+  revisionId: string,
+  userId: string,
+) {
+  const db = await getDb();
+  const row = await db
+    .prepare(
+      `SELECT document
+       FROM cms_page_revisions
+       WHERE id = ?1 AND route_slug = ?2`,
+    )
+    .bind(revisionId, routeSlug)
+    .first<{ document: string }>();
+
+  const document = parseDocumentColumn(row?.document ?? null);
+  if (!document) {
+    throw new Error("Revision not found.");
+  }
+
+  // Restoring writes into draft so editors can review before publishing.
+  return savePageDocument(routeSlug, document, userId, `restore:${revisionId}`);
 }
 
 export async function getOptionalCmsUser() {
@@ -1187,3 +1447,6 @@ export async function getOptionalCmsUser() {
     return null;
   }
 }
+
+export { tryGetCmsDb, getDb } from "@/lib/cms-db";
+
