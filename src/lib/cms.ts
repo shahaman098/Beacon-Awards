@@ -115,7 +115,7 @@ const CMS_ENTRY_SELECT = `id, kind, title, slug, route_slug, intro, content,
 
 const CMS_SESSION_COOKIE = "bm_cms_session";
 const CMS_SESSION_TTL_SECONDS = 60 * 60 * 24 * 14;
-const PBKDF2_ITERATIONS = 210_000;
+const PBKDF2_ITERATIONS = 100_000;
 const RESERVED_PAGE_PREFIXES = [
   "api",
   "category",
@@ -252,17 +252,31 @@ async function verifyPassword(password: string, storedHash: string) {
     false,
     ["deriveBits"],
   );
-  const bits = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      hash: "SHA-256",
-      salt: saltBuffer,
-      iterations,
-    },
-    key,
-    256,
-  );
-  return constantTimeEqual(hashHex, bytesToHex(new Uint8Array(bits)));
+  try {
+    const bits = await crypto.subtle.deriveBits(
+      {
+        name: "PBKDF2",
+        hash: "SHA-256",
+        salt: saltBuffer,
+        iterations,
+      },
+      key,
+      256,
+    );
+    return constantTimeEqual(hashHex, bytesToHex(new Uint8Array(bits)));
+  } catch (error) {
+    // Workerd rejects PBKDF2 counts above 100000; treat legacy hashes as invalid
+    // so the admin bootstrap path can rotate them to the supported iteration count.
+    if (
+      error instanceof DOMException &&
+      error.name === "NotSupportedError" &&
+      /iteration counts above 100000/.test(error.message)
+    ) {
+      return false;
+    }
+
+    throw error;
+  }
 }
 
 function mapUser(row: CmsUserRow): CmsUser {
@@ -1449,4 +1463,3 @@ export async function getOptionalCmsUser() {
 }
 
 export { tryGetCmsDb, getDb } from "@/lib/cms-db";
-
