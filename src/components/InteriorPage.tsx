@@ -1093,6 +1093,38 @@ export function MediaSection({
   sectionIndex?: number;
 }) {
   const basePath = `sections.${sectionIndex}`;
+  const isPartnerLogoStrip =
+    !section.title &&
+    section.items.length === 1 &&
+    section.items[0]?.type === "image";
+
+  if (isPartnerLogoStrip) {
+    const item = section.items[0]!;
+    return (
+      <section className="bg-white px-5 pb-2 pt-10 md:px-8 md:pb-4 md:pt-14">
+        <div className="mx-auto flex max-w-[1180px] flex-col items-center text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-black/55 md:text-base">
+            Sponsor
+          </p>
+          <figure className="mt-4 max-w-[280px]">
+            <CmsImage
+              adjustKey={`${basePath}.items.0.src`}
+              alt={item.alt ?? item.caption ?? ""}
+              className="h-auto w-full object-contain"
+              height={220}
+              sizes="(min-width: 768px) 280px, 70vw"
+              src={item.src}
+              width={420}
+            />
+            {item.caption ? (
+              <span className="sr-only">{item.caption}</span>
+            ) : null}
+          </figure>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className={bandClass("warm")}>
       <SectionAwardsDecor left="Media" right="Archive" />

@@ -4859,6 +4859,23 @@ awardCategoryNominations.forEach((category) => {
     return !cardYear || !previousWinnerYears.has(cardYear);
   });
 
+  const partnerLogoSection =
+    category.title === "Best Convert Support Service"
+      ? ([
+          {
+            kind: "media" as const,
+            items: [
+              {
+                type: "image" as const,
+                src: "/assets/partners/convert-muslim-foundation.png",
+                alt: "Convert Muslim Foundation",
+                caption: "Convert Muslim Foundation",
+              },
+            ],
+          },
+        ] satisfies PageSection[])
+      : [];
+
   pageMap[slug] = {
     slug,
     title: category.title,
@@ -4879,6 +4896,7 @@ awardCategoryNominations.forEach((category) => {
       },
     ],
     sections: [
+      ...partnerLogoSection,
       {
         kind: "textPair",
         items: [
