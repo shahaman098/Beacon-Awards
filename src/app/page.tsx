@@ -1,8 +1,5 @@
 import { EditableHome } from "@/components/EditableHome";
-import {
-  getHomepageContent,
-  getOptionalCmsUser,
-} from "@/lib/cms";
+import { getHomepageContent, getOptionalCmsUser } from "@/lib/cms";
 
 export const dynamic = "force-dynamic";
 
