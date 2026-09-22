@@ -2319,6 +2319,9 @@ const awardArchiveHrefByYear = Object.fromEntries(
   awardsArchiveYears.map(({ year, href }) => [year, href]),
 );
 
+const awards2023IslamChannelSeriesHref =
+  "https://watch.islamchannel.tv/series/38bebafe-b3b7-11ee-bf56-06313e739a49";
+
 const awardsArchive: CardLink[] = awardsArchiveYears.map(
   ({ year, sequence, href, text }) => ({
     title: `${sequence} Beacon Mosque Awards ${year}`,
@@ -6357,6 +6360,15 @@ for (const [year, detail] of Object.entries(historicAwardArchiveDetails)) {
     title: `${detail.sequence} Beacon Mosque Awards ${year}`,
     eyebrow: "Awards archive",
     intro: detail.intro,
+    ctas:
+      year === "2023"
+        ? [
+            {
+              label: "Watch 2023 Awards on Islam Channel",
+              href: awards2023IslamChannelSeriesHref,
+            },
+          ]
+        : undefined,
     image:
       year === "2024"
         ? awardWinners2024[0].src
