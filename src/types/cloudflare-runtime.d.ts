@@ -25,6 +25,7 @@ declare interface R2ObjectBody {
   httpMetadata?: {
     contentType?: string;
   };
+  size: number;
   write: number;
 }
 
