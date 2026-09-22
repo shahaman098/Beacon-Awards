@@ -4187,6 +4187,60 @@ const winnerCards2021: CardLink[] = [
   };
 });
 
+const winnerYearArchives = [
+  {
+    year: "2025",
+    sequence: "8th",
+    awardsHref: "/awards/beacon-mosque-awards-2025/",
+    cards: winnerCards2025,
+    image: awardWinners2025[0].src,
+    imageAlt: awardWinners2025[0].alt,
+  },
+  {
+    year: "2024",
+    sequence: "7th",
+    awardsHref: "/awards/awards2024/",
+    cards: winnerCards2024,
+    image: awardWinners2024[0].src,
+    imageAlt: awardWinners2024[0].alt,
+  },
+  {
+    year: "2023",
+    sequence: "6th",
+    awardsHref: "/awards/awards2023/",
+    cards: winnerCards2023,
+    image: awardsGallery2023[0].src,
+    imageAlt: awardsGallery2023[0].alt,
+  },
+  {
+    year: "2022",
+    sequence: "5th",
+    awardsHref: "/awards/british-beacon-mosque-awards-2022/",
+    cards: winnerCards2022,
+    image: awardsGallery2022[0].src,
+    imageAlt: awardsGallery2022[0].alt,
+  },
+  {
+    year: "2021",
+    sequence: "4th",
+    awardsHref: "/british-beacon-mosque-awards-2021/",
+    cards: winnerCards2021,
+    image: awardsGallery2021[0].src,
+    imageAlt: awardsGallery2021[0].alt,
+  },
+];
+
+const winnerYearArchiveCards: CardLink[] = winnerYearArchives.map(
+  ({ year, sequence, cards, image, imageAlt }) => ({
+    title: `${year} winners`,
+    text: `Browse ${cards.length} winners from the ${sequence} Beacon Mosque Awards.`,
+    href: `/winners/${year}/`,
+    meta: "Winners archive",
+    image,
+    imageAlt,
+  }),
+);
+
 const pageMap: Record<string, InteriorPage> = {
   "about-us": {
     slug: "about-us",
@@ -4262,6 +4316,11 @@ const pageMap: Record<string, InteriorPage> = {
           "The winners archive highlights mosques, madrassahs, imams, alimahs and volunteers recognised for service, leadership and measurable community impact.",
           "Use the year-by-year winner sections below to browse official Beacon Mosque winner imagery alongside the recognised institutions and individuals.",
         ],
+      },
+      {
+        kind: "cards",
+        title: "Winner year pages",
+        cards: winnerYearArchiveCards,
       },
       {
         kind: "gallery",
@@ -5520,6 +5579,49 @@ awardCategoryPages2023.forEach((category) => {
     ],
   };
 });
+
+winnerYearArchives.forEach(
+  ({ year, sequence, awardsHref, cards, image, imageAlt }) => {
+    pageMap[`winners/${year}`] = {
+      slug: `winners/${year}`,
+      title: `${year} Winners`,
+      eyebrow: "Recognition archive",
+      intro: `Browse the winners recognised at the ${sequence} Beacon Mosque Awards ${year}.`,
+      image,
+      imageAlt,
+      ctas: [
+        { label: `Back to Awards ${year}`, href: awardsHref },
+        {
+          label: "View all winners",
+          href: "/winners/",
+          variant: "secondary",
+        },
+      ],
+      sections: [
+        {
+          kind: "text",
+          title: `${year} winner archive`,
+          paragraphs: [
+            `The ${year} Beacon Mosque Awards recognised mosques, madrassahs, imams, alimahs and volunteers whose work strengthened Islamic service, leadership, education and community life.`,
+            `This page brings the ${year} winners together in one dedicated archive for easy browsing and sharing.`,
+          ],
+        },
+        {
+          kind: "cards",
+          title: `${year} winners`,
+          cards,
+        },
+        {
+          kind: "cards",
+          title: "Continue through the winners archive",
+          cards: winnerYearArchiveCards.filter(
+            (card) => card.href !== `/winners/${year}/`,
+          ),
+        },
+      ],
+    };
+  },
+);
 
 [
   {
