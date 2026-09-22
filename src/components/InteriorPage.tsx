@@ -57,26 +57,33 @@ function PageCtaButton({
   cta: PageCta;
   index: number;
 }) {
-  return (
-    <ButtonLink
-      className={
-        cta.logoSrc ? "w-full max-w-full gap-3 px-4 text-left sm:w-auto" : undefined
-      }
-      href={cta.href}
-      variant={cta.variant ?? "primary"}
-    >
-      {cta.logoSrc ? (
-        <span className="flex h-8 w-[82px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-white px-2 py-1 shadow-sm">
+  if (cta.logoSrc) {
+    return (
+      <div className="flex w-full max-w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-stretch">
+        <span className="flex min-h-14 w-full items-center justify-center overflow-hidden rounded-lg border border-white/30 bg-white px-4 py-3 shadow-[0_18px_40px_rgba(255,255,255,0.12)] sm:w-[176px]">
           <img
             alt={cta.logoAlt ?? ""}
-            className="h-full w-full scale-[1.65] object-contain"
+            className="h-full max-h-9 w-full scale-[2.15] object-contain"
             src={cta.logoSrc}
           />
         </span>
-      ) : null}
-      <span className={cta.logoSrc ? "min-w-0" : undefined}>
-        <EditableText path={`ctas.${index}.label`} value={cta.label} />
-      </span>
+        <ButtonLink
+          className="w-full max-w-full text-center sm:w-auto"
+          href={cta.href}
+          variant={cta.variant ?? "primary"}
+        >
+          <EditableText path={`ctas.${index}.label`} value={cta.label} />
+        </ButtonLink>
+      </div>
+    );
+  }
+
+  return (
+    <ButtonLink
+      href={cta.href}
+      variant={cta.variant ?? "primary"}
+    >
+      <EditableText path={`ctas.${index}.label`} value={cta.label} />
     </ButtonLink>
   );
 }
