@@ -4313,6 +4313,60 @@ const pageMap: Record<string, InteriorPage> = {
       },
     ],
   },
+  "winners/2023": {
+    slug: "winners/2023",
+    title: "2023 Winners",
+    eyebrow: "Recognition archive",
+    intro:
+      "Browse the winners recognised at the 6th Beacon Mosque Awards 2023.",
+    image: awardsGallery2023[0].src,
+    imageAlt: awardsGallery2023[0].alt,
+    ctas: [
+      { label: "Back to Awards 2023", href: "/awards/awards2023/" },
+      {
+        label: "View all winners",
+        href: "/winners/",
+        variant: "secondary",
+      },
+    ],
+    sections: [
+      {
+        kind: "text",
+        title: "2023 winner archive",
+        paragraphs: [
+          "The 2023 Beacon Mosque Awards recognised mosques, madrassahs, imams, alimahs and volunteers whose work strengthened Islamic service, leadership, education and community life.",
+          "This page brings the 2023 winners together in one dedicated archive for easy browsing and sharing.",
+        ],
+      },
+      {
+        kind: "cards",
+        title: "2023 winners",
+        cards: winnerCards2023,
+      },
+      {
+        kind: "cards",
+        title: "Continue through the winners archive",
+        cards: [
+          {
+            title: "2024 winners",
+            text: "Browse the winners from the 7th Beacon Mosque Awards 2024.",
+            href: "/winners/#2024-winners",
+            meta: "Winners archive",
+            image: awardWinners2024[0].src,
+            imageAlt: awardWinners2024[0].alt,
+          },
+          {
+            title: "2022 winners",
+            text: "Browse the winners from the 5th Beacon Mosque Awards 2022.",
+            href: "/winners/#2022-winners",
+            meta: "Winners archive",
+            image: awardsGallery2022[0].src,
+            imageAlt: awardsGallery2022[0].alt,
+          },
+        ],
+      },
+    ],
+  },
   "awards/beacon-mosque-awards-2026": {
     slug: "awards/beacon-mosque-awards-2026",
     title: "9th Beacon Mosque Awards 2026",
