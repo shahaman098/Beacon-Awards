@@ -64,10 +64,10 @@ function PageCtaButton({
       variant={cta.variant ?? "primary"}
     >
       {cta.logoSrc ? (
-        <span className="flex h-8 w-[72px] shrink-0 items-center justify-center rounded-md bg-white px-2 py-1 shadow-sm">
+        <span className="flex h-8 w-[82px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-white px-2 py-1 shadow-sm">
           <img
             alt={cta.logoAlt ?? ""}
-            className="max-h-full max-w-full object-contain"
+            className="h-full w-full scale-[1.65] object-contain"
             src={cta.logoSrc}
           />
         </span>
