@@ -457,6 +457,36 @@ function parseSection(raw: unknown, index: number): IdentifiedPageSection | null
         items,
       };
     }
+    case "videoPlaylist": {
+      const items = Array.isArray(raw.items)
+        ? raw.items
+            .filter(isRecord)
+            .map((item) => ({
+              title: typeof item.title === "string" ? item.title : "Episode",
+              ...(typeof item.subtitle === "string"
+                ? { subtitle: item.subtitle }
+                : {}),
+              ...(typeof item.duration === "string"
+                ? { duration: item.duration }
+                : {}),
+              href: typeof item.href === "string" ? item.href : "",
+              ...(typeof item.poster === "string" ? { poster: item.poster } : {}),
+            }))
+            .filter((item) => Boolean(item.href))
+        : [];
+      return {
+        id,
+        kind: "videoPlaylist",
+        title:
+          typeof raw.title === "string" ? raw.title : "Video playlist",
+        ...(typeof raw.text === "string" ? { text: raw.text } : {}),
+        ...(typeof raw.provider === "string" ? { provider: raw.provider } : {}),
+        ...(typeof raw.seriesHref === "string"
+          ? { seriesHref: raw.seriesHref }
+          : {}),
+        items,
+      };
+    }
     case "standards":
       return { id, kind: "standards" };
     case "accredited":

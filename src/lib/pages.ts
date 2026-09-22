@@ -42,6 +42,14 @@ export type PageSection =
   | { kind: "wordpress"; html: string; sourceUrl?: string }
   | { kind: "gallery"; title?: string; images: GalleryImage[] }
   | { kind: "audio"; title: string; text?: string; items: AudioResource[] }
+  | {
+      kind: "videoPlaylist";
+      title: string;
+      text?: string;
+      provider?: string;
+      seriesHref?: string;
+      items: VideoPlaylistItem[];
+    }
   | { kind: "standards" }
   | { kind: "accredited" }
   | {
@@ -63,6 +71,14 @@ export type AudioResource = {
   title: string;
   subtitle: string;
   src: string;
+};
+
+export type VideoPlaylistItem = {
+  title: string;
+  subtitle?: string;
+  duration?: string;
+  href: string;
+  poster?: string;
 };
 
 export type MediaItem = {
@@ -2321,6 +2337,63 @@ const awardArchiveHrefByYear = Object.fromEntries(
 
 const awards2023IslamChannelSeriesHref =
   "https://watch.islamchannel.tv/series/38bebafe-b3b7-11ee-bf56-06313e739a49";
+
+const awards2023IslamChannelPlaylist: VideoPlaylistItem[] = [
+  {
+    title: "British Beacon Mosque Awards 2023",
+    subtitle:
+      "Episode 1 of the 2023 ceremony coverage on Islam Channel.",
+    duration: "25m",
+    href: "https://watch.islamchannel.tv/watch/vod/52282420/british-beacon-mosque-awards-episode-1",
+    poster:
+      "https://thumbnails.simplestreamcdn.com/islamtv/ondemand/52282420.jpg?width=700&lang=en",
+  },
+  {
+    title: "British Beacon Mosque Awards 2023",
+    subtitle:
+      "Episode 2 of the 2023 ceremony coverage on Islam Channel.",
+    duration: "23m",
+    href: "https://watch.islamchannel.tv/watch/vod/52282426/british-beacon-mosque-awards-episode-2",
+    poster:
+      "https://thumbnails.simplestreamcdn.com/islamtv/ondemand/52282426.jpg?width=700&lang=en",
+  },
+  {
+    title: "British Beacon Mosque Awards 2023",
+    subtitle:
+      "Episode 3 of the 2023 ceremony coverage on Islam Channel.",
+    duration: "23m",
+    href: "https://watch.islamchannel.tv/watch/vod/52282432/british-beacon-mosque-awards-episode-3",
+    poster:
+      "https://thumbnails.simplestreamcdn.com/islamtv/ondemand/52282432.jpg?width=700&lang=en",
+  },
+  {
+    title: "British Beacon Mosque Awards 2023",
+    subtitle:
+      "Episode 4 of the 2023 ceremony coverage on Islam Channel.",
+    duration: "25m",
+    href: "https://watch.islamchannel.tv/watch/vod/52282439/british-beacon-mosque-awards-episode-4",
+    poster:
+      "https://thumbnails.simplestreamcdn.com/islamtv/ondemand/52282439.jpg?width=700&lang=en",
+  },
+  {
+    title: "British Beacon Mosque Awards 2023",
+    subtitle:
+      "Episode 5 of the 2023 ceremony coverage on Islam Channel.",
+    duration: "23m",
+    href: "https://watch.islamchannel.tv/watch/vod/52282445/british-beacon-mosque-awards-episode-5",
+    poster:
+      "https://thumbnails.simplestreamcdn.com/islamtv/ondemand/52282445.jpg?width=700&lang=en",
+  },
+  {
+    title: "British Beacon Mosque Awards 2023",
+    subtitle:
+      "Episode 6 of the 2023 ceremony coverage on Islam Channel.",
+    duration: "25m",
+    href: "https://watch.islamchannel.tv/watch/vod/52282451/british-beacon-mosque-awards-episode-6",
+    poster:
+      "https://thumbnails.simplestreamcdn.com/islamtv/ondemand/52282451.jpg?width=700&lang=en",
+  },
+];
 
 const awardsArchive: CardLink[] = awardsArchiveYears.map(
   ({ year, sequence, href, text }) => ({
@@ -6360,15 +6433,7 @@ for (const [year, detail] of Object.entries(historicAwardArchiveDetails)) {
     title: `${detail.sequence} Beacon Mosque Awards ${year}`,
     eyebrow: "Awards archive",
     intro: detail.intro,
-    ctas:
-      year === "2023"
-        ? [
-            {
-              label: "Watch 2023 Awards on Islam Channel",
-              href: awards2023IslamChannelSeriesHref,
-            },
-          ]
-        : undefined,
+    ctas: undefined,
     image:
       year === "2024"
         ? awardWinners2024[0].src
@@ -6427,6 +6492,15 @@ for (const [year, detail] of Object.entries(historicAwardArchiveDetails)) {
         : []),
       ...(year === "2023"
         ? [
+            {
+              kind: "videoPlaylist" as const,
+              title: "Watch the 2023 awards on Islam Channel",
+              text:
+                "The full 2023 British Beacon Mosque Awards ceremony was broadcast on Islam Channel in six episodes. Select an episode below, then continue watching on Islam Channel.",
+              provider: "Islam Channel",
+              seriesHref: awards2023IslamChannelSeriesHref,
+              items: awards2023IslamChannelPlaylist,
+            },
             {
               kind: "gallery" as const,
               title: "2023 awards gallery",

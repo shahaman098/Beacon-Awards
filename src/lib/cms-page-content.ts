@@ -253,6 +253,17 @@ export function collectEditablePageFields(page: InteriorPage): Record<string, st
           fields[`${base}.items.${itemIndex}.subtitle`] = item.subtitle;
         });
         break;
+      case "videoPlaylist":
+        fields[`${base}.title`] = section.title;
+        if (section.text) fields[`${base}.text`] = section.text;
+        if (section.provider) fields[`${base}.provider`] = section.provider;
+        section.items.forEach((item, itemIndex) => {
+          fields[`${base}.items.${itemIndex}.title`] = item.title;
+          if (item.subtitle) {
+            fields[`${base}.items.${itemIndex}.subtitle`] = item.subtitle;
+          }
+        });
+        break;
       case "criteria":
         fields[`${base}.title`] = section.title;
         section.groups.forEach((group, groupIndex) => {

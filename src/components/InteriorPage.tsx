@@ -34,6 +34,7 @@ import { EditableText } from "@/components/visual-editor/EditableText";
 import { EditableHtml } from "@/components/visual-editor/EditableHtml";
 import { CmsEditOnly } from "@/components/visual-editor/CmsEditOnly";
 import { FormSection } from "@/components/cms/CmsFormSection";
+import { VideoPlaylistSection } from "@/components/VideoPlaylistSection";
 import {
   useLiveInteriorPage,
   usePageEditorOptional,
@@ -2845,6 +2846,10 @@ function RenderSection({
           section={section}
           sectionIndex={index}
         />
+      );
+    case "videoPlaylist":
+      return (
+        <VideoPlaylistSection section={section} sectionIndex={index} />
       );
     case "standards":
       return <StandardsSection sectionIndex={index} />;
