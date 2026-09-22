@@ -9,6 +9,7 @@ import {
   getAwardWinnerRecord2025ByCategory,
   getAwardWinnerRecord2025ByHref,
   getAwardCategoryMedia,
+  resolveAwardCategoryPageImage,
   newsCards,
   nominationForm2026Href,
   standards,
@@ -5288,6 +5289,7 @@ accreditedMosques.forEach((mosque) => {
 awardCategoryPages2025.forEach((category) => {
   const slug = category.href.replace(/^\/|\/$/g, "");
   const winner = getAwardWinnerRecord2025ByCategory(category.title);
+  const categoryHero = resolveAwardCategoryPageImage(category.title);
   const winnerWebsiteHref = winner
     ? winnerWebsiteHrefFor("2025", category.title)
     : null;
@@ -5300,8 +5302,8 @@ awardCategoryPages2025.forEach((category) => {
     title: `Beacon Mosque 2025 ${category.title}`,
     eyebrow: "Awards 2025 category",
     intro: `Explore the 2025 Beacon Mosque Awards profiles listed in the ${category.title} category.`,
-    image: winner?.image ?? "/assets/awards/2025/bbma-2025-identity.png",
-    imageAlt: winner?.imageAlt ?? "British Beacon Mosque Awards 2025 identity",
+    image: winner?.image ?? categoryHero.image,
+    imageAlt: winner?.imageAlt ?? categoryHero.imageAlt,
     ctas: [
       ...(winnerWebsiteHref
         ? [{ label: "Visit winner website", href: winnerWebsiteHref }]
@@ -5431,6 +5433,7 @@ awardRecognitionProfiles2024.forEach((profile) => {
 awardCategoryPages2024.forEach((category) => {
   const slug = category.href.replace(/^\/|\/$/g, "");
   const winner = getAwardWinnerRecord2024ByCategory(category.title);
+  const categoryHero = resolveAwardCategoryPageImage(category.title);
   const winnerWebsiteHref = winner
     ? winnerWebsiteHrefFor("2024", category.title)
     : null;
@@ -5445,8 +5448,8 @@ awardCategoryPages2024.forEach((category) => {
     title: `Beacon Mosque 2024 ${category.title}`,
     eyebrow: "Awards 2024 category",
     intro: `Explore the 2024 Beacon Mosque Awards profiles listed in the ${category.title} category.`,
-    image: winner?.image ?? "/assets/interior/awards-gala.jpg",
-    imageAlt: winner?.imageAlt ?? "Beacon Mosque awards ceremony",
+    image: winner?.image ?? categoryHero.image,
+    imageAlt: winner?.imageAlt ?? categoryHero.imageAlt,
     ctas: [
       ...(winnerWebsiteHref
         ? [{ label: "Visit winner website", href: winnerWebsiteHref }]
@@ -5497,14 +5500,14 @@ awardCategoryPages2024.forEach((category) => {
 
 awardCategoryPages2023.forEach((category) => {
   const slug = category.href.replace(/^\/|\/$/g, "");
+  const categoryHero = resolveAwardCategoryPageImage(category.title);
 
   pageMap[slug] = {
     slug,
     title: `Beacon Mosque 2023 ${category.title}`,
     eyebrow: "Awards 2023 category",
     intro: `Explore the ${category.title} category from the 2023 Beacon Mosque Awards.`,
-    image: "/assets/interior/awards-gala.jpg",
-    imageAlt: "Beacon Mosque awards ceremony",
+    ...categoryHero,
     ctas: [
       { label: "Back to Awards 2023", href: "/awards/awards2023/" },
       {
@@ -5623,13 +5626,13 @@ awardCategoryPages2022.forEach((category) => {
     return (finalist ?? vote)?.category === category.title;
   });
 
+  const categoryHero = resolveAwardCategoryPageImage(category.title);
   const page: InteriorPage = {
     slug,
     title: `Beacon Mosque 2022 ${category.title}`,
     eyebrow: "Awards 2022 category",
     intro: `Explore the ${category.title} category from the 2022 Beacon Mosque Awards.`,
-    image: "/assets/interior/awards-gala.jpg",
-    imageAlt: "Beacon Mosque awards ceremony",
+    ...categoryHero,
     ctas: [
       {
         label: "Back to Awards 2022",
@@ -5869,13 +5872,13 @@ awardCategoryPages2021.forEach((category) => {
     return (vote ?? result)?.category === category.title;
   });
 
+  const categoryHero = resolveAwardCategoryPageImage(category.title);
   const page: InteriorPage = {
     slug,
     title: `Beacon Mosque 2021 ${category.title}`,
     eyebrow: "Awards 2021 category",
     intro: `Explore the ${category.title} category from the 2021 Beacon Mosque Awards.`,
-    image: "/assets/interior/awards-gala.jpg",
-    imageAlt: "Beacon Mosque awards ceremony",
+    ...categoryHero,
     ctas: [
       {
         label: "Back to Awards 2021",
@@ -6070,13 +6073,13 @@ awardCategoryPages2020.forEach((category) => {
       category.title,
   );
 
+  const categoryHero = resolveAwardCategoryPageImage(category.title);
   pageMap[slug] = {
     slug,
     title: `Beacon Mosque 2020 ${category.title}`,
     eyebrow: "Awards 2020 category",
     intro: `Explore the ${category.title} category from the 2020 Beacon Mosque Awards.`,
-    image: "/assets/interior/awards-gala.jpg",
-    imageAlt: "Beacon Mosque awards ceremony",
+    ...categoryHero,
     ctas: [
       {
         label: "Back to Awards 2020",
@@ -6383,13 +6386,13 @@ awardCategoryPages2018.forEach((category) => {
     ),
   );
 
+  const categoryHero = resolveAwardCategoryPageImage(category.title);
   pageMap[slug] = {
     slug,
     title: `Beacon Mosque 2018 ${category.title}`,
     eyebrow: "Awards 2018 category",
     intro: `${category.summary} Explore the category in the founding British Beacon Mosque Awards archive.`,
-    image: "/assets/interior/awards-gala.jpg",
-    imageAlt: "Beacon Mosque awards ceremony",
+    ...categoryHero,
     ctas: [
       {
         label: "Back to Awards 2018",

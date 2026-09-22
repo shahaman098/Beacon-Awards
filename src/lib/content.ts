@@ -220,6 +220,14 @@ export function getAwardCategoryMedia(title: string) {
   return awardCategoryMediaByKey[key as keyof typeof awardCategoryMediaByKey] ?? null;
 }
 
+export function resolveAwardCategoryPageImage(title: string) {
+  const media = getAwardCategoryMedia(title);
+  return {
+    image: media?.image ?? "/assets/interior/awards-gala.jpg",
+    imageAlt: media?.imageAlt ?? `${title} category artwork`,
+  };
+}
+
 export const awardCategoryNominationDetails = [
   {
     title: "Best Run Mosque",

@@ -16,6 +16,10 @@ import {
   standards,
   type CardLink,
 } from "@/lib/content";
+import {
+  awardCategoryImageAdjustKey,
+  awardWinnerHeroAdjustKey,
+} from "@/lib/cms-image-overrides";
 import type {
   InteriorPage as InteriorPageData,
   PageSection,
@@ -196,6 +200,12 @@ function LinkCard({
   const hasImage = Boolean(card.image);
   const isNominationCard = card.meta === "Nominate";
   const isAwardCategoryCard = /category/i.test(card.meta ?? "");
+  const imageAdjustKey =
+    pathPrefix && (isNominationCard || isAwardCategoryCard)
+      ? awardCategoryImageAdjustKey(card.title)
+      : pathPrefix
+        ? `${pathPrefix}.image`
+        : undefined;
   const imageFit = card.imageFit ?? "cover";
   const defaultCtaLabel = isNominationCard
     ? "Nominate"
@@ -219,7 +229,7 @@ function LinkCard({
           ].join(" ")}
         >
           <CmsImage
-            adjustKey={pathPrefix ? `${pathPrefix}.image` : undefined}
+            adjustKey={imageAdjustKey}
             alt={card.imageAlt ?? ""}
             className={[
               "transition duration-500",
@@ -2937,6 +2947,10 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
     page.imageAlt ??
     category;
   const usePosterHeroLayout = isAwardWinnerPosterImage(heroImageSrc);
+  const categoryHeroAdjustKey =
+    categoryWinner2024 || categoryWinner2025
+      ? awardWinnerHeroAdjustKey(archiveYear, category)
+      : awardCategoryImageAdjustKey(category);
   const cardSections = page.sections.filter(
     (section): section is Extract<PageSection, { kind: "cards" }> =>
       section.kind === "cards",
@@ -3017,7 +3031,7 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
                 >
                   {heroImageSrc ? (
                     <CmsImage
-                      adjustKey="landing.awardCategory.hero"
+                      adjustKey={categoryHeroAdjustKey}
                       alt={heroImageAlt}
                       className={
                         usePosterHeroLayout
@@ -3414,6 +3428,10 @@ export function InteriorPage({ page: pageProp }: { page: InteriorPageData }) {
   const isStandardsAccreditationPage = page.slug === "standards/accreditation";
   const hasHeroVideo = Boolean(page.heroVideo);
   const hasHeroVisual = hasHeroVideo || Boolean(page.image);
+  const nominationCategoryHeroAdjustKey =
+    page.eyebrow === "Awards 2026 nomination"
+      ? awardCategoryImageAdjustKey(page.title)
+      : undefined;
   const showHeroVisual =
     hasHeroVisual && !isAwardsLandingPage && !isStandardsSubpage && !isContactPage;
   const heroAwardsArchiveSection = isAwardsLandingPage
@@ -3637,6 +3655,7 @@ export function InteriorPage({ page: pageProp }: { page: InteriorPageData }) {
                     />
                   ) : (
                     <CmsImage
+                      adjustKey={nominationCategoryHeroAdjustKey}
                       alt={page.imageAlt ?? ""}
                       className="arch-frame-inner aspect-[0.9] w-full object-cover"
                       height={720}

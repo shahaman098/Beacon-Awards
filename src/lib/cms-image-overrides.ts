@@ -19,6 +19,24 @@ export type CmsImageOverrides = Record<string, CmsImageOverride>;
 
 export const CMS_IMAGE_OVERRIDES_ID = "image-overrides";
 
+export function normalizeAwardCategoryTitle(title: string) {
+  return title
+    .toLowerCase()
+    .replace(/'/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** Stable CMS key shared by every surface that shows a category artwork image. */
+export function awardCategoryImageAdjustKey(title: string) {
+  return `award-category:${normalizeAwardCategoryTitle(title)}`;
+}
+
+/** Stable CMS key for archive category pages that feature a year winner portrait. */
+export function awardWinnerHeroAdjustKey(year: string, title: string) {
+  return `award-winner-hero:${year}:${normalizeAwardCategoryTitle(title)}`;
+}
+
 export function emptyImageOverrides(): CmsImageOverrides {
   return {};
 }
