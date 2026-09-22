@@ -59,7 +59,9 @@ function PageCtaButton({
 }) {
   return (
     <ButtonLink
-      className={cta.logoSrc ? "gap-3 px-4 text-left" : undefined}
+      className={
+        cta.logoSrc ? "w-full max-w-full gap-3 px-4 text-left sm:w-auto" : undefined
+      }
       href={cta.href}
       variant={cta.variant ?? "primary"}
     >
