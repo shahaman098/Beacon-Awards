@@ -6487,6 +6487,21 @@ for (const [year, detail] of Object.entries(historicAwardArchiveDetails)) {
       ...(year === "2023"
         ? [
             {
+              kind: "cards" as const,
+              title: "Islam Channel coverage",
+              cards: [
+                {
+                  title: "Watch the 2023 Awards on Islam Channel",
+                  text: "Open the full British Beacon Mosque Awards 2023 series on Islam Channel.",
+                  href: awards2023IslamChannelSeriesHref,
+                  meta: "Official coverage",
+                  image: "/assets/partners/islam-channel-logo.png",
+                  imageAlt: "Islam Channel logo",
+                  imageFit: "contain" as const,
+                },
+              ],
+            },
+            {
               kind: "gallery" as const,
               title: "2023 awards gallery",
               images: awardsGallery2023,
