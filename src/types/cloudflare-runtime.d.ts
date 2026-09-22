@@ -39,6 +39,7 @@ declare abstract class R2Bucket {
     },
   ): Promise<unknown>;
   get(key: string): Promise<R2ObjectBody | null>;
+  delete(keys: string | string[]): Promise<void>;
 }
 
 declare interface CloudflareEnv {
