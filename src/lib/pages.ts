@@ -100,6 +100,8 @@ export type InteriorPage = {
     label: string;
     href: string;
     variant?: "primary" | "secondary";
+    logoSrc?: string;
+    logoAlt?: string;
   }>;
   sections: PageSection[];
 };
@@ -6527,6 +6529,8 @@ for (const [year, detail] of Object.entries(historicAwardArchiveDetails)) {
               label: "Watch 2023 Awards on Islam Channel",
               href: awards2023IslamChannelSeriesHref,
               variant: "secondary",
+              logoSrc: "/assets/partners/islam-channel-logo.png",
+              logoAlt: "",
             },
           ]
         : undefined,

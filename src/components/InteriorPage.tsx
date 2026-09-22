@@ -41,12 +41,42 @@ import {
 import { isPageStructureLocked } from "@/lib/cms-page-document";
 
 type SectionTone = "white" | "warm";
+type PageCta = NonNullable<InteriorPageData["ctas"]>[number];
 
 function bandClass(tone: SectionTone = "white") {
   return [
     "relative isolate overflow-hidden px-5 py-20 text-black md:px-8 md:py-28",
     tone === "warm" ? "bg-[#f3f1ed]" : "bg-white",
   ].join(" ");
+}
+
+function PageCtaButton({
+  cta,
+  index,
+}: {
+  cta: PageCta;
+  index: number;
+}) {
+  return (
+    <ButtonLink
+      className={cta.logoSrc ? "gap-3 px-4 text-left" : undefined}
+      href={cta.href}
+      variant={cta.variant ?? "primary"}
+    >
+      {cta.logoSrc ? (
+        <span className="flex h-8 w-[72px] shrink-0 items-center justify-center rounded-md bg-white px-2 py-1 shadow-sm">
+          <img
+            alt={cta.logoAlt ?? ""}
+            className="max-h-full max-w-full object-contain"
+            src={cta.logoSrc}
+          />
+        </span>
+      ) : null}
+      <span className={cta.logoSrc ? "min-w-0" : undefined}>
+        <EditableText path={`ctas.${index}.label`} value={cta.label} />
+      </span>
+    </ButtonLink>
+  );
 }
 
 function TextSection({
@@ -2139,16 +2169,11 @@ function TrainingLandingPage({ page }: { page: InteriorPageData }) {
                 />
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                   {page.ctas?.map((cta, ctaIndex) => (
-                    <ButtonLink
-                      href={cta.href}
+                    <PageCtaButton
+                      cta={cta}
+                      index={ctaIndex}
                       key={`${cta.href}-${ctaIndex}`}
-                      variant={cta.variant ?? "primary"}
-                    >
-                      <EditableText
-                        path={`ctas.${ctaIndex}.label`}
-                        value={cta.label}
-                      />
-                    </ButtonLink>
+                    />
                   ))}
                 </div>
               </div>
@@ -3034,16 +3059,11 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
                 </div>
                 <div className="mt-6 flex flex-wrap gap-3">
                   {page.ctas?.map((cta, ctaIndex) => (
-                    <ButtonLink
-                      href={cta.href}
+                    <PageCtaButton
+                      cta={cta}
+                      index={ctaIndex}
                       key={`${cta.href}-${ctaIndex}`}
-                      variant={cta.variant ?? "primary"}
-                    >
-                      <EditableText
-                        path={`ctas.${ctaIndex}.label`}
-                        value={cta.label}
-                      />
-                    </ButtonLink>
+                    />
                   ))}
                 </div>
               </div>
@@ -3251,16 +3271,11 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
                 </div>
                 <div className="mt-6 flex flex-wrap gap-3">
                   {page.ctas?.map((cta, ctaIndex) => (
-                    <ButtonLink
-                      href={cta.href}
+                    <PageCtaButton
+                      cta={cta}
+                      index={ctaIndex}
                       key={`${cta.href}-${ctaIndex}`}
-                      variant={cta.variant ?? "primary"}
-                    >
-                      <EditableText
-                        path={`ctas.${ctaIndex}.label`}
-                        value={cta.label}
-                      />
-                    </ButtonLink>
+                    />
                   ))}
                 </div>
               </div>
@@ -3508,16 +3523,11 @@ export function InteriorPage({ page: pageProp }: { page: InteriorPageData }) {
                 {page.ctas?.length ? (
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     {page.ctas.map((cta, index) => (
-                      <ButtonLink
-                        href={cta.href}
+                      <PageCtaButton
+                        cta={cta}
+                        index={index}
                         key={`${cta.href}-${index}`}
-                        variant={cta.variant ?? "primary"}
-                      >
-                        <EditableText
-                          path={`ctas.${index}.label`}
-                          value={cta.label}
-                        />
-                      </ButtonLink>
+                      />
                     ))}
                   </div>
                 ) : null}
