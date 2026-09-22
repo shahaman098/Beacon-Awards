@@ -6418,8 +6418,13 @@ for (const [year, detail] of Object.entries(historicAwardArchiveDetails)) {
       year === "2023"
         ? [
             {
+              label: "View 2023 winners",
+              href: "/winners/2023/",
+            },
+            {
               label: "Watch 2023 Awards on Islam Channel",
               href: awards2023IslamChannelSeriesHref,
+              variant: "secondary",
             },
           ]
         : undefined,
