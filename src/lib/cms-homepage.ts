@@ -15,11 +15,7 @@ function publicCtaLabel(label: string, fallback: string) {
   if (!awards2026NominationsClosed) {
     return label || fallback;
   }
-  if (
-    /nominat/i.test(label) ||
-    /prepare to vote/i.test(label) ||
-    !label.trim()
-  ) {
+  if (/nominat/i.test(label) || !label.trim()) {
     return fallback;
   }
   return label;
@@ -227,8 +223,8 @@ export function defaultHomepageContent(): HomepageContent {
       cycleLabel: "Awards cycle",
       cycleHeading: "9th Annual Beacon Mosque Awards 2026",
       body: "Celebrating the best of British mosques through service, governance, innovation and measurable community impact.",
-      ctaLabel: "Submit Your Nomination",
-      ctaHref: awards2026HubHref,
+      ctaLabel: "Prepare to vote",
+      ctaHref: awards2026CategoriesHref,
       videoUrl:
         "/wp-content/uploads/2023/05/Beacon-Mosque-Home-Intro-Video.mp4",
       posterUrl: "/assets/hero/awards-2025-poster.jpeg",
@@ -500,12 +496,19 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
       cycleLabel: asString(heroRaw.cycleLabel, defaults.hero.cycleLabel),
       cycleHeading: asString(heroRaw.cycleHeading, defaults.hero.cycleHeading),
       body: asString(heroRaw.body, defaults.hero.body),
-      ctaLabel: asString(heroRaw.ctaLabel, defaults.hero.ctaLabel),
-      // Submit-nomination CTAs should land on the Awards 2026 hub hero,
-      // not the categories grid further down the page.
+      ctaLabel: publicCtaLabel(
+        asString(heroRaw.ctaLabel, defaults.hero.ctaLabel),
+        defaults.hero.ctaLabel,
+      ),
+      // Closed nominations: send prepare-to-vote CTAs to the 2026 categories.
       ctaHref: (() => {
         const href = asString(heroRaw.ctaHref, defaults.hero.ctaHref);
-        return href === awards2026CategoriesHref ? awards2026HubHref : href;
+        if (awards2026NominationsClosed && /nominat/i.test(href)) {
+          return awards2026CategoriesHref;
+        }
+        return href === awards2026HubHref && awards2026NominationsClosed
+          ? awards2026CategoriesHref
+          : href;
       })(),
       videoUrl: asString(heroRaw.videoUrl, defaults.hero.videoUrl),
       posterUrl: asString(heroRaw.posterUrl, defaults.hero.posterUrl),
