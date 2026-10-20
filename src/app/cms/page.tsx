@@ -16,6 +16,8 @@ export default async function CmsDashboardPage() {
       actions={
         <>
           <CmsTopLink href="/">Edit live site</CmsTopLink>
+          <CmsTopLink href="/content/">Content archive</CmsTopLink>
+          <CmsTopLink href="/cms/assessments/">Self-assessments</CmsTopLink>
           <CmsTopLink href="/cms/new/?kind=page">New page</CmsTopLink>
           <CmsTopLink href="/cms/new/?kind=post">New post</CmsTopLink>
           <form action="/api/cms/logout/" method="post">

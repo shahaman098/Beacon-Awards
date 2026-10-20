@@ -11,6 +11,7 @@
   --line-soft: rgb(255 255 255 / 0.1);
   --accent-warm: #d36b34;
   --accent-gold: #e4bf68;
+  --font-manrope: Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {

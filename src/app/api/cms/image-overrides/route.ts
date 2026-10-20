@@ -5,6 +5,7 @@ import {
   saveImageOverrides,
 } from "@/lib/cms";
 import { mergeImageOverrides } from "@/lib/cms-image-overrides";
+import { revalidateEntireSite } from "@/lib/cms-revalidate";
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
     };
     const overrides = mergeImageOverrides(body.overrides ?? body);
     const saved = await saveImageOverrides(overrides, user.id);
+    revalidateEntireSite();
     return NextResponse.json({ ok: true, overrides: saved });
   } catch (error) {
     console.error("CMS image overrides save failed", error);

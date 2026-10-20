@@ -1,14 +1,7 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
 import { SiteCmsRoot } from "@/components/cms/SiteCmsRoot";
 import { absoluteUrl, siteDescription, siteName, siteUrl } from "@/lib/seo";
 import "./globals.css";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -50,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${manrope.variable} h-full`}>
+    <html lang="en" className="h-full">
       <body className="flex min-h-full flex-col antialiased">
         <SiteCmsRoot>{children}</SiteCmsRoot>
       </body>

@@ -320,7 +320,7 @@ function EditableFinalCta() {
 
   return (
     <section className="relative isolate min-h-[520px] overflow-hidden bg-black px-5 py-20 text-center text-white md:px-8 md:py-28">
-      <SectionAwardsDecor left="Nominate" right="2026" tone="dark" />
+      <SectionAwardsDecor left="Shortlist" right="2026" tone="dark" />
       <div className="absolute inset-0">
         <EditableImage
           alt={finalCta.imageAlt}

@@ -104,7 +104,7 @@ export function defaultSiteChrome(): SiteChrome {
     },
     forms: {
       nomination: {
-        actionLabel: "Submit nomination",
+        actionLabel: "Send nomination",
         messageLabel: "Nomination details",
         fields: [
           {
@@ -197,7 +197,7 @@ function mergeNavItems(
   defaults: SiteChromeNavItem[],
 ): SiteChromeNavItem[] {
   if (!Array.isArray(raw) || raw.length === 0) return defaults;
-  return raw.map((item, index) => {
+  const merged = raw.map((item, index) => {
     const fallback = defaults[index] ?? defaults[0] ?? { label: "Link", href: "/" };
     const row =
       item && typeof item === "object" ? (item as Record<string, unknown>) : {};
@@ -206,6 +206,21 @@ function mergeNavItems(
       href: asString(row.href, fallback.href),
     };
   });
+
+  for (const item of defaults) {
+    if (!merged.some((entry) => entry.href === item.href)) {
+      const standardsIndex = merged.findIndex((entry) =>
+        entry.href.startsWith("/standards"),
+      );
+      if (standardsIndex >= 0) {
+        merged.splice(standardsIndex + 1, 0, item);
+      } else {
+        merged.push(item);
+      }
+    }
+  }
+
+  return merged;
 }
 
 const SOCIAL_NETWORKS: SiteChromeSocialNetwork[] = [

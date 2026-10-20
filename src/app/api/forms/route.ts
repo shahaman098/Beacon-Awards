@@ -1,3 +1,4 @@
+import { notifyCrm } from "@/lib/crm";
 import { NextResponse, type NextRequest } from "next/server";
 import { appendFile, mkdir } from "node:fs/promises";
 import path from "node:path";
@@ -127,15 +128,19 @@ export async function POST(request: NextRequest) {
           returnTo,
         });
       }
-
-      return redirectTo(request, {
-        status: "received",
-        form: formType,
-        returnTo,
-      });
+    } else {
+      await saveLocalSubmission(payload);
     }
 
-    await saveLocalSubmission(payload);
+    void notifyCrm({
+      eventType: "form.submitted",
+      formType,
+      formLabel: formLabels[formType],
+      sourcePath: returnTo,
+      source: payload.source,
+      fields: payload.fields,
+    });
+
     return redirectTo(request, {
       status: "received",
       form: formType,

@@ -1,6 +1,28 @@
+export const CRESCENT_FINIAL_SRC = "/assets/brand/crescent-finial.png";
+
 type MotifProps = {
   className?: string;
 };
+
+export function CrescentFinial({
+  className = "h-40 w-auto",
+  opacity = 0.72,
+}: MotifProps & { opacity?: number }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      alt=""
+      aria-hidden="true"
+      className={["block object-contain select-none", className].join(" ")}
+      decoding="async"
+      draggable={false}
+      height={1227}
+      src={CRESCENT_FINIAL_SRC}
+      style={{ opacity, width: "auto" }}
+      width={587}
+    />
+  );
+}
 
 function StarIcon({ className = "" }: MotifProps) {
   return (
@@ -118,7 +140,7 @@ export function HeroAwardPanel() {
       <div className="absolute inset-3 rounded-lg border border-gold-200/12" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(241,213,138,0.2),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.08),transparent)]" />
       <div className="relative flex h-full flex-col items-center justify-center">
-        <AwardSeal className="h-44 w-44" />
+        <CrescentFinial className="h-52 w-auto max-w-[4rem]" opacity={0.95} />
         <div className="mt-8 h-px w-40 bg-[linear-gradient(90deg,transparent,#f1d58a,transparent)]" />
         <div className="mt-7 grid w-full max-w-xs grid-cols-3 gap-3">
           {[0, 1, 2].map((item) => (

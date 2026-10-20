@@ -1,19 +1,16 @@
 import { EditableHome } from "@/components/EditableHome";
-import { getHomepageContent, getOptionalCmsUser } from "@/lib/cms";
+import { getHomepageContent } from "@/lib/cms";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function Home() {
-  const [content, user] = await Promise.all([
-    getHomepageContent(),
-    getOptionalCmsUser(),
-  ]);
+  const content = await getHomepageContent();
 
   return (
     <EditableHome
-      canEdit={Boolean(user)}
+      canEdit={false}
       content={content}
-      editorEmail={user?.email ?? null}
+      editorEmail={null}
       initialEditMode={false}
     />
   );

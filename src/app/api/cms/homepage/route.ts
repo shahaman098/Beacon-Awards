@@ -5,6 +5,7 @@ import {
   saveHomepageContent,
 } from "@/lib/cms";
 import { mergeHomepageContent } from "@/lib/cms-homepage";
+import { revalidateSiteContent } from "@/lib/cms-revalidate";
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
     };
     const content = mergeHomepageContent(body.content ?? body);
     const saved = await saveHomepageContent(content, user.id);
+    revalidateSiteContent();
     return NextResponse.json({ ok: true, content: saved });
   } catch (error) {
     console.error("CMS homepage save failed", error);

@@ -1,50 +1,25 @@
 import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { InteriorPage } from "@/components/InteriorPage";
 import { EditableInteriorPage } from "@/components/EditableInteriorPage";
-import {
-  getOptionalCmsUser,
-  resolveInteriorPage,
-  resolveInteriorPageForRequest,
-} from "@/lib/cms";
+import { resolveInteriorPage } from "@/lib/cms";
 import { collectEditablePageFields } from "@/lib/cms-page-content";
 import {
   documentHasCmsOwnedSections,
   withStableSectionIds,
 } from "@/lib/cms-page-document";
 import { findCmsRedirect } from "@/lib/cms-redirects";
-import { getPage, getPageStaticParams } from "@/lib/pages";
+import { getPage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { withWordPressBody } from "@/lib/wordpress-content";
 
 type PageProps = {
   params: Promise<{ slug: string[] }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export const dynamic = "force-dynamic";
-
-export function generateStaticParams() {
-  return getPageStaticParams();
-}
+export const revalidate = 3600;
 
 function routePathFromSegments(slug: string[]) {
   return `/${slug.filter(Boolean).join("/")}/`;
-}
-
-function wantsPreview(
-  searchParams?: Record<string, string | string[] | undefined>,
-) {
-  const value = searchParams?.preview;
-  const raw = Array.isArray(value) ? value[0] : value;
-  return raw === "1" || raw === "true";
-}
-
-function wantsEditMode(
-  searchParams?: Record<string, string | string[] | undefined>,
-) {
-  const value = searchParams?.edit;
-  const raw = Array.isArray(value) ? value[0] : value;
-  return raw === "1" || raw === "true";
 }
 
 async function applyRedirectIfAny(pathname: string) {
@@ -56,52 +31,49 @@ async function applyRedirectIfAny(pathname: string) {
   redirect(match.toPath);
 }
 
-export async function generateMetadata({ params, searchParams }: PageProps) {
-  const { slug } = await params;
-  const resolvedSearch = searchParams ? await searchParams : undefined;
-  await applyRedirectIfAny(routePathFromSegments(slug));
-
+async function resolvePageContent(slug: string[]) {
   const page = await getPage(slug);
-  if (!page) {
-    return {};
-  }
+  if (!page) return null;
 
-  const user = await getOptionalCmsUser();
-  const preview = Boolean(user && wantsPreview(resolvedSearch));
-  const editable = await resolveInteriorPageForRequest(page, { preview });
-  return pageMetadata(editable);
-}
-
-export default async function DynamicPage({ params, searchParams }: PageProps) {
-  const { slug } = await params;
-  const resolvedSearch = searchParams ? await searchParams : undefined;
-  await applyRedirectIfAny(routePathFromSegments(slug));
-
-  const page = await getPage(slug);
-
-  if (!page) {
-    notFound();
-  }
-
-  const user = await getOptionalCmsUser();
-  const preview = Boolean(user && wantsPreview(resolvedSearch));
-  const editMode = Boolean(user && wantsEditMode(resolvedSearch));
-
-  const resolved = await resolveInteriorPageForRequest(page, { preview });
-  // CMS-owned documents (real sections) must not be overwritten by remote WP HTML.
+  const resolved = await resolveInteriorPage(page);
   const content = documentHasCmsOwnedSections(resolved)
     ? resolved
     : await withWordPressBody(resolved);
+
+  return content;
+}
+
+export async function generateMetadata({ params }: PageProps) {
+  const { slug } = await params;
+  await applyRedirectIfAny(routePathFromSegments(slug));
+
+  const content = await resolvePageContent(slug);
+  if (!content) {
+    return {};
+  }
+
+  return pageMetadata(content);
+}
+
+export default async function DynamicPage({ params }: PageProps) {
+  const { slug } = await params;
+  await applyRedirectIfAny(routePathFromSegments(slug));
+
+  const content = await resolvePageContent(slug);
+  if (!content) {
+    notFound();
+  }
+
   const initialDocument = withStableSectionIds(content);
   const initialFields = collectEditablePageFields(content);
 
   return (
     <EditableInteriorPage
-      canEdit={Boolean(user)}
+      canEdit={false}
       initialDocument={initialDocument}
-      initialEditMode={editMode}
+      initialEditMode={false}
       initialFields={initialFields}
-      key={`${content.slug}:${preview ? "preview" : "live"}`}
+      key={content.slug}
       page={content}
     >
       <InteriorPage page={content} />

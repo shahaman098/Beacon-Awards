@@ -1,13 +1,22 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "main": ".open-next/worker.js",
+  "main": "cloudflare/worker-entry.mjs",
   "name": "beaconmosque",
   "compatibility_date": "2026-06-19",
   "compatibility_flags": ["nodejs_compat"],
   "routes": ["beaconmosque.com/*", "www.beaconmosque.com/*"],
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "beaconmosque",
+    },
+  ],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "html_handling": "force-trailing-slash",
+    "not_found_handling": "none",
+    "run_worker_first": false
   },
   "d1_databases": [
     {

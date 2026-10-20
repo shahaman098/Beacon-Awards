@@ -32,6 +32,12 @@ export type ContentEditorRegistration = {
   previewHref?: string | null;
 };
 
+type SiteCmsSessionPayload = {
+  email: string;
+  overrides: CmsImageOverrides;
+  chrome: SiteChrome;
+};
+
 type SiteCmsContextValue = {
   canEdit: boolean;
   editMode: boolean;
@@ -41,6 +47,7 @@ type SiteCmsContextValue = {
   email: string | null;
   overrides: CmsImageOverrides;
   chrome: SiteChrome;
+  hydrateSession: (payload: SiteCmsSessionPayload) => void;
   setEditMode: (value: boolean) => void;
   setOverride: (key: string, patch: Partial<CmsImageOverride>) => void;
   resetOverride: (key: string) => void;
@@ -74,6 +81,7 @@ export function useSiteCms() {
       save: async () => undefined,
       publish: async () => undefined,
       previewHref: null,
+      hydrateSession: () => undefined,
       registerContentEditor: () => undefined,
     } satisfies SiteCmsContextValue;
   }
@@ -99,6 +107,8 @@ export function SiteCmsProvider({
   initialEditMode?: boolean;
   children: ReactNode;
 }) {
+  const [canEditState, setCanEditState] = useState(canEdit);
+  const [emailState, setEmailState] = useState(email);
   const [editMode, setEditMode] = useState(Boolean(canEdit && initialEditMode));
   const [overrides, setOverrides] = useState(initialOverrides);
   const overridesRef = useRef(overrides);
@@ -121,6 +131,15 @@ export function SiteCmsProvider({
     },
     [],
   );
+
+  const hydrateSession = useCallback((payload: SiteCmsSessionPayload) => {
+    setCanEditState(true);
+    setEmailState(payload.email);
+    setOverrides(payload.overrides);
+    setChrome(payload.chrome);
+    setOverridesDirty(false);
+    setChromeDirty(false);
+  }, []);
 
   const setOverride = useCallback(
     (key: string, patch: Partial<CmsImageOverride>) => {
@@ -283,14 +302,15 @@ export function SiteCmsProvider({
 
   const value = useMemo(
     () => ({
-      canEdit,
-      editMode: canEdit && editMode,
+      canEdit: canEditState,
+      editMode: canEditState && editMode,
       dirty,
       saving: combinedSaving,
       status: combinedStatus,
-      email,
+      email: emailState,
       overrides,
       chrome,
+      hydrateSession,
       setEditMode,
       setOverride,
       resetOverride,
@@ -302,14 +322,15 @@ export function SiteCmsProvider({
       registerContentEditor,
     }),
     [
-      canEdit,
+      canEditState,
       editMode,
       dirty,
       combinedSaving,
       combinedStatus,
-      email,
+      emailState,
       overrides,
       chrome,
+      hydrateSession,
       setOverride,
       resetOverride,
       setChromeField,

@@ -1,9 +1,11 @@
 "use client";
 
+import { MosqueMbaPoster } from "@/components/award-finalists/MosqueMbaPoster";
 import { CmsImage } from "@/components/cms/CmsImage";
 import { CmsEditSafeLink } from "@/components/cms/CmsEditSafeLink";
 import { useSiteCms } from "@/components/cms/SiteCmsProvider";
 import Link from "@/components/AppLink";
+import type { CardLink } from "@/lib/content";
 import {
   accreditedMosques,
   awards2026CategoriesHref,
@@ -19,7 +21,7 @@ import {
 } from "@/lib/cms-homepage";
 import { AutoScrollRail } from "@/components/AutoScrollRail";
 import { ButtonLink } from "@/components/ButtonLink";
-import { AwardSeal, StarRating } from "@/components/AwardMotifs";
+import { CrescentFinial } from "@/components/AwardMotifs";
 import { HomeHeroVideo } from "@/components/HomeHeroVideo";
 import { CmsEditableProvider } from "@/components/visual-editor/CmsEditableContext";
 import { EditableImage } from "@/components/visual-editor/EditableImage";
@@ -72,14 +74,18 @@ export function SectionAwardsDecor({
     tone === "dark"
       ? "border-white/12 bg-white/6 text-white/55"
       : "border-black/10 bg-white/55 text-black/34";
+  const finialOpacity = tone === "dark" ? 0.85 : 0.78;
 
   return (
     <div
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 z-0 hidden overflow-hidden lg:block"
     >
-      <div className="award-float-slow absolute -left-12 top-8 flex items-center gap-4 2xl:left-5">
-        <AwardSeal className="h-24 w-24 opacity-50" />
+      <div className="award-float-slow absolute left-3 top-8 flex items-center gap-3 xl:left-6 2xl:left-8">
+        <CrescentFinial
+          className="h-40 w-auto max-w-[3.25rem]"
+          opacity={finialOpacity}
+        />
         <div>
           <div className={`h-14 w-px ${lineClass}`} />
           <p
@@ -89,13 +95,16 @@ export function SectionAwardsDecor({
           </p>
         </div>
       </div>
-      <div className="award-float-delayed absolute right-5 bottom-10 grid justify-items-end gap-3">
+      <div className="award-float-delayed absolute right-5 bottom-8 grid justify-items-end gap-3">
         <span
           className={`rounded-full border px-4 py-2 text-[0.62rem] font-bold uppercase tracking-[0.2em] backdrop-blur ${chipClass}`}
         >
           {right}
         </span>
-        <StarRating className={tone === "dark" ? "opacity-55" : "opacity-35"} />
+        <CrescentFinial
+          className="h-32 w-auto max-w-[2.75rem]"
+          opacity={finialOpacity}
+        />
       </div>
     </div>
   );
@@ -157,7 +166,7 @@ export function HomeHero() {
                 className="mt-6 w-full justify-center sm:w-auto"
                 href={awards2026CategoriesHref}
               >
-                Submit Your Nomination
+                View 2026 categories
               </ButtonLink>
             </div>
           </div>
@@ -274,7 +283,7 @@ export function AwardsFeatureSection() {
 
   return (
     <section className="relative isolate overflow-hidden bg-[#f3f1ed] px-5 py-20 text-black md:px-8 md:py-28">
-      <SectionAwardsDecor left="Nomination" right="Shortlist" />
+      <SectionAwardsDecor left="Shortlist" right="2026" />
       <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
         <CmsImage
           alt={awards.imageAlt}
@@ -284,7 +293,7 @@ export function AwardsFeatureSection() {
           width={980}
         />
         <div className="max-w-md">
-          <SectionKicker>Awards 2026</SectionKicker>
+          <SectionKicker>9th Beacon Mosque Awards</SectionKicker>
           <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
             {awards.title}
           </h2>
@@ -293,13 +302,13 @@ export function AwardsFeatureSection() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <EditorialLink href="/awards/beacon-mosque-awards-2026/">
-              View awards
+              Awards 2026 hub
             </EditorialLink>
             <EditorialLink
               className="!bg-white !text-black hover:!bg-black hover:!text-white"
               href={awards2026CategoriesHref}
             >
-              Submit nomination
+              Ten categories
             </EditorialLink>
           </div>
         </div>
@@ -751,18 +760,8 @@ export function MosqueMbaSection({
             </div>
           </div>
           <div className="grid items-start gap-5">
-            <div className="self-start overflow-hidden rounded-[28px] border border-black/10 bg-white p-3 shadow-[0_32px_110px_rgba(0,0,0,0.12)]">
-              <EditableImage
-                alt={content.imageAlt}
-                className="h-auto w-full rounded-[22px]"
-                height={864}
-                imageScale={content.imageScale}
-                objectFit={content.objectFit}
-                objectPosition={content.objectPosition}
-                path="mosqueMba.image"
-                src={content.image}
-                width={1536}
-              />
+            <div className="self-start rounded-[28px] border border-black/10 bg-white p-3 shadow-[0_32px_110px_rgba(0,0,0,0.12)]">
+              <MosqueMbaPoster className="rounded-[22px]" />
             </div>
             <div className="grid gap-4 md:grid-cols-3">
               {content.pills.map((item, index) => (
@@ -903,7 +902,11 @@ export function ExperiencePillarsSection({
                   value={pathway.text}
                 />
                 <span className="inline-flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-black md:justify-self-end">
-                  Explore
+                  {pathway.title === "Awards"
+                    ? "Open awards"
+                    : pathway.title === "Standards"
+                      ? "Open standards"
+                      : "Open accreditation"}
                   <span
                     aria-hidden="true"
                     className="transition-transform duration-300 group-hover:translate-x-1"
@@ -924,10 +927,100 @@ export function EventsShowcaseSection() {
   return null;
 }
 
+export function CmsContentArchiveSection({
+  body = "Published pages and posts appear here, and each item also remains available on its own public route.",
+  ctaHref = "/content/",
+  ctaLabel = "View all published content",
+  entries,
+  heading = "All published CMS content",
+  limit,
+}: {
+  body?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  entries: CardLink[];
+  heading?: string;
+  limit?: number;
+}) {
+  const visibleEntries = typeof limit === "number" ? entries.slice(0, limit) : entries;
+
+  return (
+    <section className="relative isolate overflow-hidden bg-[#f3f1ed] px-5 py-20 text-black md:px-8 md:py-28">
+      <SectionAwardsDecor left="CMS" right="Archive" />
+      <div className="relative z-10 mx-auto max-w-[1360px]">
+        <div className="mx-auto max-w-3xl text-center">
+          <SectionKicker>Content archive</SectionKicker>
+          <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
+            {heading}
+          </h2>
+          <p className="section-word-motion mt-5 text-sm leading-7 text-black/58 md:text-base">
+            {body}
+          </p>
+        </div>
+
+        {visibleEntries.length === 0 ? (
+          <div className="mx-auto mt-12 max-w-2xl rounded-[28px] border border-dashed border-black/12 bg-white px-6 py-12 text-center text-black/58">
+            No published CMS content yet. Create and publish a page or post to
+            see it here.
+          </div>
+        ) : (
+          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {visibleEntries.map((entry, index) => (
+              <CmsEditSafeLink href={entry.href} key={`${entry.href}-${index}`}>
+                <article className="group flex h-full flex-col overflow-hidden border border-black/10 bg-white shadow-[0_18px_55px_rgba(0,0,0,0.06)] transition-transform duration-300 hover:-translate-y-1">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#111827]">
+                    {entry.image ? (
+                      <CmsImage
+                        alt={entry.imageAlt ?? entry.title}
+                        className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                        fill
+                        sizes="(min-width: 1280px) 320px, (min-width: 768px) 50vw, 100vw"
+                        src={entry.image}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(215,169,72,0.28),transparent_30%),linear-gradient(135deg,#0b1020,#05070a)]" />
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    {entry.meta ? (
+                      <p className="text-[0.66rem] font-semibold uppercase tracking-[0.2em] text-gold-400">
+                        {entry.meta}
+                      </p>
+                    ) : null}
+                    <h3 className="mt-3 text-[1.25rem] font-semibold leading-tight tracking-[-0.03em] text-black">
+                      {entry.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-black/58">
+                      {entry.text}
+                    </p>
+                    <span className="mt-5 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-black">
+                      Open story
+                      <span
+                        aria-hidden="true"
+                        className="translate-x-0 transition-transform duration-300 group-hover:translate-x-1"
+                      >
+                        →
+                      </span>
+                    </span>
+                  </div>
+                </article>
+              </CmsEditSafeLink>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-10 flex justify-center">
+          <EditorialLink href={ctaHref}>{ctaLabel}</EditorialLink>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function FinalCta() {
   return (
     <section className="relative isolate min-h-[520px] overflow-hidden bg-black px-5 py-20 text-center text-white md:px-8 md:py-28">
-      <SectionAwardsDecor left="Nominate" right="2026" tone="dark" />
+      <SectionAwardsDecor left="Vote" right="2026" tone="dark" />
       <CmsImage
         alt="Beacon Mosque Awards final call to action"
         className="object-cover object-[50%_18%]"
@@ -937,15 +1030,19 @@ export function FinalCta() {
       />
       <div className="absolute inset-0 bg-black/42" />
       <div className="relative z-10 mx-auto flex min-h-[360px] max-w-3xl flex-col items-center justify-center">
-        <SectionKicker>Beacon Mosque Awards 2026</SectionKicker>
+        <SectionKicker>9th Beacon Mosque Awards</SectionKicker>
         <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] md:text-5xl">
-          Presenting the most inspiring mosque excellence stories of the season
+          Finalists named Thursday 23 October 2026
         </h2>
+        <p className="mt-4 max-w-xl text-sm leading-7 text-white/70 md:text-base">
+          Nominations are closed. Browse the ten award categories and hold a
+          shortlist page ready for the public vote.
+        </p>
         <EditorialLink
           className="mt-7 border-white bg-transparent text-white hover:bg-white hover:text-black"
           href={awards2026CategoriesHref}
         >
-          Submit nomination
+          View the 2026 categories
         </EditorialLink>
       </div>
     </section>

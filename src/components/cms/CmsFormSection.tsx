@@ -27,7 +27,7 @@ const formConfigs: Record<
   }
 > = {
   nomination: {
-    actionLabel: "Submit nomination",
+    actionLabel: "Send nomination",
     fields: [
       {
         label: "Mosque name",
@@ -214,7 +214,15 @@ export function FormSection({
       <SectionAwardsDecor left="Contact" right="Enquiry" />
       <div className="relative z-10 mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[0.75fr_1fr]">
         <div>
-          <SectionKicker>Form</SectionKicker>
+          <SectionKicker>
+            {form === "contact"
+              ? "Contact Beacon Mosque"
+              : form === "nomination"
+                ? "Nomination"
+                : form === "rating"
+                  ? "Mosque rating"
+                  : "Enquiry"}
+          </SectionKicker>
           <EditableText
             as="h2"
             className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
@@ -229,14 +237,21 @@ export function FormSection({
             value={text}
           />
         </div>
-        {embedSrc ? (
+        {embedSrc && !embedSrc.includes("REPLACE_WITH") ? (
           <div className="border border-black/10 bg-white p-3 shadow-[0_24px_80px_rgba(0,0,0,0.08)]">
             <iframe
+              allow="geolocation; microphone; camera"
               className="w-full border-0"
               height={embedHeight ?? 700}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
               src={embedSrc}
               title={title}
             />
+            <p className="mt-3 px-1 text-xs leading-6 text-black/45">
+              Your message is sent securely to the Beacon Mosque team at Faith
+              Associates.
+            </p>
           </div>
         ) : (
           <form
@@ -302,8 +317,7 @@ export function FormSection({
               </button>
             </CmsEditableProvider>
             <p className="mt-4 text-xs leading-6 text-black/45">
-              Fields marked with an asterisk are required. Your submission is
-              routed through the Beacon Mosque intake workflow.
+              Fields marked with an asterisk are required.
             </p>
           </form>
         )}

@@ -1,0 +1,26 @@
+---
+description: Never attribute git commits or PRs to Cursor/AI agents
+alwaysApply: true
+---
+
+# No AI / Cursor commit attribution
+
+When creating commits or pull requests in this repository:
+
+- **NEVER** add `Co-authored-by: Cursor`, `Co-authored-by: Claude`, `Co-authored-by: Auto`, `Co-authored-by: Composer`, or any AI/agent co-author trailer
+- **NEVER** add `Made-with: Cursor`, `Generated with Cursor`, or similar attribution trailers/footers
+- **NEVER** put agent names, model names, or “via Cursor/Claude/Auto” in commit subjects or bodies
+- Commits must use **only** the user’s existing git identity (`user.name` / `user.email` already configured)
+- **Do not** change `git config` (local or global), including identity or signing settings
+- Prefer ordinary commit messages that look human-authored
+
+```text
+# ❌ BAD
+feat: update homepage
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+Made-with: Cursor
+
+# ✅ GOOD
+feat: update homepage hero copy for Beacon Awards
+```

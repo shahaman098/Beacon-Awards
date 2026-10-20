@@ -12,6 +12,11 @@ const publicSitemaps = [
 
 const publicSlugCache = new Map<string, Promise<string[]>>();
 const sourcePageCache = new Map<string, Promise<WordPressSourcePage | null>>();
+const WP_SLUG_CACHE_TTL_MS = 60 * 60 * 1000;
+const sitemapSlugStore = new Map<
+  string,
+  { expiresAt: number; slugs: string[] }
+>();
 
 export type WordPressSourcePage = {
   slug: string;
@@ -393,6 +398,11 @@ function sanitizeWordPressBody(html: string, slug: string) {
 }
 
 async function fetchSitemapSlugs(name: string) {
+  const cached = sitemapSlugStore.get(name);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.slugs;
+  }
+
   if (!publicSlugCache.has(name)) {
     publicSlugCache.set(
       name,
@@ -401,7 +411,7 @@ async function fetchSitemapSlugs(name: string) {
           if (!response.ok) return [];
           const xml = await response.text();
 
-          return Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g))
+          const slugs = Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g))
             .map((match) => match[1].trim())
             .map((url) => {
               const pathname = new URL(url).pathname;
@@ -409,6 +419,12 @@ async function fetchSitemapSlugs(name: string) {
             })
             .filter(isMeaningfulRoute)
             .map(slugFromRoute);
+
+          sitemapSlugStore.set(name, {
+            slugs,
+            expiresAt: Date.now() + WP_SLUG_CACHE_TTL_MS,
+          });
+          return slugs;
         })
         .catch(() => []),
     );

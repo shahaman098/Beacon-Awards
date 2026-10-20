@@ -1,5 +1,6 @@
 import {
   awards2026CategoriesHref,
+  awards2026HubHref,
   ceremonyGallery,
   featureCards,
   serviceCards,
@@ -7,6 +8,37 @@ import {
   winnerShowcaseItems,
   type WinnerShowcaseItem,
 } from "@/lib/content";
+import { awards2026NominationsClosed } from "@/lib/awards-2026-cycle";
+
+/** Rewrite CMS-stored nomination CTAs once nominations are closed. */
+function publicCtaLabel(label: string, fallback: string) {
+  if (!awards2026NominationsClosed) {
+    return label || fallback;
+  }
+  if (
+    /nominat/i.test(label) ||
+    /prepare to vote/i.test(label) ||
+    !label.trim()
+  ) {
+    return fallback;
+  }
+  return label;
+}
+
+function publicCtaHeading(heading: string, fallback: string) {
+  if (!awards2026NominationsClosed) {
+    return heading || fallback;
+  }
+  if (
+    /nominat/i.test(heading) ||
+    /most inspiring mosque excellence stories of the season/i.test(heading) ||
+    /one platform/i.test(heading) ||
+    !heading.trim()
+  ) {
+    return fallback;
+  }
+  return heading;
+}
 
 export type HomepageFeatureCard = {
   title: string;
@@ -196,7 +228,7 @@ export function defaultHomepageContent(): HomepageContent {
       cycleHeading: "9th Annual Beacon Mosque Awards 2026",
       body: "Celebrating the best of British mosques through service, governance, innovation and measurable community impact.",
       ctaLabel: "Submit Your Nomination",
-      ctaHref: awards2026CategoriesHref,
+      ctaHref: awards2026HubHref,
       videoUrl:
         "/wp-content/uploads/2023/05/Beacon-Mosque-Home-Intro-Video.mp4",
       posterUrl: "/assets/hero/awards-2025-poster.jpeg",
@@ -256,12 +288,12 @@ export function defaultHomepageContent(): HomepageContent {
     awardsArchive: {
       kicker: "Archive",
       heading: "Awards archive",
-      ctaLabel: "Submit Your Nomination for Beacon Mosque Awards 2026",
+      ctaLabel: "Browse Awards 2026 categories",
     },
     awardsFeature: {
-      kicker: "Awards 2026",
-      viewLabel: "View awards",
-      nominateLabel: "Submit nomination",
+      kicker: "9th Beacon Mosque Awards",
+      viewLabel: "Awards 2026 hub",
+      nominateLabel: "View 2026 categories",
     },
     winnersIntro:
       "The archive keeps public recognition visible and helps mosque teams learn from strong examples of service, governance and community impact.",
@@ -278,7 +310,7 @@ export function defaultHomepageContent(): HomepageContent {
       kicker: "National network",
       heading: "Beacon Mosque network",
       body: "A growing network of accredited mosques, award winners and community projects demonstrating measurable impact.",
-      partnerKicker: "Partner platform",
+      partnerKicker: "Faith Associates partners",
       ctaLabel: "View beacon mosques",
     },
     mosqueMba: {
@@ -287,9 +319,10 @@ export function defaultHomepageContent(): HomepageContent {
       body: "A masters-level professional pathway for mosque founders, executives and volunteers building stronger institutions, clearer leadership and sustainable community projects.",
       ctaLabel: "Visit Mosque MBA",
       image: "/assets/home/mosque-mba-programme.png",
-      imageAlt: "Mosque MBA programme visual",
+      imageAlt: "Mosque MBA programme poster",
       objectPosition: DEFAULT_OBJECT_POSITION,
       imageScale: DEFAULT_IMAGE_SCALE,
+      objectFit: "contain",
       stats: [
         { value: "200+", label: "online seminars" },
         { value: "12-18", label: "months" },
@@ -302,24 +335,24 @@ export function defaultHomepageContent(): HomepageContent {
       ],
     },
     experiencePillars: {
-      kicker: "Pathways",
-      heading: "One platform. Three ways forward.",
-      body: "Awards, standards and accreditation work together so mosques can celebrate excellence, strengthen practice and evidence quality.",
+      kicker: "Beacon Mosque",
+      heading: "Awards, standards and Beacon accreditation",
+      body: "The Beacon Mosque programme recognises excellence, raises mosque practice and evidences quality for congregations and the wider public.",
       pathways: [
         {
           title: "Awards",
           href: "/awards/",
-          text: "National recognition for mosques, teams and individuals raising the bar.",
+          text: "National recognition for mosques, imams, alimahs and volunteers across ten categories.",
         },
         {
           title: "Standards",
           href: "/standards/",
-          text: "Practical benchmarks for governance, communication and service delivery.",
+          text: "Benchmarks for governance, communication, safeguarding and service delivery.",
         },
         {
           title: "Accreditation",
           href: "/accreditation-process/",
-          text: "A route for evidencing quality and progressing toward Beacon status.",
+          text: "Evidence quality and progress toward Beacon Mosque status with Faith Associates.",
         },
       ],
     },
@@ -335,9 +368,9 @@ export function defaultHomepageContent(): HomepageContent {
     finalCta: {
       kicker: "Beacon Mosque Awards 2026",
       heading:
-        "Presenting the most inspiring mosque excellence stories of the season",
-      buttonLabel: "Submit nomination",
-      buttonHref: awards2026CategoriesHref,
+        "Finalists named Thursday 23 October 2026. Prepare to cast your public vote.",
+      buttonLabel: "View the 2026 categories",
+      buttonHref: awards2026HubHref,
       image: "/wp-content/uploads/2025/12/19-1024x576.jpg",
       imageAlt: "Beacon Mosque Awards final call to action",
       objectPosition: "50% 18%",
@@ -468,7 +501,12 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
       cycleHeading: asString(heroRaw.cycleHeading, defaults.hero.cycleHeading),
       body: asString(heroRaw.body, defaults.hero.body),
       ctaLabel: asString(heroRaw.ctaLabel, defaults.hero.ctaLabel),
-      ctaHref: asString(heroRaw.ctaHref, defaults.hero.ctaHref),
+      // Submit-nomination CTAs should land on the Awards 2026 hub hero,
+      // not the categories grid further down the page.
+      ctaHref: (() => {
+        const href = asString(heroRaw.ctaHref, defaults.hero.ctaHref);
+        return href === awards2026CategoriesHref ? awards2026HubHref : href;
+      })(),
       videoUrl: asString(heroRaw.videoUrl, defaults.hero.videoUrl),
       posterUrl: asString(heroRaw.posterUrl, defaults.hero.posterUrl),
       posterObjectPosition: asString(
@@ -514,7 +552,10 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
     awardsArchive: {
       kicker: asString(archiveRaw.kicker, defaults.awardsArchive.kicker),
       heading: asString(archiveRaw.heading, defaults.awardsArchive.heading),
-      ctaLabel: asString(archiveRaw.ctaLabel, defaults.awardsArchive.ctaLabel),
+      ctaLabel: publicCtaLabel(
+        asString(archiveRaw.ctaLabel, defaults.awardsArchive.ctaLabel),
+        defaults.awardsArchive.ctaLabel,
+      ),
     },
     awardsFeature: {
       kicker: asString(
@@ -525,8 +566,11 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
         awardsFeatureRaw.viewLabel,
         defaults.awardsFeature.viewLabel,
       ),
-      nominateLabel: asString(
-        awardsFeatureRaw.nominateLabel,
+      nominateLabel: publicCtaLabel(
+        asString(
+          awardsFeatureRaw.nominateLabel,
+          defaults.awardsFeature.nominateLabel,
+        ),
         defaults.awardsFeature.nominateLabel,
       ),
     },
@@ -614,7 +658,10 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
     },
     experiencePillars: {
       kicker: asString(pillarsRaw.kicker, defaults.experiencePillars.kicker),
-      heading: asString(pillarsRaw.heading, defaults.experiencePillars.heading),
+      heading: publicCtaHeading(
+        asString(pillarsRaw.heading, defaults.experiencePillars.heading),
+        defaults.experiencePillars.heading,
+      ),
       body: asString(pillarsRaw.body, defaults.experiencePillars.body),
       pathways: pathwaysRaw.map((pathway, index) => {
         const fallback =
@@ -657,9 +704,18 @@ export function mergeHomepageContent(partial: unknown): HomepageContent {
     }),
     finalCta: {
       kicker: asString(finalRaw.kicker, defaults.finalCta.kicker),
-      heading: asString(finalRaw.heading, defaults.finalCta.heading),
-      buttonLabel: asString(finalRaw.buttonLabel, defaults.finalCta.buttonLabel),
-      buttonHref: asString(finalRaw.buttonHref, defaults.finalCta.buttonHref),
+      heading: publicCtaHeading(
+        asString(finalRaw.heading, defaults.finalCta.heading),
+        defaults.finalCta.heading,
+      ),
+      buttonLabel: publicCtaLabel(
+        asString(finalRaw.buttonLabel, defaults.finalCta.buttonLabel),
+        defaults.finalCta.buttonLabel,
+      ),
+      buttonHref: (() => {
+        const href = asString(finalRaw.buttonHref, defaults.finalCta.buttonHref);
+        return href === awards2026CategoriesHref ? awards2026HubHref : href;
+      })(),
       image: asString(finalRaw.image, defaults.finalCta.image),
       imageAlt: asString(finalRaw.imageAlt, defaults.finalCta.imageAlt),
       objectPosition: asString(

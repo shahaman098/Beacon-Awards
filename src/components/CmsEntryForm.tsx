@@ -137,7 +137,8 @@ export function CmsEntryForm({
             </span>
           ) : (
             <span className="text-xs uppercase tracking-[0.18em] text-white/44">
-              Pages publish to /slug/ and posts publish to /news/slug/
+              Pages publish to /slug/, posts publish to /news/slug/, and both
+              appear in the content archive
             </span>
           )}
         </div>

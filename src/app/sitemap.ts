@@ -3,7 +3,7 @@ import { listPublishedCmsEntriesForSitemap } from "@/lib/cms";
 import { getPageStaticParams } from "@/lib/pages";
 import { absoluteUrl } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();

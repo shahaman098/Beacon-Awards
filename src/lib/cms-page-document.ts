@@ -101,7 +101,7 @@ export const ADDABLE_SECTION_LABELS: Record<AddableSectionKind, string> = {
   gallery: "Gallery",
   media: "Media",
   criteria: "Criteria",
-  form: "Form",
+  form: "Enquiry",
   audio: "Audio",
   awardHistory: "Award history",
 };
@@ -518,7 +518,7 @@ function parseSection(raw: unknown, index: number): IdentifiedPageSection | null
         id,
         kind: "form",
         form,
-        title: typeof raw.title === "string" ? raw.title : "Form",
+        title: typeof raw.title === "string" ? raw.title : "Enquiry",
         text: typeof raw.text === "string" ? raw.text : "",
         ...(typeof raw.defaultCategory === "string"
           ? { defaultCategory: raw.defaultCategory }

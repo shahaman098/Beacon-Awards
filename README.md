@@ -62,6 +62,7 @@ Static community story cards, with **published CMS posts** prepended. CMS posts 
 | `/[...slug]/` | Catch-all interiors, WP archives, CMS pages/posts |
 | `/category/news/` | News hub |
 | `/news/{slug}/` | CMS posts |
+| `/self-assessment/`, `/self-assessment/{token}/` | Safeguarding self-assessment |
 | `/form-submitted/` | Form thank-you |
 | `/cms/login/`, `/cms/`, `/cms/new/`, `/cms/[id]/`, `/cms/setup/` | Admin UI |
 | `/api/cms/*` | CMS APIs (auth, save, upload, entries) |
@@ -166,10 +167,18 @@ For full CMS behaviour locally, apply D1 migrations (and create R2 once for prod
 ```bash
 npx wrangler d1 execute beaconmosque-cms --local --file=infra/d1/001_cms.sql
 npx wrangler d1 execute beaconmosque-cms --local --file=infra/d1/002_cms_media_homepage.sql
+npx wrangler d1 execute beaconmosque-cms --local --file=infra/d1/003_cms_page_documents.sql
+npx wrangler d1 execute beaconmosque-cms --local --file=infra/d1/004_cms_page_drafts.sql
+npx wrangler d1 execute beaconmosque-cms --local --file=infra/d1/005_cms_redirects.sql
+npx wrangler d1 execute beaconmosque-cms --local --file=infra/d1/006_self_assessment.sql
 
 # Production / remote (once per environment)
 npx wrangler d1 execute beaconmosque-cms --remote --file=infra/d1/001_cms.sql
 npx wrangler d1 execute beaconmosque-cms --remote --file=infra/d1/002_cms_media_homepage.sql
+npx wrangler d1 execute beaconmosque-cms --remote --file=infra/d1/003_cms_page_documents.sql
+npx wrangler d1 execute beaconmosque-cms --remote --file=infra/d1/004_cms_page_drafts.sql
+npx wrangler d1 execute beaconmosque-cms --remote --file=infra/d1/005_cms_redirects.sql
+npx wrangler d1 execute beaconmosque-cms --remote --file=infra/d1/006_self_assessment.sql
 npx wrangler r2 bucket create beaconmosque-cms-media
 ```
 
@@ -194,6 +203,25 @@ Bindings in `wrangler.jsonc`:
 | `CMS_MEDIA` | R2 `beaconmosque-cms-media` |
 
 Routes: `beaconmosque.com/*`, `www.beaconmosque.com/*`.
+
+### GoHighLevel forms and CRM automation
+
+**Public forms** (contact, nomination, rating) are embedded from GoHighLevel. Configure URLs in `src/lib/ghl-forms.ts` — get embed/link URLs from GHL → Sites → Forms → Share.
+
+**Safeguarding self-assessment** and other site events post structured JSON to a GHL inbound webhook:
+
+| Secret | Purpose |
+|--------|---------|
+| `BEACON_CRM_WEBHOOK_URL` | GHL inbound webhook URL (assessment lifecycle events) |
+| `BEACON_SITE_URL` | Optional base URL for assessment links in payloads (default `https://beaconmosque.com`) |
+| `BEACON_FORM_WEBHOOK_URL` | Legacy native form webhook (optional; unused when GHL forms are embedded) |
+
+Setup guide and workflow diagrams: `docs/beacon-mosque-ghl-automation.md`
+
+```bash
+npx wrangler secret put BEACON_CRM_WEBHOOK_URL
+npx wrangler secret put BEACON_SITE_URL
+```
 
 ---
 

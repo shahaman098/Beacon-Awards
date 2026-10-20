@@ -135,11 +135,12 @@ export function PageEditorProvider({
   children: ReactNode;
 }) {
   const site = useSiteCmsOptional();
+  const effectiveCanEdit = site?.canEdit ?? canEdit;
   const [localEditMode, setLocalEditMode] = useState(
-    Boolean(canEdit && initialEditMode),
+    Boolean(effectiveCanEdit && initialEditMode),
   );
   const routeSlug = initialPage.slug;
-  const canStructureEdit = canEdit && !isPageStructureLocked(initialPage);
+  const canStructureEdit = effectiveCanEdit && !isPageStructureLocked(initialPage);
 
   const [document, setDocument] = useState<PageDocument>(
     () => initialDocument ?? interiorPageToDocument(initialPage),
@@ -164,7 +165,7 @@ export function PageEditorProvider({
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const editMode = site ? site.editMode : Boolean(canEdit && localEditMode);
+  const editMode = site ? site.editMode : Boolean(effectiveCanEdit && localEditMode);
   const setEditMode = site ? site.setEditMode : setLocalEditMode;
 
   const syncFromDocument = useCallback(
@@ -336,10 +337,10 @@ export function PageEditorProvider({
 
   const setSiteEditMode = site?.setEditMode;
   useEffect(() => {
-    if (canEdit && initialEditMode && setSiteEditMode) {
+    if (effectiveCanEdit && initialEditMode && setSiteEditMode) {
       setSiteEditMode(true);
     }
-  }, [canEdit, initialEditMode, setSiteEditMode]);
+  }, [effectiveCanEdit, initialEditMode, setSiteEditMode]);
 
   const previewHref = routeSlug ? `/${routeSlug}/?preview=1` : null;
 
@@ -364,15 +365,15 @@ export function PageEditorProvider({
 
   const value = useMemo(
     () => ({
-      canEdit,
-      editMode: canEdit && editMode,
+      canEdit: effectiveCanEdit,
+      editMode: effectiveCanEdit && editMode,
       dirty,
       saving,
       status,
       routeSlug,
       page,
       document,
-      structureEditable: canStructureEdit && canEdit && editMode,
+      structureEditable: canStructureEdit && effectiveCanEdit && editMode,
       setEditMode,
       setField,
       addSection,
@@ -382,7 +383,7 @@ export function PageEditorProvider({
       publish,
     }),
     [
-      canEdit,
+      effectiveCanEdit,
       editMode,
       dirty,
       saving,
@@ -404,7 +405,7 @@ export function PageEditorProvider({
   return (
     <PageEditorContext.Provider value={value}>
       <CmsEditableProvider
-        editMode={canEdit && editMode}
+        editMode={effectiveCanEdit && editMode}
         fields={fields}
         setField={setField}
       >

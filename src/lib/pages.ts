@@ -10,11 +10,23 @@ import {
   getAwardWinnerRecord2025ByHref,
   getAwardCategoryMedia,
   resolveAwardCategoryPageImage,
+  awards2026CategoriesHref,
   newsCards,
   nominationForm2026Href,
   standards,
   type CardLink,
 } from "@/lib/content";
+import {
+  AWARDS_2026_FINALISTS_ANNOUNCE_DATE,
+  awards2026PrepareToVoteSectionHref,
+  awards2026HeroIntro,
+  awards2026NominationsClosedIntro,
+  awards2026PrepareToVoteHeadline,
+} from "@/lib/awards-2026-cycle";
+import {
+  awardFinalists2026,
+  finalistPageSlug,
+} from "@/lib/awards-2026-finalists";
 import {
   cmsEntryToInteriorPage,
   getPublishedCmsEntryByRouteSlug,
@@ -38,6 +50,12 @@ export type PageSection =
       kind: "awardHistory";
       title: string;
       items: AwardCategoryPreviousWinner[];
+    }
+  | {
+      kind: "awardFinalists";
+      categoryTitle: string;
+      title?: string;
+      showMosqueMbaPromo?: boolean;
     }
   | { kind: "media"; title?: string; text?: string; items: MediaItem[] }
   | { kind: "wordpress"; html: string; sourceUrl?: string }
@@ -141,7 +159,7 @@ const awardCategoryCards: CardLink[] = awardCategoryNominations.map(
         ?.summary ??
       "Recognising outstanding community service, leadership and measurable excellence.",
     href: category.href,
-    meta: "Nominate",
+    meta: "Category",
   }),
 );
 
@@ -4301,13 +4319,13 @@ const pageMap: Record<string, InteriorPage> = {
     heroVideoPoster: "/assets/interior/awards-gala.jpg",
     ctas: [
       {
-        label: "Submit Your Nomination for the 9th Beacon Mosque Awards 2026",
-        href: nominationForm2026Href,
+        label: "View Awards 2026 categories",
+        href: awards2026CategoriesHref,
       },
     ],
     sections: [
       { kind: "cards", title: "Awards archive", cards: awardsArchive },
-      { kind: "cards", title: "Nominate 2026", cards: awardCategoryCards },
+      { kind: "cards", title: "2026 award categories", cards: awardCategoryCards },
     ],
   },
   winners: {
@@ -4390,43 +4408,50 @@ const pageMap: Record<string, InteriorPage> = {
   "awards/beacon-mosque-awards-2026": {
     slug: "awards/beacon-mosque-awards-2026",
     title: "9th Beacon Mosque Awards 2026",
-    eyebrow: "Nominations open",
-    intro:
-      "The 9th Annual Beacon Mosque Awards Ceremony & Gala Dinner returns this November 2026 and nominations are now open.",
+    eyebrow: "9th Beacon Mosque Awards",
+    intro: awards2026HeroIntro,
     image: "/wp-content/uploads/2026/04/04.png",
     imageAlt: "British Beacon Mosque Awards 2026 programme artwork",
     heroVideo: "/wp-content/uploads/WhatsApp-Video-2026-03-05-at-12.31.47.mp4",
     heroVideoPoster: "/wp-content/uploads/2026/04/04.png",
-    ctas: [{ label: "Submit your nomination", href: nominationForm2026Href }],
+    ctas: [
+      {
+        label: "Prepare to vote",
+        href: awards2026CategoriesHref,
+      },
+    ],
     sections: [
       {
         kind: "text",
         paragraphs: [
+          awards2026NominationsClosedIntro,
           "The Beacon Mosque Awards 2026 celebrate outstanding mosques, madrassahs, imams, alimahs and volunteers across 10 categories.",
-          "Independent judges select the winners from a shortlist of finalists, ensuring a fair and trusted process.",
-          "Submit your nomination and help recognise the people and institutions making a real difference in our communities.",
+          "Independent judges select the winners from a shortlist of finalists, with the public vote providing a smaller weighting in the final result.",
           awardProgrammeFunding,
         ],
       },
       {
         kind: "cards",
-        title: "Nominate Across Our 10 Award Categories for 2026",
+        title: awards2026PrepareToVoteHeadline,
         cards: awardCategoryCards,
       },
     ],
   },
   nominate: {
     slug: "nominate",
-    title: "Nominate The Mosque",
-    eyebrow: "Nominations",
+    title: "Beacon Mosque Awards nominations",
+    eyebrow: "Nominations closed",
     intro:
-      "Submit a mosque, madrassah, imam, alimah or volunteer for consideration by the Beacon Mosque Awards team.",
+      "Nominations for the 9th Beacon Mosque Awards 2026 are closed. Finalists will be named on Thursday 23 October 2026, when public voting opens.",
     image: "/assets/hero/awards-2025-poster.jpeg",
     imageAlt: "British Beacon Mosque Awards programme artwork",
     ctas: [
-      { label: "View Awards 2026", href: "/awards/beacon-mosque-awards-2026/" },
       {
-        label: "Explore award categories",
+        label: "View 2026 categories",
+        href: "/awards/beacon-mosque-awards-2026/#award-categories",
+      },
+      {
+        label: "Awards archive",
         href: "/awards/",
         variant: "secondary",
       },
@@ -4434,13 +4459,17 @@ const pageMap: Record<string, InteriorPage> = {
     sections: [
       {
         kind: "text",
-        title: "Nominate The Mosque",
+        title: "What happens next",
         paragraphs: [
-          "Nominate a mosque through the dedicated Beacon Mosque Awards nomination pathway.",
-          "Use the award categories below to explore the current Beacon Mosque Awards nomination pathway.",
+          "Independent judges are reviewing nominations across the ten Beacon Mosque Awards categories.",
+          "When the shortlist is published, each category page will carry three finalist profiles and the public vote.",
         ],
       },
-      { kind: "cards", title: "Award categories", cards: awardCategoryCards },
+      {
+        kind: "cards",
+        title: "2026 award categories",
+        cards: awardCategoryCards,
+      },
     ],
   },
   "awards/beacon-mosque-awards-2025": {
@@ -4956,8 +4985,8 @@ awardCategoryNominations.forEach((category) => {
   pageMap[slug] = {
     slug,
     title: category.title,
-    eyebrow: "Awards 2026 nomination",
-    intro: detail.summary,
+    eyebrow: "Awards 2026 shortlist",
+    intro: `${detail.summary} Nominations are closed. Finalists will be announced on ${AWARDS_2026_FINALISTS_ANNOUNCE_DATE}.`,
     image:
       getAwardCategoryMedia(category.title)?.image ??
       "/assets/awards/beacon-mosque-awards-2026-poster.png",
@@ -4965,7 +4994,10 @@ awardCategoryNominations.forEach((category) => {
       getAwardCategoryMedia(category.title)?.imageAlt ??
       `${category.title} category artwork`,
     ctas: [
-      { label: "Nominate", href: detail.nominateHref },
+      {
+        label: "Prepare to vote",
+        href: awards2026PrepareToVoteSectionHref,
+      },
       {
         label: "View all award categories",
         href: "/awards/beacon-mosque-awards-2026/",
@@ -4986,6 +5018,11 @@ awardCategoryNominations.forEach((category) => {
             paragraphs: [detail.note],
           },
         ],
+      },
+      {
+        kind: "awardFinalists",
+        categoryTitle: category.title,
+        title: "The 2026 shortlist",
       },
       {
         kind: "awardHistory",
@@ -5313,7 +5350,7 @@ awardCategoryPages2025.forEach((category) => {
         href: "/awards/beacon-mosque-awards-2025/",
       },
       {
-        label: "Nominate for 2026",
+        label: "2026 shortlist",
         href:
           awardCategoryNominations.find((item) => item.title === category.title)
             ?.href ?? "/awards/beacon-mosque-awards-2026/",
@@ -5650,7 +5687,7 @@ awardCategoryPages2022.forEach((category) => {
         title: category.title,
         paragraphs: [
           `The ${category.title} category formed part of the 2022 Beacon Mosque Awards recognition programme.`,
-          "This archive page keeps the category, finalist and shortlisted profile links available in the modern awards design system.",
+          "Browse the category links, finalists and shortlisted profiles from this awards archive page.",
         ],
       },
       {
@@ -6800,10 +6837,10 @@ legacyRouteItems.forEach((item) => {
         paragraphs: [
           `${item.title} connects visitors to the ${category} area of the Beacon Mosque Awards ${year} programme.`,
           isNomination
-            ? "This route preserves the original nomination intent and keeps the award category available through the redesigned frontend experience."
+            ? "This nomination route remains available so visitors can still reach the matching Beacon Mosque Awards category."
             : isVoting
               ? "This route preserves the original voting-page intent and links the category back to the wider awards archive."
-              : "This route preserves the original shortlist-page intent and presents related recognition profiles in the awards design system.",
+              : "Related recognition profiles from this shortlist year are listed below.",
           "The Beacon Mosque Awards celebrate excellent mosque service, leadership, education, outreach and community achievement across the UK.",
         ],
       },
@@ -6864,7 +6901,7 @@ legacyRouteItems.forEach((item) => {
         title: category,
         paragraphs: [
           `${item.title} is a ${status.toLowerCase()} record in the ${category} category for the ${year} Beacon Mosque Awards.`,
-          "This page preserves the original public recognition route while presenting it in the modern Beacon Mosque awards design system.",
+          "This recognition profile remains part of the Beacon Mosque Awards archive.",
           "The Beacon Mosque Awards recognise mosques, madrassahs, imams, alimahs and volunteers whose work strengthens Islamic service, leadership, education and community life.",
         ],
       },
@@ -6907,7 +6944,7 @@ function legacyPostContext(item: LegacyRouteItem) {
       paragraphs: [
         `${item.title} is retained as part of the Beacon Mosque guidance and resource archive.`,
         "The resource supports mosque leaders, trustees and community teams with practical reference material connected to mosque service, safeguarding, youth engagement, public health or community communication.",
-        "This redesigned page keeps the original route available while presenting it within the modern Beacon Mosque standards and awards design system.",
+        "Continue through the standards, awards and related Beacon Mosque pages listed below.",
       ],
     };
   }
@@ -6944,7 +6981,7 @@ function legacyPostContext(item: LegacyRouteItem) {
     paragraphs: [
       `${item.title} is retained as part of the Beacon Mosque public news archive.`,
       "The update reflects mosque life, community service, leadership, education, sport, outreach or public engagement connected to the wider Beacon Mosque mission.",
-      "This redesigned page keeps the original route accessible with clearer hierarchy and related stories for continued browsing.",
+      "Related stories and award pages are listed below so you can keep browsing the Beacon Mosque archive.",
     ],
   };
 }
@@ -7046,7 +7083,7 @@ legacyRouteItems.forEach((item) => {
           isSpecificCategory
             ? `${item.title} connects visitors to the ${category} area of the Beacon Mosque Awards archive.`
             : `${item.title} is retained as an awards archive route for visitors following older Beacon Mosque pages.`,
-          "The redesigned page keeps the original public route available while replacing the generic archive shell with the modern Islamic awards design system.",
+          "Continue through the category profiles, winners and related award years in the Beacon Mosque Awards archive.",
           "Use the related links to continue through award categories, recognition profiles and the broader Beacon Mosque Awards archive.",
         ],
       },
@@ -7100,7 +7137,7 @@ function legacyOperationalContext(item: LegacyRouteItem) {
       paragraphs: [
         "The Beacon Mosque Leadership Forum route is retained as part of the leadership and governance area of the Beacon Mosque archive.",
         "It connects mosque leaders, trustees and management teams with the standards, guidance and long-term service model behind the Beacon Mosque initiative.",
-        "The redesigned page keeps the original route available while aligning it with the modern Islamic awards and excellence visual system.",
+        "Use the links below to continue into standards, guidance and related Beacon Mosque leadership resources.",
       ],
     };
   }
@@ -7129,7 +7166,7 @@ function legacyOperationalContext(item: LegacyRouteItem) {
     paragraphs: [
       `${item.title} is retained as part of the Beacon Mosque community resilience and public health response archive.`,
       "The route preserves material connected to mosque mobilisation, COVID-19 response, community communication and the role of mosques as trusted support points during disruption.",
-      "The redesigned page links this historic content to the broader Resilience Hubs model and Beacon Mosque resources.",
+      "This historic page connects to the wider Resilience Hubs model and Beacon Mosque resources.",
     ],
   };
 }
@@ -7194,7 +7231,7 @@ function legacyUtilityContext(item: LegacyRouteItem) {
 
   if (/cart|checkout|shop|my account/i.test(text)) {
     return {
-      eyebrow: "Legacy service route",
+      eyebrow: "Services archive",
       title: "Store and account archive",
       image: "/assets/interior/awards-gala.jpg",
       imageAlt: "Beacon Mosque awards ceremony",
@@ -7224,7 +7261,7 @@ function legacyUtilityContext(item: LegacyRouteItem) {
       ],
       paragraphs: [
         `${item.title} is retained as a legacy service route from the original Beacon Mosque website.`,
-        "The redesigned frontend preserves the URL while directing visitors toward the active awards, resources and contact areas.",
+        "This page is kept for older links. Continue into awards, resources or contact from the options below.",
         "This keeps old public links usable without reintroducing WordPress commerce or account plugin templates into the modern Next.js build.",
       ],
     };
@@ -7232,7 +7269,7 @@ function legacyUtilityContext(item: LegacyRouteItem) {
 
   if (/home-beta|sample-home/i.test(text)) {
     return {
-      eyebrow: "Legacy home route",
+      eyebrow: "Homepage archive",
       title: "Beacon Mosque homepage archive",
       image: "/assets/interior/awards-gala.jpg",
       imageAlt: "Beacon Mosque awards ceremony",
@@ -7243,7 +7280,7 @@ function legacyUtilityContext(item: LegacyRouteItem) {
       cards: [
         {
           title: "Home",
-          text: "Return to the redesigned Beacon Mosque homepage and modern awards experience.",
+          text: "Return to the Beacon Mosque homepage and current awards programme.",
           href: "/",
           meta: "Homepage",
         },
@@ -7262,16 +7299,16 @@ function legacyUtilityContext(item: LegacyRouteItem) {
       ],
       paragraphs: [
         `${item.title} is retained as a legacy homepage variant from the original website.`,
-        "The route now points visitors into the redesigned Beacon Mosque experience while preserving old public links.",
-        "The current homepage defines the modern Islamic awards design system for the Next.js frontend.",
+        "Continue to the current Beacon Mosque homepage, awards and standards from the links below.",
+        "The current Beacon Mosque homepage carries the live awards programme, standards and network.",
       ],
     };
   }
 
   if (item.title.trim() === "1") {
     return {
-      eyebrow: "Legacy placeholder",
-      title: "Archived placeholder post",
+      eyebrow: "Archive",
+      title: "Archive notice",
       image: "/assets/interior/about-hero.jpg",
       imageAlt: "Beacon Mosque interior architectural detail",
       backLabel: "Back to news",
@@ -7280,18 +7317,18 @@ function legacyUtilityContext(item: LegacyRouteItem) {
       secondaryHref: "/awards/",
       cards: communityStoryCards.slice(0, 6),
       paragraphs: [
-        "This placeholder post route is retained so older public links continue to resolve in the redesigned frontend.",
-        "The original item did not carry meaningful public content, so this page directs visitors toward active Beacon Mosque stories, awards and resources.",
-        "Keeping the route inside the React page map preserves site coverage without relying on WordPress placeholder templates.",
+        "This older link no longer carries a full article. Use the stories and awards links below to continue browsing.",
+        "Choose a news story, awards page or resource to continue exploring Beacon Mosque.",
+        "Thank you for following an older Beacon Mosque link.",
       ],
     };
   }
 
   return {
-    eyebrow: "Legacy test route",
+    eyebrow: "Archive",
     title: /video/i.test(text)
-      ? "Media test archive"
-      : "Development test archive",
+      ? "Media archive"
+      : "Site archive",
     image: "/assets/interior/standards-wide.jpg",
     imageAlt: "Beacon Mosque standards graphic",
     backLabel: "Go to homepage",
@@ -7301,7 +7338,7 @@ function legacyUtilityContext(item: LegacyRouteItem) {
     cards: [
       {
         title: "Home",
-        text: "Return to the redesigned Beacon Mosque homepage.",
+        text: "Return to the Beacon Mosque homepage.",
         href: "/",
         meta: "Homepage",
       },
@@ -7320,8 +7357,8 @@ function legacyUtilityContext(item: LegacyRouteItem) {
     ],
     paragraphs: [
       `${item.title} is retained as a legacy test route from the original website.`,
-      "The route is kept available for link parity, but the redesigned frontend now directs visitors toward meaningful Beacon Mosque pages.",
-      "This avoids exposing a generic WordPress-style test shell while preserving the route in the static Next.js site.",
+      "This older route is kept so historic links still resolve. Continue to a live Beacon Mosque page below.",
+      "From here you can open the homepage, gallery or standards.",
     ],
   };
 }
@@ -7343,7 +7380,7 @@ legacyRouteItems.forEach((item) => {
 
   pageMap[slug] = {
     slug,
-    title: item.title === "1" ? "Archived placeholder post" : item.title,
+    title: item.title === "1" ? "Archive notice" : item.title,
     eyebrow: context.eyebrow,
     intro: context.paragraphs[0],
     image: context.image,
@@ -7475,6 +7512,34 @@ legacyRouteItems.forEach((item) => {
           ]
         : []),
     ],
+  };
+});
+
+awardFinalists2026.forEach((finalist) => {
+  const slug = finalistPageSlug(finalist);
+  pageMap[slug] = {
+    slug,
+    title: finalist.identityHidden
+      ? `${finalist.categoryTitle} shortlist, Beacon Mosque Awards 2026`
+      : `${finalist.mosqueName}, ${finalist.categoryTitle}`,
+    eyebrow: `9th Beacon Mosque Awards · ${finalist.categoryTitle}`,
+    intro: finalist.summary,
+    image: finalist.logo,
+    imageAlt: finalist.logoAlt,
+    ctas: [
+      {
+        label: "Beacon Mosque Awards 2026",
+        href: "/awards/beacon-mosque-awards-2026/",
+      },
+      {
+        label: `${finalist.categoryTitle} shortlist`,
+        href: `${awardCategoryNominations.find(
+          (item) => item.title === finalist.categoryTitle,
+        )?.href ?? "/awards/beacon-mosque-awards-2026/"}#prepare-to-vote`,
+        variant: "secondary",
+      },
+    ],
+    sections: [],
   };
 });
 

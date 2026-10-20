@@ -1,32 +1,23 @@
-import {
-  getImageOverrides,
-  getOptionalCmsUser,
-  getSiteChrome,
-} from "@/lib/cms";
 import { SiteCmsAdminBar } from "@/components/cms/SiteCmsAdminBar";
 import { SiteCmsProvider } from "@/components/cms/SiteCmsProvider";
+import { SiteCmsSessionLoader } from "@/components/cms/SiteCmsSessionLoader";
+import { emptyImageOverrides } from "@/lib/cms-image-overrides";
+import { mergeSiteChrome } from "@/lib/cms-site-chrome";
 
-export async function SiteCmsRoot({
+export function SiteCmsRoot({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [user, overrides, chrome] = await Promise.all([
-    getOptionalCmsUser(),
-    getImageOverrides(),
-    getSiteChrome(),
-  ]);
-  const canEdit = Boolean(user);
-
   return (
     <SiteCmsProvider
-      canEdit={canEdit}
-      email={user?.email ?? null}
-      initialChrome={chrome}
-      initialEditMode={false}
-      initialOverrides={overrides}
+      canEdit={false}
+      email={null}
+      initialChrome={mergeSiteChrome(null)}
+      initialOverrides={emptyImageOverrides()}
     >
-      {canEdit ? <SiteCmsAdminBar /> : null}
+      <SiteCmsSessionLoader />
+      <SiteCmsAdminBar />
       {children}
     </SiteCmsProvider>
   );

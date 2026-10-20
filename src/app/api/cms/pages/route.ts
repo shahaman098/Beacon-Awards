@@ -18,6 +18,7 @@ import {
   reorderSectionsByIds,
   reorderSectionsInDocument,
 } from "@/lib/cms-page-document";
+import { revalidateInteriorRoute } from "@/lib/cms-revalidate";
 import { getPage } from "@/lib/pages";
 
 async function loadBasePage(routeSlug: string) {
@@ -137,6 +138,7 @@ export async function POST(request: Request) {
         parsed,
         note || "publish",
       );
+      revalidateInteriorRoute(routeSlug);
       return NextResponse.json({
         ok: true,
         document: published,

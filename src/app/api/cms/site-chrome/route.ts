@@ -5,6 +5,7 @@ import {
   saveSiteChrome,
 } from "@/lib/cms";
 import { mergeSiteChrome } from "@/lib/cms-site-chrome";
+import { revalidateEntireSite } from "@/lib/cms-revalidate";
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
     };
     const chrome = mergeSiteChrome(body.chrome ?? body);
     const saved = await saveSiteChrome(chrome, user.id);
+    revalidateEntireSite();
     return NextResponse.json({ ok: true, chrome: saved });
   } catch (error) {
     console.error("CMS site chrome save failed", error);

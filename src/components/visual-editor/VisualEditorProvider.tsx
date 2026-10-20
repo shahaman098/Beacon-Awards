@@ -70,8 +70,9 @@ export function VisualEditorProvider({
   children: ReactNode;
 }) {
   const site = useSiteCmsOptional();
+  const effectiveCanEdit = site?.canEdit ?? canEdit;
   const [localEditMode, setLocalEditMode] = useState(
-    Boolean(canEdit && initialEditMode),
+    Boolean(effectiveCanEdit && initialEditMode),
   );
   const [content, setContent] = useState(initialContent);
   const contentRef = useRef(content);
@@ -82,7 +83,7 @@ export function VisualEditorProvider({
 
   const editMode = site
     ? site.editMode
-    : Boolean(canEdit && localEditMode);
+    : Boolean(effectiveCanEdit && localEditMode);
   const setEditMode = site ? site.setEditMode : setLocalEditMode;
 
   const setField = useCallback((path: string, value: string) => {
@@ -189,8 +190,8 @@ export function VisualEditorProvider({
 
   const value = useMemo(
     () => ({
-      canEdit,
-      editMode: canEdit && editMode,
+      canEdit: effectiveCanEdit,
+      editMode: effectiveCanEdit && editMode,
       dirty,
       saving,
       status,
@@ -202,7 +203,7 @@ export function VisualEditorProvider({
       uploadMedia,
     }),
     [
-      canEdit,
+      effectiveCanEdit,
       editMode,
       dirty,
       saving,
@@ -218,7 +219,7 @@ export function VisualEditorProvider({
 
   return (
     <VisualEditorContext.Provider value={value}>
-      <CmsEditableProvider editMode={canEdit && editMode} setField={setField}>
+      <CmsEditableProvider editMode={effectiveCanEdit && editMode} setField={setField}>
         {children}
       </CmsEditableProvider>
     </VisualEditorContext.Provider>

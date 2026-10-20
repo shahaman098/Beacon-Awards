@@ -121,6 +121,9 @@ export const heroStats = [
 
 export const nominationForm2026Href =
   "https://forms.zohopublic.eu/info157/form/BeaconMosqueAwards2026NominationForm/formperma/VWlTCVb_wxgDlI_mYQ2gYFzp7SlpGg3mn1XcgJTbnbQ";
+/** Top of the Awards 2026 hub (prepare-to-vote hero). */
+export const awards2026HubHref = "/awards/beacon-mosque-awards-2026/";
+/** Categories / prepare-to-vote grid on the Awards 2026 hub. */
 export const awards2026CategoriesHref =
   "/awards/beacon-mosque-awards-2026/#award-categories";
 
@@ -1088,8 +1091,8 @@ export const featureCards: ImageCard[] = [
     actions: [
       { label: "Awards 2026", href: "/awards/beacon-mosque-awards-2026/" },
       {
-        label: "Submit nomination",
-        href: awards2026CategoriesHref,
+        label: "View Awards 2026",
+        href: awards2026HubHref,
       },
     ],
   },

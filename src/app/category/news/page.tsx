@@ -2,7 +2,6 @@ import { InteriorPage } from "@/components/InteriorPage";
 import { EditableInteriorPage } from "@/components/EditableInteriorPage";
 import {
   cmsPostToCard,
-  getOptionalCmsUser,
   listPublishedCmsPosts,
   resolveInteriorPage,
 } from "@/lib/cms";
@@ -11,7 +10,7 @@ import { withStableSectionIds } from "@/lib/cms-page-document";
 import { communityStoryCards, pages } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 async function getNewsPageBase() {
   const basePage = pages["category/news"];
@@ -38,16 +37,13 @@ export async function generateMetadata() {
 
 export default async function CategoryNewsPage() {
   const base = await getNewsPageBase();
-  const [page, user] = await Promise.all([
-    resolveInteriorPage(base),
-    getOptionalCmsUser(),
-  ]);
+  const page = await resolveInteriorPage(base);
   const initialDocument = withStableSectionIds(page);
   const initialFields = collectEditablePageFields(page);
 
   return (
     <EditableInteriorPage
-      canEdit={Boolean(user)}
+      canEdit={false}
       initialDocument={initialDocument}
       initialEditMode={false}
       initialFields={initialFields}

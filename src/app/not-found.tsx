@@ -1,5 +1,5 @@
 import Link from "@/components/AppLink";
-import { AwardSeal } from "@/components/AwardMotifs";
+import { CrescentFinial } from "@/components/AwardMotifs";
 import { SiteFooter } from "@/components/HomeSections";
 import { SiteHeader } from "@/components/SiteHeader";
 
@@ -60,7 +60,7 @@ export default function NotFound() {
             </div>
             <div className="hidden justify-items-center lg:grid">
               <div className="rounded-lg border border-gold-200/35 bg-navy-950/75 p-8 shadow-2xl backdrop-blur">
-                <AwardSeal className="h-36 w-36" />
+                <CrescentFinial className="h-40 w-auto max-w-[3rem]" opacity={0.95} />
                 <p className="mt-6 text-center text-sm font-bold uppercase tracking-[0.22em] text-gold-200">
                   404
                 </p>

@@ -33,12 +33,20 @@ import {
   SiteFooter,
 } from "@/components/HomeSections";
 import { SiteHeader } from "@/components/SiteHeader";
-import { AwardCardAccent, AwardSeal } from "@/components/AwardMotifs";
+import { AwardCardAccent, CrescentFinial } from "@/components/AwardMotifs";
 import { EditableText } from "@/components/visual-editor/EditableText";
 import { EditableHtml } from "@/components/visual-editor/EditableHtml";
 import { CmsEditOnly } from "@/components/visual-editor/CmsEditOnly";
 import { FormSection } from "@/components/cms/CmsFormSection";
 import { VideoPlaylistSection } from "@/components/VideoPlaylistSection";
+import { AwardFinalist2026DetailPage } from "@/components/award-finalists/AwardFinalist2026DetailPage";
+import { AwardFinalistsSection } from "@/components/award-finalists/AwardFinalistsSection";
+import {
+  AWARDS_2026_FINALISTS_ANNOUNCE_LABEL,
+  awards2026CategoriesSectionLead,
+  isAwards2026CategoryCardsSection,
+} from "@/lib/awards-2026-cycle";
+import { getAwardFinalist2026BySlug } from "@/lib/awards-2026-finalists";
 import {
   useLiveInteriorPage,
   usePageEditorOptional,
@@ -192,10 +200,14 @@ function TextPairSection({
 
 function LinkCard({
   card,
+  hideImageOverlay = false,
   pathPrefix,
+  showPrepareToVoteLabel = false,
 }: {
   card: CardLink;
+  hideImageOverlay?: boolean;
   pathPrefix?: string;
+  showPrepareToVoteLabel?: boolean;
 }) {
   const hasImage = Boolean(card.image);
   const isNominationCard = card.meta === "Nominate";
@@ -207,16 +219,27 @@ function LinkCard({
         ? `${pathPrefix}.image`
         : undefined;
   const imageFit = card.imageFit ?? "cover";
+  const showPrepareToVoteOnImage =
+    showPrepareToVoteLabel && isAwardCategoryCard;
   const defaultCtaLabel = isNominationCard
     ? "Nominate"
+    : showPrepareToVoteOnImage
+      ? "Prepare to vote"
     : isAwardCategoryCard
-      ? "View"
+      ? "View category"
       : "Open";
   const ctaLabelNode = pathPrefix ? (
     <EditableText path={`${pathPrefix}.ctaLabel`} value={defaultCtaLabel} />
   ) : (
     defaultCtaLabel
   );
+  const showImageCenterCta =
+    showPrepareToVoteOnImage ||
+    (!hideImageOverlay && (isNominationCard || isAwardCategoryCard));
+  const imageBadgeLabel = isAwardCategoryCard ? card.title : card.meta;
+  const imageBadgePath = pathPrefix
+    ? `${pathPrefix}.${isAwardCategoryCard ? "title" : "meta"}`
+    : undefined;
   const className =
     "group block overflow-hidden border-t border-black/14 pt-5 text-black transition hover:text-emerald-700";
   const content = (
@@ -242,17 +265,24 @@ function LinkCard({
             src={card.image!}
           />
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.38))]" />
-          {card.meta && !isNominationCard ? (
-            <span className="absolute left-4 top-4 bg-gold-400/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-black">
-              {pathPrefix ? (
-                <EditableText path={`${pathPrefix}.meta`} value={card.meta} />
+          {imageBadgeLabel && !isNominationCard ? (
+            <span className="absolute left-3 top-3 z-20 max-w-[calc(100%-1.5rem)] bg-gold-400/95 px-2.5 py-1 text-[9px] font-bold uppercase leading-tight tracking-[0.08em] text-black sm:left-4 sm:top-4 sm:px-3 sm:text-[10px] sm:tracking-[0.12em]">
+              {imageBadgePath ? (
+                <EditableText path={imageBadgePath} value={imageBadgeLabel} />
               ) : (
-                card.meta
+                imageBadgeLabel
               )}
             </span>
           ) : null}
-          {isNominationCard || isAwardCategoryCard ? (
-            <span className="absolute inset-0 z-10 flex items-center justify-center">
+          {showImageCenterCta ? (
+            <span
+              className={[
+                "pointer-events-none absolute inset-0 z-10 flex justify-center",
+                isAwardCategoryCard
+                  ? "items-end pb-3 sm:items-center sm:pb-0"
+                  : "items-center",
+              ].join(" ")}
+            >
               <span className="inline-flex min-h-11 items-center justify-center border border-gold-300 bg-[linear-gradient(135deg,#f3d98c,#d7a948)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-black shadow-[0_16px_32px_rgba(215,169,72,0.22)] transition group-hover:bg-[linear-gradient(135deg,#f7e3a8,#c99935)]">
                 {ctaLabelNode}
               </span>
@@ -262,7 +292,7 @@ function LinkCard({
       ) : null}
       <div className="relative pb-1">
         <AwardCardAccent className="opacity-35" />
-        {!hasImage && card.meta ? (
+        {!hasImage && card.meta && !isAwardCategoryCard ? (
           <span className="relative z-10 mb-4 inline-block text-[0.62rem] font-bold uppercase tracking-[0.18em] text-black/42">
             {pathPrefix ? (
               <EditableText path={`${pathPrefix}.meta`} value={card.meta} />
@@ -351,7 +381,10 @@ function StoriesMark() {
       className="flex items-center gap-4 text-black/18 md:gap-5"
       aria-hidden="true"
     >
-      <AwardSeal className="h-20 w-20 shrink-0 text-black/18 md:h-28 md:w-28" />
+      <CrescentFinial
+        className="h-28 w-auto max-w-[2.75rem] shrink-0 md:h-36 md:max-w-[3.25rem]"
+        opacity={0.8}
+      />
       <div className="h-20 w-px bg-black/18 md:h-28" />
       <span className="[writing-mode:vertical-rl] text-[10px] font-semibold uppercase tracking-[0.45em] text-black/24 md:text-xs">
         Stories
@@ -362,88 +395,138 @@ function StoriesMark() {
 
 function FloralMark() {
   return (
-    <svg
-      aria-hidden="true"
-      className="h-[12rem] w-[9rem] text-black/18 md:h-[15rem] md:w-[11rem]"
-      fill="none"
-      viewBox="0 0 180 260"
-    >
-      <path
-        d="M99 136C118 95 132 56 126 20C155 33 170 61 166 91C163 117 147 139 125 151"
-        stroke="currentColor"
-        strokeWidth="2.4"
-      />
-      <path
-        d="M95 138C105 105 107 70 94 37C121 45 138 69 140 98C142 120 131 142 115 155"
-        stroke="currentColor"
-        strokeWidth="2.4"
-      />
-      <path
-        d="M90 142C78 108 57 80 24 62C20 91 31 120 52 142C67 156 85 164 102 164"
-        stroke="currentColor"
-        strokeWidth="2.4"
-      />
-      <path
-        d="M89 145C63 134 35 133 10 145C21 171 45 188 73 192C92 195 109 190 123 180"
-        stroke="currentColor"
-        strokeWidth="2.4"
-      />
-      <path
-        d="M96 145C120 153 142 170 155 197C129 205 100 201 78 187C62 177 52 162 49 146"
-        stroke="currentColor"
-        strokeWidth="2.4"
-      />
-      <path
-        d="M101 141C129 137 156 122 177 96C184 123 176 150 157 171C142 188 124 197 106 198"
-        stroke="currentColor"
-        strokeWidth="2.4"
-      />
-      <ellipse
-        cx="95"
-        cy="145"
-        rx="24"
-        ry="20"
-        stroke="currentColor"
-        strokeWidth="2.8"
-      />
-      <path d="M95 126V166" stroke="currentColor" strokeWidth="1.8" />
-      <path
-        d="M78 136C87 139 97 141 110 141"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M72 151C87 147 99 146 116 148"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-    </svg>
+    <CrescentFinial
+      className="h-[12rem] w-auto max-w-[3.6rem] md:h-[15rem] md:max-w-[4.5rem]"
+      opacity={0.8}
+    />
   );
 }
 
 function AwardsSectionHeader({
+  description,
+  kicker,
   title,
   variant,
 }: {
+  description?: string;
+  kicker?: string;
   title: string;
   variant: "stories" | "floral";
 }) {
+  const defaultKicker = variant === "stories" ? "Archive" : "Categories";
+
   return (
     <div className="mb-10 border-b border-black/14 pb-8">
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between md:gap-8">
-        <div className="max-w-2xl">
-          <SectionKicker>
-            {variant === "stories" ? "Archive" : "Categories"}
-          </SectionKicker>
+      <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-8">
+        <div className="max-w-3xl">
+          <SectionKicker>{kicker ?? defaultKicker}</SectionKicker>
           <h2 className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl">
             {title}
           </h2>
+          {description ? (
+            <p className="mt-5 text-base leading-8 text-black/58 md:text-lg md:leading-9">
+              {description}
+            </p>
+          ) : null}
         </div>
-        <div className="flex justify-end md:shrink-0">
+        <div className="flex justify-end md:shrink-0 md:pt-1">
           {variant === "stories" ? <StoriesMark /> : <FloralMark />}
         </div>
       </div>
     </div>
+  );
+}
+
+function PrepareToVoteCategoryCard({
+  card,
+  index,
+  pathPrefix,
+}: {
+  card: CardLink;
+  index: number;
+  pathPrefix: string;
+}) {
+  const imageAdjustKey = awardCategoryImageAdjustKey(card.title);
+  const imageFit = card.imageFit ?? "cover";
+  const hasImage = Boolean(card.image);
+
+  const content = (
+    <>
+      <div
+        className={[
+          "relative overflow-hidden",
+          hasImage
+            ? imageFit === "contain"
+              ? "aspect-[5/4] bg-[#111]"
+              : "aspect-[5/4] bg-[#1a1712]"
+            : "aspect-[5/4] bg-[linear-gradient(145deg,#1b2430,#0c1218)]",
+        ].join(" ")}
+      >
+        {hasImage ? (
+          <CmsImage
+            adjustKey={imageAdjustKey}
+            alt={card.imageAlt ?? card.title}
+            className={[
+              "transition duration-700 ease-out",
+              imageFit === "contain"
+                ? "object-contain p-5"
+                : "object-cover group-hover:scale-[1.04]",
+            ].join(" ")}
+            fill
+            sizes="(min-width: 1280px) 360px, (min-width: 768px) 45vw, 100vw"
+            src={card.image!}
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,22,0.12)_0%,rgba(8,14,22,0.28)_48%,rgba(8,14,22,0.78)_100%)]" />
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+          <span className="bg-white/12 px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.18em] text-white/88 backdrop-blur-sm">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <span className="bg-[linear-gradient(135deg,#f3d98c,#d7a948)] px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-black">
+            2026
+          </span>
+        </div>
+        <span className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-4">
+          <span className="inline-flex min-h-11 items-center justify-center border border-gold-300 bg-[linear-gradient(135deg,#f3d98c,#d7a948)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-black shadow-[0_16px_32px_rgba(0,0,0,0.28)] transition duration-300 group-hover:bg-[linear-gradient(135deg,#f7e3a8,#c99935)] group-hover:shadow-[0_20px_36px_rgba(215,169,72,0.28)]">
+            Prepare to vote
+          </span>
+        </span>
+        <div className="absolute inset-x-0 bottom-0 z-10 p-5 md:p-6">
+          <EditableText
+            as="h3"
+            className="max-w-[14ch] text-[1.35rem] font-semibold leading-[1.08] tracking-[-0.04em] text-white md:text-[1.55rem]"
+            path={`${pathPrefix}.title`}
+            value={card.title}
+          />
+        </div>
+      </div>
+      {card.text || pathPrefix ? (
+        <EditableText
+          as="p"
+          className="mt-4 text-sm leading-7 text-black/58"
+          multiline
+          path={`${pathPrefix}.text`}
+          value={card.text ?? ""}
+        />
+      ) : null}
+      <CmsEditOnly>
+        <EditableText
+          as="span"
+          className="mt-2 block text-[0.62rem] font-medium normal-case tracking-normal text-black/35"
+          path={`${pathPrefix}.href`}
+          value={card.href}
+        />
+      </CmsEditOnly>
+    </>
+  );
+
+  return (
+    <CmsEditSafeLink
+      className="group block text-black transition"
+      href={card.href}
+    >
+      {content}
+    </CmsEditSafeLink>
   );
 }
 
@@ -682,8 +765,10 @@ function CardsSection({
   const hasImages = section.cards.some((card) => card.image);
   const sectionTitle = section.title ?? "";
   const isHeadOfficeSection = sectionTitle === "Head Office";
-  const isAwardCategoriesSection =
-    sectionTitle === "Nominate Across Our 10 Award Categories for 2026";
+  const isAwardCategoriesSection = isAwards2026CategoryCardsSection(
+    currentPath,
+    sectionTitle,
+  );
   const isResourcesLibrarySection = sectionTitle === "Booklets and guides";
   const isWinnersArchiveSection =
     currentPath === "/winners/" && sectionTitle === "Awards archive";
@@ -693,22 +778,20 @@ function CardsSection({
     currentPath === "/winners/" &&
     /^(2024|2023|2022|2021) winners$/.test(sectionTitle);
   const sectionId =
-    (currentPath === "/awards/" && sectionTitle === "Nominate 2026") ||
-    (currentPath === "/awards/beacon-mosque-awards-2026/" &&
-      sectionTitle === "Nominate Across Our 10 Award Categories for 2026")
-      ? "award-categories"
-      : undefined;
-  const sectionClass = isResourcesLibrarySection
-    ? "relative isolate overflow-hidden bg-white px-5 pb-24 pt-16 text-black md:px-8 md:pb-28 md:pt-20"
-    : isHeadOfficeSection
-      ? "relative isolate overflow-hidden bg-[#f3f1ed] px-5 pb-20 pt-10 text-black md:px-8 md:pb-24 md:pt-14"
-      : bandClass(tone);
+    isAwardCategoriesSection ? "award-categories" : undefined;
+  const sectionClass = [
+    isAwardCategoriesSection
+      ? "relative isolate overflow-hidden scroll-mt-28 bg-[#f7f4ee] px-5 pb-24 pt-16 text-black md:px-8 md:pb-32 md:pt-24"
+      : isResourcesLibrarySection
+        ? "relative isolate overflow-hidden bg-white px-5 pb-24 pt-16 text-black md:px-8 md:pb-28 md:pt-20"
+        : isHeadOfficeSection
+          ? "relative isolate overflow-hidden bg-[#f3f1ed] px-5 pb-20 pt-10 text-black md:px-8 md:pb-24 md:pt-14"
+          : bandClass(tone),
+  ]
+    .filter(Boolean)
+    .join(" ");
   const awardsHeaderVariant =
-    sectionTitle === "Awards archive"
-      ? "stories"
-      : isAwardCategoriesSection
-        ? "floral"
-        : null;
+    sectionTitle === "Awards archive" ? "stories" : null;
   const resourcePublications = isResourcesLibrarySection
     ? section.cards.filter(
         (card) =>
@@ -753,20 +836,68 @@ function CardsSection({
 
   return (
     <section className={sectionClass} id={sectionId}>
-      {isResourcesLibrarySection ? null : (
+      {isAwardCategoriesSection ? (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(215,169,72,0.16),transparent_42%),radial-gradient(circle_at_88%_18%,rgba(15,42,34,0.08),transparent_38%),linear-gradient(180deg,#fbf8f1_0%,#f3efe6_55%,#efe9de_100%)]" />
+          <div className="absolute -right-8 top-10 opacity-55 md:right-6 md:top-16">
+            <CrescentFinial
+              className="h-36 w-auto max-w-[3rem] md:h-48 md:max-w-[3.75rem]"
+              opacity={0.7}
+            />
+          </div>
+          <div className="absolute inset-x-0 bottom-0 h-px bg-[linear-gradient(90deg,transparent,#d7a94866,transparent)]" />
+        </div>
+      ) : isResourcesLibrarySection ? null : (
         <SectionAwardsDecor left={sectionTitle || "Cards"} right="Explore" />
       )}
       <div
         className={
           isWinnersArchiveSection
             ? "relative z-10 w-full"
-            : isResourcesLibrarySection
+            : isResourcesLibrarySection || isAwardCategoriesSection
               ? "relative z-10 mx-auto max-w-[1280px]"
               : "relative z-10 mx-auto max-w-[1180px]"
         }
       >
         {section.title ? (
-          awardsHeaderVariant ? (
+          isAwardCategoriesSection ? (
+            <div className="mb-14 grid gap-8 border-b border-black/10 pb-10 md:mb-16 md:grid-cols-[minmax(0,1.35fr)_minmax(14rem,0.65fr)] md:items-end md:gap-12 md:pb-12">
+              <div className="max-w-3xl">
+                <span className="section-word-motion block text-[0.68rem] font-bold uppercase tracking-[0.24em] text-[#b88b2a]">
+                  9th Beacon Mosque Awards
+                </span>
+                <EditableText
+                  as="h2"
+                  className="section-word-motion mt-4 text-[clamp(2.4rem,5vw,4.25rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-black"
+                  path={`${basePath}.title`}
+                  value={section.title}
+                />
+                <p className="mt-5 max-w-2xl text-base leading-8 text-black/58 md:text-lg md:leading-9">
+                  {awards2026CategoriesSectionLead}
+                </p>
+              </div>
+              <div className="flex flex-col gap-4 md:items-stretch">
+                <div className="relative overflow-hidden border border-[#d7a948]/55 bg-[#111814] px-5 py-5 text-white shadow-[0_18px_40px_rgba(15,24,20,0.12)]">
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-6 -top-8 h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(215,169,72,0.35),transparent_68%)]"
+                  />
+                  <p className="relative text-[0.62rem] font-bold uppercase tracking-[0.2em] text-gold-300">
+                    Finalists named
+                  </p>
+                  <p className="relative mt-2 text-2xl font-semibold tracking-[-0.04em] text-white md:text-[1.7rem]">
+                    {AWARDS_2026_FINALISTS_ANNOUNCE_LABEL}
+                  </p>
+                </div>
+                <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/38 md:text-right">
+                  {section.cards.length} categories
+                </p>
+              </div>
+            </div>
+          ) : awardsHeaderVariant ? (
             <AwardsSectionHeader
               title={section.title}
               variant={awardsHeaderVariant}
@@ -786,16 +917,6 @@ function CardsSection({
                 {resourcePublications.length} awards publications ·{" "}
                 {resourceGuides.length} practical guides
               </p>
-            </div>
-          ) : isAwardCategoriesSection ? (
-            <div className="mb-10 max-w-3xl">
-              <SectionKicker>Explore</SectionKicker>
-              <EditableText
-                as="h2"
-                className="section-word-motion mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-black md:text-5xl"
-                path={`${basePath}.title`}
-                value={section.title ?? ""}
-              />
             </div>
           ) : (
             <div
@@ -910,9 +1031,19 @@ function CardsSection({
                   ))}
               </div>
             ) : isAwardCategoriesSection ? (
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-7 sm:grid-cols-2 xl:grid-cols-3 xl:gap-8">
                 {section.cards.map((card, cardIndex) => (
-                  <LinkCard card={card} key={`${card.title}-${card.href}-${cardIndex}`} pathPrefix={`${basePath}.cards.${cardIndex}`} />
+                  <div
+                    className="section-word-motion"
+                    key={`${card.title}-${card.href}-${cardIndex}`}
+                    style={{ animationDelay: `${cardIndex * 70}ms` }}
+                  >
+                    <PrepareToVoteCategoryCard
+                      card={card}
+                      index={cardIndex}
+                      pathPrefix={`${basePath}.cards.${cardIndex}`}
+                    />
+                  </div>
                 ))}
               </div>
             ) : isWinnerProfilesSection || isHistoricalWinnersSection ? (
@@ -973,7 +1104,14 @@ function CardsSection({
                 ].join(" ")}
               >
                 {section.cards.map((card, cardIndex) => (
-                  <LinkCard card={card} key={`${card.title}-${card.href}-${cardIndex}`} pathPrefix={`${basePath}.cards.${cardIndex}`} />
+                  <LinkCard
+                    card={card}
+                    hideImageOverlay={/previous winners|winners from other years/i.test(
+                      sectionTitle,
+                    )}
+                    key={`${card.title}-${card.href}-${cardIndex}`}
+                    pathPrefix={`${basePath}.cards.${cardIndex}`}
+                  />
                 ))}
               </div>
             )}
@@ -2837,6 +2975,15 @@ function RenderSection({
           tone={tone}
         />
       );
+    case "awardFinalists":
+      return (
+        <AwardFinalistsSection
+          categoryTitle={section.categoryTitle}
+          showMosqueMbaPromo={section.showMosqueMbaPromo ?? true}
+          title={section.title}
+          tone={tone}
+        />
+      );
     case "wordpress":
       return <WordPressSection section={section} sectionIndex={index} />;
     case "media":
@@ -2971,11 +3118,6 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
       ? extractEntityNameFromCardTitle(preferredCard.title, category)
       : null) ??
     "Beacon Mosque Archive";
-  const scoreRows = [
-    { label: "Great contribution", value: 92 },
-    { label: "Great leadership", value: 90 },
-    { label: "Great performance", value: 94 },
-  ];
   const introSectionIndex = page.sections.findIndex(
     (section) => section.kind === "text",
   );
@@ -2987,17 +3129,11 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
       ? `sections.${introSectionIndex}.paragraphs`
       : null;
 
-  const categoryBlurbs = [
-    `${winnerName} is presented here as the lead archive record for the ${category} category within the Beacon Mosque Awards.`,
-    "This category detail page uses the same editorial structure across the archive so each award category opens with a consistent internal page.",
-    "The category pages connect award recognition, mosque leadership and measurable service in one repeatable presentation system.",
-    "Related cards remain below so visitors can continue through profiles, archive routes and other category records.",
-  ];
   const recognitionDetails = [
-    ["Profile type", "Category winner"],
-    ["Mosque name", winnerName],
-    ["Award category", category],
-    ["Archive year", archiveYear],
+    ["Recognition", `${archiveYear} category winner`],
+    ["Name", winnerName],
+    ["Category", category],
+    ["Awards year", archiveYear],
   ] as const;
 
   return (
@@ -3005,13 +3141,13 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
       <SiteHeader />
       <main>
         <section className="relative isolate overflow-hidden bg-[#f6f5ef] px-5 pb-24 pt-36 text-black md:px-8 md:pb-28 md:pt-40">
-          <SectionAwardsDecor left="Category" right="Winner" />
+          <SectionAwardsDecor left="Category" right={archiveYear} />
           <div className="relative z-10 mx-auto max-w-[1180px]">
             <EditableText
               as="span"
               className="text-xs font-bold uppercase tracking-[0.24em] text-gold-500"
               path="landing.awardCategory.eyebrow"
-              value="Category winner"
+              value={`${archiveYear} Beacon Mosque Awards`}
             />
             <EditableText
               as="h1"
@@ -3019,6 +3155,9 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
               path="landing.awardCategory.winnerName"
               value={winnerName}
             />
+            <p className="mt-4 max-w-2xl text-lg leading-8 text-black/58">
+              Winner, {category}
+            </p>
             <div className="mt-10 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
               <div>
                 <div
@@ -3066,93 +3205,17 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
                   ))}
                 </div>
               </div>
-              <div className="space-y-8">
-                <div className="space-y-6 pt-3">
-                  {scoreRows.map((row, scoreIndex) => (
-                    <div key={row.label}>
-                      <div className="mb-3 flex items-center justify-between gap-4 text-sm font-semibold text-black">
-                        <EditableText
-                          path={`landing.awardCategory.scores.${scoreIndex}.label`}
-                          value={row.label}
-                        />
-                        <span>
-                          <EditableText
-                            path={`landing.awardCategory.scores.${scoreIndex}.value`}
-                            value={String(row.value)}
-                          />
-                          %
-                        </span>
-                      </div>
-                      <div className="h-1.5 bg-black/8">
-                        <div
-                          className="h-full bg-[#3154f1]"
-                          style={{ width: `${row.value}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid gap-6 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:grid-cols-2">
-                  {categoryBlurbs.map((blurb, blurbIndex) => (
-                    <EditableText
-                      as="p"
-                      className="text-sm leading-7 text-black/58"
-                      key={`category-blurb-${blurbIndex}`}
-                      multiline
-                      path={`landing.awardCategory.blurbs.${blurbIndex}`}
-                      value={blurb}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="mt-20 grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
-              <div>
-                <EditableText
-                  as="h2"
-                  className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl"
-                  path="landing.awardCategory.biographyHeading"
-                  value="Biography"
-                />
-                <div className="mt-6 space-y-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
-                  {biographyParagraphs.map((paragraph, paragraphIndex) =>
-                    biographyPathBase ? (
-                      <EditableText
-                        as="p"
-                        key={`${biographyPathBase}.${paragraphIndex}`}
-                        multiline
-                        path={`${biographyPathBase}.${paragraphIndex}`}
-                        value={paragraph}
-                      />
-                    ) : (
-                      <EditableText
-                        as="p"
-                        key={`intro-${paragraphIndex}`}
-                        multiline
-                        path="intro"
-                        value={paragraph}
-                      />
-                    ),
-                  )}
-                  <EditableText
-                    as="p"
-                    multiline
-                    path="landing.awardCategory.biographyClosing"
-                    value={`This internal category page keeps the archive presentation consistent while still linking visitors into the full awards history for ${archiveYear}.`}
-                  />
-                </div>
-              </div>
               <div className="border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:p-8">
                 <EditableText
                   as="h2"
-                  className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl"
+                  className="text-2xl font-semibold tracking-[-0.03em] md:text-3xl"
                   path="landing.awardCategory.recognitionHeading"
-                  value="Recognition details"
+                  value="Recognition"
                 />
                 <div className="mt-8 space-y-5">
                   {recognitionDetails.map(([label, value], detailIndex) => (
                     <div
-                      className="border-b border-black/10 pb-4"
+                      className="border-b border-black/10 pb-4 last:border-b-0 last:pb-0"
                       key={`${label}-${detailIndex}`}
                     >
                       <EditableText
@@ -3170,6 +3233,35 @@ function AwardCategoryDetailPage({ page }: { page: InteriorPageData }) {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+            <div className="mt-16 max-w-3xl">
+              <EditableText
+                as="h2"
+                className="text-3xl font-semibold tracking-[-0.04em] md:text-4xl"
+                path="landing.awardCategory.biographyHeading"
+                value={`About ${category}`}
+              />
+              <div className="mt-6 space-y-5 text-base leading-8 text-black/62 md:text-lg md:leading-9">
+                {biographyParagraphs.map((paragraph, paragraphIndex) =>
+                  biographyPathBase ? (
+                    <EditableText
+                      as="p"
+                      key={`${biographyPathBase}.${paragraphIndex}`}
+                      multiline
+                      path={`${biographyPathBase}.${paragraphIndex}`}
+                      value={paragraph}
+                    />
+                  ) : (
+                    <EditableText
+                      as="p"
+                      key={`intro-${paragraphIndex}`}
+                      multiline
+                      path="intro"
+                      value={paragraph}
+                    />
+                  ),
+                )}
               </div>
             </div>
           </div>
@@ -3196,27 +3288,16 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
   const category =
     page.eyebrow?.split(" - ").slice(1).join(" - ") || "Beacon Mosque Awards";
   const archiveYear = page.title.match(/20\d{2}/)?.[0] ?? "2025";
-  const scoreRows = [
-    { label: "Great contribution", value: 92 },
-    { label: "Great leadership", value: 90 },
-    { label: "Great service", value: 94 },
-  ];
   const cardSections = page.sections.filter(
     (section): section is Extract<PageSection, { kind: "cards" }> =>
       section.kind === "cards",
   );
   const usePosterHeroLayout = isAwardWinnerPosterImage(page.image);
-  const profileBlurbs = [
-    `${winnerName} is recognised within the Beacon Mosque Awards archive for sustained community impact, trusted leadership and visible service across mosque life.`,
-    "This winner profile follows a consistent editorial format across the archive, highlighting the same standards of contribution, leadership and service for every card detail page.",
-    "The Beacon Mosque Awards recognise institutions whose work strengthens worshippers, families and neighbourhoods through practical excellence and reliable stewardship.",
-    "Each page in this winner series keeps the presentation intentionally minimal so the archive reads as a coherent national record of recognition.",
-  ];
   const recognitionDetails = [
-    ["Profile type", "Winner"],
-    ["Mosque name", winnerName],
-    ["Award category", category],
-    ["Archive year", archiveYear],
+    ["Recognition", "Beacon Mosque Awards winner"],
+    ["Name", winnerName],
+    ["Category", category],
+    ["Awards year", archiveYear],
   ] as const;
 
   return (
@@ -3224,13 +3305,13 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
       <SiteHeader />
       <main>
         <section className="relative isolate overflow-hidden bg-[#f6f5ef] px-5 pb-24 pt-36 text-black md:px-8 md:pb-28 md:pt-40">
-          <SectionAwardsDecor left="Winner" right="Profile" />
+          <SectionAwardsDecor left="Winner" right={archiveYear} />
           <div className="relative z-10 mx-auto max-w-[1180px]">
             <EditableText
               as="span"
               className="text-xs font-bold uppercase tracking-[0.24em] text-gold-500"
               path="landing.awardProfile.eyebrow"
-              value="Winner"
+              value={`${archiveYear} Beacon Mosque Awards`}
             />
             <EditableText
               as="h1"
@@ -3238,6 +3319,9 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
               path="landing.awardProfile.winnerName"
               value={winnerName}
             />
+            <p className="mt-4 max-w-2xl text-lg leading-8 text-black/58">
+              Winner, {category}
+            </p>
             <div className="mt-10 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
               <div>
                 <div
@@ -3283,80 +3367,17 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
                   ))}
                 </div>
               </div>
-              <div className="space-y-8">
-                <div className="space-y-6 pt-3">
-                  {scoreRows.map((row, scoreIndex) => (
-                    <div key={row.label}>
-                      <div className="mb-3 flex items-center justify-between gap-4 text-sm font-semibold text-black">
-                        <EditableText
-                          path={`landing.awardProfile.scores.${scoreIndex}.label`}
-                          value={row.label}
-                        />
-                        <span>
-                          <EditableText
-                            path={`landing.awardProfile.scores.${scoreIndex}.value`}
-                            value={String(row.value)}
-                          />
-                          %
-                        </span>
-                      </div>
-                      <div className="h-1.5 bg-black/8">
-                        <div
-                          className="h-full bg-[#3154f1]"
-                          style={{ width: `${row.value}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid gap-6 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:grid-cols-2">
-                  {profileBlurbs.map((blurb, blurbIndex) => (
-                    <EditableText
-                      as="p"
-                      className="text-sm leading-7 text-black/58"
-                      key={`profile-blurb-${blurbIndex}`}
-                      multiline
-                      path={`landing.awardProfile.blurbs.${blurbIndex}`}
-                      value={blurb}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="mt-20 grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
-              <div>
-                <EditableText
-                  as="h2"
-                  className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl"
-                  path="landing.awardProfile.biographyHeading"
-                  value="Biography"
-                />
-                <EditableText
-                  as="p"
-                  className="mt-6 text-base leading-8 text-black/62 md:text-lg md:leading-9"
-                  multiline
-                  path="intro"
-                  value={page.intro}
-                />
-                <EditableText
-                  as="p"
-                  className="mt-5 text-base leading-8 text-black/62 md:text-lg md:leading-9"
-                  multiline
-                  path="landing.awardProfile.biographyClosing"
-                  value="This archive profile presents the recognised winner in a repeatable, editorial page structure that can be reused across every linked winner card without altering the overall experience."
-                />
-              </div>
               <div className="border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:p-8">
                 <EditableText
                   as="h2"
-                  className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl"
+                  className="text-2xl font-semibold tracking-[-0.03em] md:text-3xl"
                   path="landing.awardProfile.recognitionHeading"
-                  value="Recognition details"
+                  value="Recognition"
                 />
                 <div className="mt-8 space-y-5">
                   {recognitionDetails.map(([label, value], detailIndex) => (
                     <div
-                      className="border-b border-black/10 pb-4"
+                      className="border-b border-black/10 pb-4 last:border-b-0 last:pb-0"
                       key={`${label}-${detailIndex}`}
                     >
                       <EditableText
@@ -3375,6 +3396,21 @@ function AwardProfileDetailPage({ page }: { page: InteriorPageData }) {
                   ))}
                 </div>
               </div>
+            </div>
+            <div className="mt-16 max-w-3xl">
+              <EditableText
+                as="h2"
+                className="text-3xl font-semibold tracking-[-0.04em] md:text-4xl"
+                path="landing.awardProfile.biographyHeading"
+                value="About this winner"
+              />
+              <EditableText
+                as="p"
+                className="mt-6 text-base leading-8 text-black/62 md:text-lg md:leading-9"
+                multiline
+                path="intro"
+                value={page.intro}
+              />
             </div>
           </div>
         </section>
@@ -3414,6 +3450,14 @@ export function InteriorPage({ page: pageProp }: { page: InteriorPageData }) {
     return <TrainingLandingPage page={page} />;
   }
 
+  if (page.slug.startsWith("awards/beacon-mosque-awards-2026/finalist/")) {
+    const finalistSlug = page.slug.split("/").pop() ?? "";
+    const finalist = getAwardFinalist2026BySlug(finalistSlug);
+    if (finalist) {
+      return <AwardFinalist2026DetailPage finalist={finalist} page={page} />;
+    }
+  }
+
   if (isAwardCategoryPage(page)) {
     return <AwardCategoryDetailPage page={page} />;
   }
@@ -3423,13 +3467,14 @@ export function InteriorPage({ page: pageProp }: { page: InteriorPageData }) {
   }
 
   const isAwardsLandingPage = page.slug === "awards";
+  const isAwards2026HubPage = page.slug === "awards/beacon-mosque-awards-2026";
   const isContactPage = page.slug === "contact-us";
   const isStandardsSubpage = page.slug.startsWith("standards/");
   const isStandardsAccreditationPage = page.slug === "standards/accreditation";
   const hasHeroVideo = Boolean(page.heroVideo);
   const hasHeroVisual = hasHeroVideo || Boolean(page.image);
   const nominationCategoryHeroAdjustKey =
-    page.eyebrow === "Awards 2026 nomination"
+    page.eyebrow?.startsWith("Awards 2026")
       ? awardCategoryImageAdjustKey(page.title)
       : undefined;
   const showHeroVisual =
@@ -3456,7 +3501,9 @@ export function InteriorPage({ page: pageProp }: { page: InteriorPageData }) {
             isAwardsLandingPage
               ? "pb-14 pt-24 md:pb-18 md:pt-26"
               : "pb-20 pt-36 md:pb-24 md:pt-40",
+            isAwards2026HubPage ? "scroll-mt-28" : "",
           ].join(" ")}
+          id={isAwards2026HubPage ? "prepare-to-vote" : undefined}
         >
           {isContactPage ? (
             <div className="absolute inset-0 -z-10">

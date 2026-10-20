@@ -307,6 +307,14 @@ function mapEntry(row: CmsEntryRow): CmsEntry {
   };
 }
 
+function formatCmsDate(value: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
 function paragraphiseContent(content: string) {
   return normaliseWhitespace(content)
     .split(/\n\s*\n/g)
@@ -365,6 +373,22 @@ export function cmsPostToCard(entry: CmsEntry): CardLink {
   };
 }
 
+export function cmsEntryToArchiveCard(entry: CmsEntry): CardLink {
+  const kindLabel = entry.kind === "post" ? "Post" : "Page";
+  const publishedLabel = entry.publishedAt
+    ? `Published ${formatCmsDate(entry.publishedAt)}`
+    : `Updated ${formatCmsDate(entry.updatedAt)}`;
+
+  return {
+    title: entry.title,
+    text: entry.intro || `${entry.title} is available on its public route.`,
+    href: entryHref(entry),
+    meta: `${kindLabel} · ${publishedLabel}`,
+    image: entry.coverImageUrl || undefined,
+    imageAlt: entry.coverImageAlt || entry.title,
+  };
+}
+
 export async function hasCmsUsers() {
   const db = await getDb();
   const count = await db
@@ -387,7 +411,9 @@ export async function listCmsEntries() {
 }
 
 export async function listPublishedCmsPosts() {
-  const db = await getDb();
+  const db = await tryGetCmsDb();
+  if (!db) return [];
+
   const rows = await db
     .prepare(
       `SELECT ${CMS_ENTRY_SELECT}
@@ -401,6 +427,10 @@ export async function listPublishedCmsPosts() {
 }
 
 export async function listPublishedCmsEntriesForSitemap() {
+  return listPublishedCmsEntries();
+}
+
+export async function listPublishedCmsEntries() {
   const db = await getDb();
   const rows = await db
     .prepare(
@@ -637,7 +667,6 @@ export function validateCmsLoginInput(
 }
 
 export async function getCurrentCmsUser() {
-  await pruneExpiredSessions();
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get(CMS_SESSION_COOKIE)?.value;
   if (!sessionToken) return null;
