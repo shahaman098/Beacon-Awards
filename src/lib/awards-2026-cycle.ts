@@ -72,5 +72,15 @@ export const awards2026NominationsClosedIntro =
 export const awards2026HeroIntro =
   `Nominations for the 9th Annual Beacon Mosque Awards 2026 are closed. Finalists will be announced on ${AWARDS_2026_FINALISTS_ANNOUNCE_DATE} on this page before public voting opens.`;
 
+/** WhatsApp / Open Graph share preview for `/awards/beacon-mosque-awards-2026/`. */
+export const awards2026ShareMetaTitle =
+  "Prepare to vote · 9th Beacon Mosque Awards 2026";
+
+export const awards2026ShareMetaDescription =
+  `Finalists announced ${AWARDS_2026_FINALISTS_ANNOUNCE_DATE}. Browse the ten Beacon Mosque Awards categories and prepare to cast your public vote.`;
+
+export const awards2026ShareOgImage =
+  "/assets/awards/beacon-mosque-awards-2026-poster.png";
+
 export const awards2026CategoryAnnouncementParagraph =
   `Finalists for this category will be announced on ${AWARDS_2026_FINALISTS_ANNOUNCE_DATE}.`;

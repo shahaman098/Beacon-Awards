@@ -22,7 +22,13 @@ export function pageMetadata(page: InteriorPage): Metadata {
     page.ogImage?.trim() ||
     page.image ||
     "/assets/hero/awards-2025-poster.jpeg";
-  const image = absoluteUrl(imageSource);
+  // Query helps WhatsApp / iMessage refetch when share artwork changes.
+  const image = absoluteUrl(
+    imageSource.includes("?")
+      ? imageSource
+      : `${imageSource}?v=awards-2026-prepare`,
+  );
+  const shareTitle = title.includes(siteName) ? title : `${title} - ${siteName}`;
 
   return {
     title,
@@ -31,16 +37,23 @@ export function pageMetadata(page: InteriorPage): Metadata {
       canonical: path,
     },
     openGraph: {
-      title: `${title} - ${siteName}`,
+      title: shareTitle,
       description,
-      images: [{ url: image }],
+      images: [
+        {
+          url: image,
+          width: 1024,
+          height: 1024,
+          alt: page.imageAlt || title,
+        },
+      ],
       siteName,
       type: "website",
       url: path,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} - ${siteName}`,
+      title: shareTitle,
       description,
       images: [image],
     },

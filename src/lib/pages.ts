@@ -22,6 +22,9 @@ import {
   awards2026HeroIntro,
   awards2026NominationsClosedIntro,
   awards2026PrepareToVoteHeadline,
+  awards2026ShareMetaDescription,
+  awards2026ShareMetaTitle,
+  awards2026ShareOgImage,
 } from "@/lib/awards-2026-cycle";
 import {
   awardFinalists2026,
@@ -4408,6 +4411,9 @@ const pageMap: Record<string, InteriorPage> = {
   "awards/beacon-mosque-awards-2026": {
     slug: "awards/beacon-mosque-awards-2026",
     title: "9th Beacon Mosque Awards 2026",
+    metaTitle: awards2026ShareMetaTitle,
+    metaDescription: awards2026ShareMetaDescription,
+    ogImage: awards2026ShareOgImage,
     eyebrow: "9th Beacon Mosque Awards",
     intro: awards2026HeroIntro,
     image: "/wp-content/uploads/2026/04/04.png",
