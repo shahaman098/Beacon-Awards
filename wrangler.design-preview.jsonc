@@ -1,0 +1,39 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "beaconmosque-design-review-2026",
+  "account_id": "aa2252eb15b0563c0e4de43bef93d8fc",
+  "main": "cloudflare/design-preview-entry.mjs",
+  "build": { "command": "node scripts/generate-review-video-sizes.mjs" },
+  "compatibility_date": "2026-10-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "routes": [],
+  "vars": {
+    "BEACON_FINALIST_DESIGN_PREVIEW": "true",
+    "BEACON_REVIEW_VOTING_ENABLED": "true",
+    "BEACON_VOTING_2026_ENABLED": "true",
+    "BEACON_VOTING_HOSTNAME": "beaconmosque-design-review-2026.amanks.workers.dev",
+    "BEACON_TURNSTILE_SITE_KEY": "0x4AAAAAAFgzTdKvxiHe-GKP",
+    "BEACON_VOTING_2026_OPENS_AT": "2026-10-22T00:00:00Z",
+    "BEACON_VOTING_2026_CLOSES_AT": "2026-11-05T23:59:59Z",
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "beaconmosque-design-review-2026",
+    },
+  ],
+  "d1_databases": [{
+    "binding": "VOTING_DB",
+    "database_name": "beaconmosque-review-voting-2026",
+    "database_id": "97d575be-6c84-45c7-b95d-a2c5876534f5"
+  }],
+  "triggers": { "crons": ["*/15 * * * *"] },
+  "observability": { "enabled": true },
+}
